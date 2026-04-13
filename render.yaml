@@ -3,13 +3,11 @@ services:
   - type: web
     name: api-server
     env: node
-    buildCommand: npm install
+    buildCommand: npm install --production
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
         value: 20
-      - key: PORT
-        value: 3000
 
   # Frontend Vue.js Service
   - type: web
