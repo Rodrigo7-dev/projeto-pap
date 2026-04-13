@@ -1,4 +1,16 @@
 services:
+  # API Server Service
+  - type: web
+    name: api-server
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 3000
+
   # Frontend Vue.js Service
   - type: web
     name: frontend-vue
@@ -9,7 +21,7 @@ services:
       - key: NODE_VERSION
         value: 20
       - key: VITE_API_URL
-        value: http://myapp-api-production-a4fa.up.railway.app/
+        value: https://api-server.onrender.com/api
       - key: VITE_APP_NAME
         value: Sistema de Gestão
       - key: VITE_APP_ENV
