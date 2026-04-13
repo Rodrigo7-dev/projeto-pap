@@ -19,12 +19,15 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 1000,
-    minify: 'terser'
+    minify: 'terser',
+    assetsDir: 'assets',
+    sourcemap: false
   },
   server: {
     hmr: {
       host: 'localhost',
       port: 5173
     }
-  }
+  },
+  base: './'
 })
