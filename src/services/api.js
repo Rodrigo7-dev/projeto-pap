@@ -26,7 +26,7 @@ export default {
   // Login
   async login(credentials) {
     try {
-      const response = await api.post('/login', credentials)
+      const response = await api.post('/api/login', credentials)
       return response.data
     } catch (error) {
       throw error
