@@ -22,13 +22,13 @@ git push origin main
 ### 3. Variáveis de Ambiente
 O `render.yaml` já configura:
 - `NODE_VERSION=20`
-- `VITE_API_URL=http://myapp-api-production-a4fa.up.railway.app/`
+- `VITE_API_URL=https://myapp-api-production-a4fa.up.railway.app/`
 - `VITE_APP_NAME=Sistema de Gestão`
 - `VITE_APP_ENV=production`
 
 ## URLs Após Deploy
 - **Frontend**: `https://seu-app.onrender.com`
-- **API**: `http://myapp-api-production-a4fa.up.railway.app/`
+- **API**: `https://myapp-api-production-a4fa.up.railway.app/`
 
 ## Verificação
 Após o deploy, teste:

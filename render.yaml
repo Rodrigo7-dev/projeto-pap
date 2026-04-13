@@ -9,7 +9,7 @@ services:
       - key: NODE_VERSION
         value: 20
       - key: VITE_API_URL
-        value: http://myapp-api-production-a4fa.up.railway.app/api
+        value: https://myapp-api-production-a4fa.up.railway.app/api
       - key: VITE_APP_NAME
         value: Sistema de Gestão
       - key: VITE_APP_ENV
