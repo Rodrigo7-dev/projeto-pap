@@ -123,154 +123,113 @@
   </div>
 </template>
 
-<script>
-import { useAuthStore } from '../stores/auth'
+<script setup>
+import { ref, onMounted } from 'vue'
+import api from '../services/api'
 
-export default {
-  setup() {
-    const auth = useAuthStore()
-    return { auth }
-  },
+const tipos = ref([])
+const processos = ref([])
+const loading = ref(false)
+const saving = ref(false)
+const error = ref('')
 
-  data() {
-    return {
-      loading: true,
-      tipos: [],
-      processos: [],
-      search: '',
-      showAddModal: false,
-      newTipo: {
-        publicidade: ''
-      }
-    }
-  },
+const showAddModal = ref(false)
+const showEditModal = ref(false)
 
-  computed: {
-    isAdmin() {
-      return this.auth.user?.is_admin === true
-    },
+const filters = ref({
+  search: ''
+})
 
-    filteredTipos() {
-      if (!this.search) return this.tipos
-      return this.tipos.filter(tipo => 
-        tipo.publicidade.toLowerCase().includes(this.search.toLowerCase())
-      )
-    },
+const form = ref({
+  id: null,
+  publicidade: ''
+})
 
-    totalTipos() {
-      return this.tipos.length
-    }
-  },
+onMounted(() => {
+  loadTipos()
+  loadProcessos()
+})
 
-  mounted() {
-    this.carregarDados()
-  },
-
-  methods: {
-    async carregarDados() {
-      this.loading = true
-      
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      if (!token) {
-        console.error('Token não encontrado')
-        this.loading = false
-        return
-      }
-
-      try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
-        
-        const headers = {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-
-        // Carregar tipos e processos em paralelo
-        const [tiposResponse, processosResponse] = await Promise.allSettled([
-          fetch('http://127.0.0.1:8000/api/tipopublicidade', { headers, signal: controller.signal }),
-          fetch('http://127.0.0.1:8000/api/processos?limit=1000', { headers, signal: controller.signal })
-        ])
-        
-        clearTimeout(timeoutId)
-
-        // Processar tipos
-        if (tiposResponse.status === 'fulfilled' && tiposResponse.value.ok) {
-          const data = await tiposResponse.value.json()
-          this.tipos = data.data || data || []
-        }
-
-        // Processar processos
-        if (processosResponse.status === 'fulfilled' && processosResponse.value.ok) {
-          const data = await processosResponse.value.json()
-          this.processos = data.data || data || []
-        }
-
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-      } finally {
-        this.loading = false
-      }
-    },
-
-    getProcessosCount(tipoId) {
-      return this.processos.filter(processo => processo.tipo_publicidade_id === tipoId).length
-    },
-
-    async addTipo() {
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/tipopublicidade', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(this.newTipo)
-        })
-
-        if (response.ok) {
-          this.showAddModal = false
-          this.newTipo = { publicidade: '' }
-          this.carregarDados()
-        }
-      } catch (error) {
-        console.error('Erro ao adicionar tipo:', error)
-      }
-    },
-
-    async deleteTipo(tipoId) {
-      const processosCount = this.getProcessosCount(tipoId)
-      if (processosCount > 0) {
-        alert(`Não é possível apagar este tipo. Existem ${processosCount} processos associados.`)
-        return
-      }
-      
-      if (!confirm('Tem certeza que deseja apagar este tipo de publicidade?')) return
-      
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/api/tipopublicidade/${tipoId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        })
-
-        if (response.ok) {
-          this.carregarDados()
-        }
-      } catch (error) {
-        console.error('Erro ao apagar tipo:', error)
-      }
-    }
+const loadTipos = async () => {
+  try {
+    loading.value = true
+    const response = await api.getTipos(filters.value)
+    tipos.value = response.data || []
+  } catch (error) {
+    console.error('Erro ao carregar tipos:', error)
+  } finally {
+    loading.value = false
   }
+}
+
+const loadProcessos = async () => {
+  try {
+    const response = await api.getProcessos({ limit: 1000 })
+    processos.value = response.data || []
+  } catch (error) {
+    console.error('Erro ao carregar processos:', error)
+  }
+}
+
+const editTipo = (tipo) => {
+  form.value = { ...tipo }
+  showEditModal.value = true
+}
+
+const saveTipo = async () => {
+  try {
+    saving.value = true
+    error.value = ''
+    
+    if (showEditModal.value) {
+      // Editar tipo existente
+      await api.updateTipo(form.value.id, form.value)
+    } else {
+      // Criar novo tipo
+      await api.createTipo(form.value)
+    }
+    
+    closeModal()
+    loadTipos()
+  } catch (err) {
+    console.error('Erro ao salvar tipo:', err)
+    error.value = 'Erro ao salvar tipo. Tente novamente.'
+  } finally {
+    saving.value = false
+  }
+}
+
+const deleteTipo = async (id) => {
+  const processosCount = getProcessosCount(id)
+  if (processosCount > 0) {
+    alert(`Não é possível excluir este tipo. Existem ${processosCount} processos associados.`)
+    return
+  }
+  
+  if (!confirm('Tem certeza que deseja excluir este tipo de publicidade?')) {
+    return
+  }
+  
+  try {
+    await api.deleteTipo(id)
+    loadTipos()
+  } catch (error) {
+    console.error('Erro ao excluir tipo:', error)
+    alert('Erro ao excluir tipo. Tente novamente.')
+  }
+}
+
+const closeModal = () => {
+  showAddModal.value = false
+  showEditModal.value = false
+  form.value = {
+    id: null,
+    publicidade: ''
+  }
+  error.value = ''
+}
+
+const getProcessosCount = (tipoId) => {
+  return processos.value.filter(processo => processo.tipo_publicidade_id === tipoId).length
 }
 </script>

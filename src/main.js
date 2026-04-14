@@ -10,4 +10,9 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+
+// Initialize auth store and load user data
+const auth = useAuthStore()
+auth.loadUser()
+
 app.mount('#app')

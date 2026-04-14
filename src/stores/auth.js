@@ -62,6 +62,8 @@ export const useAuthStore = defineStore('auth', {
       await api.logout()
       this.user = null
       this.token = null
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
     },
 
     // Carregar usuário do localStorage
