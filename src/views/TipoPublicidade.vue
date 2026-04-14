@@ -1,103 +1,123 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-6">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-slate-800">Tipos de Publicidade</h1>
-        <button
-          v-if="isAdmin"
-          @click="showAddModal = true"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Adicionar Tipo
-        </button>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Tipos de Publicidade</h1>
+      <button
+        @click="showAddModal = true"
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200"
+      >
+        Novo Tipo
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+          <input
+            v-model="filters.search"
+            type="text"
+            placeholder="Tipo de publicidade..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="loadTipos"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Total</label>
+          <div class="flex items-center h-10">
+            <span class="text-sm text-gray-600">
+              Total: <span class="font-bold text-gray-800">{{ tipos.length }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div v-if="tipos.length === 0" class="text-center py-8 text-gray-500">
+        Nenhum tipo de publicidade encontrado
       </div>
       
-      <div v-if="loading" class="text-center py-12">
-        <p class="text-slate-600">Carregando...</p>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo de Publicidade</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Processos Associados</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="tipo in tipos" :key="tipo.id">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tipo.id }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tipo.publicidade }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ getProcessosCount(tipo.id) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button
+                  @click="editTipo(tipo)"
+                  class="text-blue-600 hover:text-blue-900 mr-3"
+                >
+                  Editar
+                </button>
+                <button
+                  @click="deleteTipo(tipo.id)"
+                  class="text-red-600 hover:text-red-900"
+                >
+                  Excluir
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
 
-      <div v-else>
-        <!-- Search e Stats -->
-        <div class="bg-white rounded-lg shadow p-4 mb-6">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Pesquisar tipos de publicidade..." 
-              class="flex-1 px-4 py-2 border border-slate-300 rounded-lg"
+    <!-- Modal Adicionar/Editar -->
+    <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold mb-4">
+          {{ showEditModal ? 'Editar Tipo' : 'Novo Tipo' }}
+        </h2>
+        
+        <form @submit.prevent="saveTipo" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Publicidade</label>
+            <input
+              v-model="form.publicidade"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ex: Publicidade Digital"
             />
-            <div class="text-sm text-slate-600">
-              Total: <span class="font-bold text-slate-800">{{ totalTipos }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tipos Grid -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <div v-if="filteredTipos.length === 0" class="text-center py-8 text-slate-500">
-            Nenhum tipo de publicidade encontrado
           </div>
           
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="tipo in filteredTipos" :key="tipo.id" 
-              class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h3 class="font-medium text-slate-800 text-lg mb-2">{{ tipo.publicidade }}</h3>
-                  <div class="text-sm text-slate-500">
-                    <p>ID: {{ tipo.id }}</p>
-                    <p>Processos: {{ getProcessosCount(tipo.id) }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <button
-                    v-if="isAdmin"
-                    @click="deleteTipo(tipo.id)"
-                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Apagar
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+            {{ error }}
           </div>
-        </div>
-      </div>
-
-      <!-- Add Modal -->
-      <div v-if="showAddModal && isAdmin" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md">
-          <h2 class="text-xl font-bold mb-4">Adicionar Novo Tipo</h2>
-          <form @submit.prevent="addTipo">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de Publicidade</label>
-                <input
-                  v-model="newTipo.publicidade"
-                  type="text"
-                  required
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg"
-                  placeholder="Ex: Publicidade Digital"
-                />
-              </div>
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                @click="showAddModal = false"
-                class="px-4 py-2 border border-slate-300 rounded-lg"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Adicionar
-              </button>
-            </div>
-          </form>
-        </div>
+          
+          <div class="flex gap-3">
+            <button
+              type="submit"
+              :disabled="saving"
+              class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {{ saving ? 'Salvando...' : 'Salvar' }}
+            </button>
+            <button
+              type="button"
+              @click="closeModal"
+              class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

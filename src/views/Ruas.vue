@@ -1,277 +1,268 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-6">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-slate-800">Ruas</h1>
-        <button
-          v-if="isAdmin"
-          @click="showAddModal = true"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Adicionar Rua
-        </button>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Ruas</h1>
+      <button
+        @click="showAddModal = true"
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200"
+      >
+        Nova Rua
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+          <input
+            v-model="filters.search"
+            type="text"
+            placeholder="Nome da rua..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="loadRuas"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Freguesia</label>
+          <select
+            v-model="filters.freguesia"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @change="loadRuas"
+          >
+            <option value="">Todas</option>
+            <option v-for="freguesia in freguesias" :key="freguesia.id" :value="freguesia.id">
+              {{ freguesia.freguesia }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div v-if="ruas.length === 0" class="text-center py-8 text-gray-500">
+        Nenhuma rua encontrada
       </div>
       
-      <div v-if="loading" class="text-center py-12">
-        <p class="text-slate-600">Carregando...</p>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rua</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Freguesia</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Coordenadas</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="rua in ruas" :key="rua.id">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ rua.id }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ rua.rua }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ getFreguesiaName(rua.freguesias_id) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ rua.coordenada }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button
+                  @click="editRua(rua)"
+                  class="text-blue-600 hover:text-blue-900 mr-3"
+                >
+                  Editar
+                </button>
+                <button
+                  @click="deleteRua(rua.id)"
+                  class="text-red-600 hover:text-red-900"
+                >
+                  Excluir
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
 
-      <div v-else>
-        <!-- Search e Stats -->
-        <div class="bg-white rounded-lg shadow p-4 mb-6">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Pesquisar ruas..." 
-              class="flex-1 px-4 py-2 border border-slate-300 rounded-lg"
+    <!-- Modal Adicionar/Editar -->
+    <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold mb-4">
+          {{ showEditModal ? 'Editar Rua' : 'Nova Rua' }}
+        </h2>
+        
+        <form @submit.prevent="saveRua" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Rua</label>
+            <input
+              v-model="form.rua"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <div class="text-sm text-slate-600">
-              Total: <span class="font-bold text-slate-800">{{ totalRuas }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ruas List -->
-        <div class="bg-white rounded-lg shadow">
-          <div v-if="filteredRuas.length === 0" class="text-center py-8 text-slate-500">
-            Nenhuma rua encontrada
           </div>
           
-          <div v-else class="divide-y divide-slate-200">
-            <div v-for="rua in filteredRuas" :key="rua.id" 
-              class="p-4 hover:bg-slate-50">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <h3 class="font-medium text-slate-800 text-lg">{{ rua.rua }}</h3>
-                  <p class="text-sm text-slate-500">Freguesia: {{ getFreguesiaName(rua.freguesias_id) }}</p>
-                  <p class="text-sm text-slate-400">Coordenadas: {{ rua.coordenada }}</p>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <div class="text-sm text-slate-400">
-                    #{{ rua.id }}
-                  </div>
-                  <button
-                    v-if="isAdmin"
-                    @click="deleteRua(rua.id)"
-                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Apagar
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Freguesia</label>
+            <select
+              v-model="form.freguesias_id"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Selecione uma freguesia</option>
+              <option v-for="freguesia in freguesias" :key="freguesia.id" :value="freguesia.id">
+                {{ freguesia.freguesia }}
+              </option>
+            </select>
           </div>
-        </div>
-      </div>
-
-      <!-- Add Modal -->
-      <div v-if="showAddModal && isAdmin" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md">
-          <h2 class="text-xl font-bold mb-4">Adicionar Nova Rua</h2>
-          <form @submit.prevent="addRua">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Rua</label>
-                <input
-                  v-model="newRua.rua"
-                  type="text"
-                  required
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg"
-                  placeholder="Ex: Rua Nova"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Freguesia</label>
-                <select
-                  v-model="newRua.freguesias_id"
-                  required
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg"
-                >
-                  <option value="">Selecione uma freguesia</option>
-                  <option v-for="freguesia in freguesias" :key="freguesia.id" :value="freguesia.id">
-                    {{ freguesia.freguesia }}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Coordenadas</label>
-                <input
-                  v-model="newRua.coordenada"
-                  type="text"
-                  required
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg"
-                  placeholder="Ex: 41.8442,-8.8359"
-                />
-              </div>
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                @click="showAddModal = false"
-                class="px-4 py-2 border border-slate-300 rounded-lg"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Adicionar
-              </button>
-            </div>
-          </form>
-        </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Coordenadas</label>
+            <input
+              v-model="form.coordenada"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ex: 41.8442,-8.8359"
+            />
+          </div>
+          
+          <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+            {{ error }}
+          </div>
+          
+          <div class="flex gap-3">
+            <button
+              type="submit"
+              :disabled="saving"
+              class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {{ saving ? 'Salvando...' : 'Salvar' }}
+            </button>
+            <button
+              type="button"
+              @click="closeModal"
+              class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { useAuthStore } from '../stores/auth'
+<script setup>
+import { ref, onMounted } from 'vue'
+import api from '../services/api'
 
-export default {
-  setup() {
-    const auth = useAuthStore()
-    return { auth }
-  },
+const ruas = ref([])
+const freguesias = ref([])
+const loading = ref(false)
+const saving = ref(false)
+const error = ref('')
 
-  data() {
-    return {
-      loading: true,
-      ruas: [],
-      freguesias: [],
-      search: '',
-      showAddModal: false,
-      newRua: {
-        rua: '',
-        freguesias_id: '',
-        coordenada: ''
-      }
-    }
-  },
+const showAddModal = ref(false)
+const showEditModal = ref(false)
 
-  computed: {
-    isAdmin() {
-      return this.auth.user?.is_admin === true
-    },
+const filters = ref({
+  search: '',
+  freguesia: ''
+})
 
-    filteredRuas() {
-      if (!this.search) return this.ruas
-      return this.ruas.filter(rua => 
-        rua.rua.toLowerCase().includes(this.search.toLowerCase())
-      )
-    },
+const form = ref({
+  id: null,
+  rua: '',
+  freguesias_id: '',
+  coordenada: ''
+})
 
-    totalRuas() {
-      return this.ruas.length
-    }
-  },
+onMounted(() => {
+  loadRuas()
+  loadFreguesias()
+})
 
-  mounted() {
-    this.carregarDados()
-  },
-
-  methods: {
-    async carregarDados() {
-      this.loading = true
-      
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      if (!token) {
-        console.error('Token não encontrado')
-        this.loading = false
-        return
-      }
-
-      try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
-        
-        const headers = {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-
-        // Carregar ruas e freguesias em paralelo
-        const [ruasResponse, freguesiasResponse] = await Promise.allSettled([
-          fetch('http://127.0.0.1:8000/api/ruas', { headers, signal: controller.signal }),
-          fetch('http://127.0.0.1:8000/api/freguesias', { headers, signal: controller.signal })
-        ])
-        
-        clearTimeout(timeoutId)
-
-        // Processar ruas
-        if (ruasResponse.status === 'fulfilled' && ruasResponse.value.ok) {
-          const data = await ruasResponse.value.json()
-          this.ruas = data.data || data || []
-        }
-
-        // Processar freguesias
-        if (freguesiasResponse.status === 'fulfilled' && freguesiasResponse.value.ok) {
-          const data = await freguesiasResponse.value.json()
-          this.freguesias = data.data || data || []
-        }
-
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-      } finally {
-        this.loading = false
-      }
-    },
-
-    getFreguesiaName(freguesiaId) {
-      const freguesia = this.freguesias.find(f => f.id === freguesiaId)
-      return freguesia ? freguesia.freguesia : 'Não encontrada'
-    },
-
-    async addRua() {
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/ruas', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(this.newRua)
-        })
-
-        if (response.ok) {
-          this.showAddModal = false
-          this.newRua = { rua: '', freguesias_id: '', coordenada: '' }
-          this.carregarDados()
-        }
-      } catch (error) {
-        console.error('Erro ao adicionar rua:', error)
-      }
-    },
-
-    async deleteRua(ruaId) {
-      if (!confirm('Tem certeza que deseja apagar esta rua?')) return
-      
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/api/ruas/${ruaId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        })
-
-        if (response.ok) {
-          this.carregarDados()
-        }
-      } catch (error) {
-        console.error('Erro ao apagar rua:', error)
-      }
-    }
+const loadRuas = async () => {
+  try {
+    loading.value = true
+    const response = await api.getRuas(filters.value)
+    ruas.value = response.data || []
+  } catch (error) {
+    console.error('Erro ao carregar ruas:', error)
+  } finally {
+    loading.value = false
   }
+}
+
+const loadFreguesias = async () => {
+  try {
+    const response = await api.getFreguesias()
+    freguesias.value = response.data || []
+  } catch (error) {
+    console.error('Erro ao carregar freguesias:', error)
+  }
+}
+
+const editRua = (rua) => {
+  form.value = { ...rua }
+  showEditModal.value = true
+}
+
+const saveRua = async () => {
+  try {
+    saving.value = true
+    error.value = ''
+    
+    if (showEditModal.value) {
+      // Editar rua existente
+      await api.updateRua(form.value.id, form.value)
+    } else {
+      // Criar nova rua
+      await api.createRua(form.value)
+    }
+    
+    closeModal()
+    loadRuas()
+  } catch (err) {
+    console.error('Erro ao salvar rua:', err)
+    error.value = 'Erro ao salvar rua. Tente novamente.'
+  } finally {
+    saving.value = false
+  }
+}
+
+const deleteRua = async (id) => {
+  if (!confirm('Tem certeza que deseja excluir esta rua?')) {
+    return
+  }
+  
+  try {
+    await api.deleteRua(id)
+    loadRuas()
+  } catch (error) {
+    console.error('Erro ao excluir rua:', error)
+    alert('Erro ao excluir rua. Tente novamente.')
+  }
+}
+
+const closeModal = () => {
+  showAddModal.value = false
+  showEditModal.value = false
+  form.value = {
+    id: null,
+    rua: '',
+    freguesias_id: '',
+    coordenada: ''
+  }
+  error.value = ''
+}
+
+const getFreguesiaName = (freguesiaId) => {
+  const freguesia = freguesias.value.find(f => f.id === freguesiaId)
+  return freguesia ? freguesia.freguesia : 'Não encontrada'
 }
 </script>

@@ -1,256 +1,235 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-6">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-slate-800">Freguesias</h1>
-        <button
-          v-if="isAdmin"
-          @click="showAddModal = true"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Adicionar Freguesia
-        </button>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Freguesias</h1>
+      <button
+        @click="showAddModal = true"
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200"
+      >
+        Nova Freguesia
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+          <input
+            v-model="filters.search"
+            type="text"
+            placeholder="Nome da freguesia..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="loadFreguesias"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Total</label>
+          <div class="flex items-center h-10">
+            <span class="text-sm text-gray-600">
+              Total: <span class="font-bold text-gray-800">{{ freguesias.length }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div v-if="freguesias.length === 0" class="text-center py-8 text-gray-500">
+        Nenhuma freguesia encontrada
       </div>
       
-      <div v-if="loading" class="text-center py-12">
-        <p class="text-slate-600">Carregando...</p>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Freguesia</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruas Associadas</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="freguesia in freguesias" :key="freguesia.id">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ freguesia.id }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ freguesia.freguesia }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ getRuasCount(freguesia.id) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button
+                  @click="editFreguesia(freguesia)"
+                  class="text-blue-600 hover:text-blue-900 mr-3"
+                >
+                  Editar
+                </button>
+                <button
+                  @click="deleteFreguesia(freguesia.id)"
+                  class="text-red-600 hover:text-red-900"
+                >
+                  Excluir
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
 
-      <div v-else>
-        <!-- Search e Stats -->
-        <div class="bg-white rounded-lg shadow p-4 mb-6">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Pesquisar freguesias..." 
-              class="flex-1 px-4 py-2 border border-slate-300 rounded-lg"
+    <!-- Modal Adicionar/Editar -->
+    <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold mb-4">
+          {{ showEditModal ? 'Editar Freguesia' : 'Nova Freguesia' }}
+        </h2>
+        
+        <form @submit.prevent="saveFreguesia" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Freguesia</label>
+            <input
+              v-model="form.freguesia"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ex: Nova Freguesia"
             />
-            <div class="text-sm text-slate-600">
-              Total: <span class="font-bold text-slate-800">{{ totalFreguesias }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Freguesias Grid -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <div v-if="filteredFreguesias.length === 0" class="text-center py-8 text-slate-500">
-            Nenhuma freguesia encontrada
           </div>
           
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="freguesia in filteredFreguesias" :key="freguesia.id" 
-              class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h3 class="font-medium text-slate-800 text-lg mb-2">{{ freguesia.freguesia }}</h3>
-                  <div class="text-sm text-slate-500">
-                    <p>ID: {{ freguesia.id }}</p>
-                    <p>Ruas associadas: {{ getRuasCount(freguesia.id) }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <button
-                    v-if="isAdmin"
-                    @click="deleteFreguesia(freguesia.id)"
-                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Apagar
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+            {{ error }}
           </div>
-        </div>
-      </div>
-
-      <!-- Add Modal -->
-      <div v-if="showAddModal && isAdmin" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md">
-          <h2 class="text-xl font-bold mb-4">Adicionar Nova Freguesia</h2>
-          <form @submit.prevent="addFreguesia">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Freguesia</label>
-                <input
-                  v-model="newFreguesia.freguesia"
-                  type="text"
-                  required
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg"
-                  placeholder="Ex: Nova Freguesia"
-                />
-              </div>
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                @click="showAddModal = false"
-                class="px-4 py-2 border border-slate-300 rounded-lg"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Adicionar
-              </button>
-            </div>
-          </form>
-        </div>
+          
+          <div class="flex gap-3">
+            <button
+              type="submit"
+              :disabled="saving"
+              class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {{ saving ? 'Salvando...' : 'Salvar' }}
+            </button>
+            <button
+              type="button"
+              @click="closeModal"
+              class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { useAuthStore } from '../stores/auth'
+<script setup>
+import { ref, onMounted } from 'vue'
+import api from '../services/api'
 
-export default {
-  setup() {
-    const auth = useAuthStore()
-    return { auth }
-  },
+const freguesias = ref([])
+const ruas = ref([])
+const loading = ref(false)
+const saving = ref(false)
+const error = ref('')
 
-  data() {
-    return {
-      loading: true,
-      freguesias: [],
-      ruas: [],
-      search: '',
-      showAddModal: false,
-      newFreguesia: {
-        freguesia: ''
-      }
-    }
-  },
+const showAddModal = ref(false)
+const showEditModal = ref(false)
 
-  computed: {
-    isAdmin() {
-      return this.auth.user?.is_admin === true
-    },
+const filters = ref({
+  search: ''
+})
 
-    filteredFreguesias() {
-      if (!this.search) return this.freguesias
-      return this.freguesias.filter(freguesia => 
-        freguesia.freguesia.toLowerCase().includes(this.search.toLowerCase())
-      )
-    },
+const form = ref({
+  id: null,
+  freguesia: ''
+})
 
-    totalFreguesias() {
-      return this.freguesias.length
-    }
-  },
+onMounted(() => {
+  loadFreguesias()
+  loadRuas()
+})
 
-  mounted() {
-    this.carregarDados()
-  },
-
-  methods: {
-    async carregarDados() {
-      this.loading = true
-      
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      if (!token) {
-        console.error('Token não encontrado')
-        this.loading = false
-        return
-      }
-
-      try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
-        
-        const headers = {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-
-        // Carregar freguesias e ruas em paralelo
-        const [freguesiasResponse, ruasResponse] = await Promise.allSettled([
-          fetch('http://127.0.0.1:8000/api/freguesias', { headers, signal: controller.signal }),
-          fetch('http://127.0.0.1:8000/api/ruas', { headers, signal: controller.signal })
-        ])
-        
-        clearTimeout(timeoutId)
-
-        // Processar freguesias
-        if (freguesiasResponse.status === 'fulfilled' && freguesiasResponse.value.ok) {
-          const data = await freguesiasResponse.value.json()
-          this.freguesias = data.data || data || []
-        }
-
-        // Processar ruas
-        if (ruasResponse.status === 'fulfilled' && ruasResponse.value.ok) {
-          const data = await ruasResponse.value.json()
-          this.ruas = data.data || data || []
-        }
-
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-      } finally {
-        this.loading = false
-      }
-    },
-
-    getRuasCount(freguesiaId) {
-      return this.ruas.filter(rua => rua.freguesias_id === freguesiaId).length
-    },
-
-    async addFreguesia() {
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/freguesias', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(this.newFreguesia)
-        })
-
-        if (response.ok) {
-          this.showAddModal = false
-          this.newFreguesia = { freguesia: '' }
-          this.carregarDados()
-        }
-      } catch (error) {
-        console.error('Erro ao adicionar freguesia:', error)
-      }
-    },
-
-    async deleteFreguesia(freguesiaId) {
-      const ruasCount = this.getRuasCount(freguesiaId)
-      if (ruasCount > 0) {
-        alert(`Não é possível apagar esta freguesia. Existem ${ruasCount} ruas associadas.`)
-        return
-      }
-      
-      if (!confirm('Tem certeza que deseja apagar esta freguesia?')) return
-      
-      const token = this.auth.token || localStorage.getItem('auth_token')
-      
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/api/freguesias/${freguesiaId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        })
-
-        if (response.ok) {
-          this.carregarDados()
-        }
-      } catch (error) {
-        console.error('Erro ao apagar freguesia:', error)
-      }
-    }
+const loadFreguesias = async () => {
+  try {
+    loading.value = true
+    const response = await api.getFreguesias(filters.value)
+    freguesias.value = response.data || []
+  } catch (error) {
+    console.error('Erro ao carregar freguesias:', error)
+  } finally {
+    loading.value = false
   }
+}
+
+const loadRuas = async () => {
+  try {
+    const response = await api.getRuas()
+    ruas.value = response.data || []
+  } catch (error) {
+    console.error('Erro ao carregar ruas:', error)
+  }
+}
+
+const editFreguesia = (freguesia) => {
+  form.value = { ...freguesia }
+  showEditModal.value = true
+}
+
+const saveFreguesia = async () => {
+  try {
+    saving.value = true
+    error.value = ''
+    
+    if (showEditModal.value) {
+      // Editar freguesia existente
+      await api.updateFreguesia(form.value.id, form.value)
+    } else {
+      // Criar nova freguesia
+      await api.createFreguesia(form.value)
+    }
+    
+    closeModal()
+    loadFreguesias()
+  } catch (err) {
+    console.error('Erro ao salvar freguesia:', err)
+    error.value = 'Erro ao salvar freguesia. Tente novamente.'
+  } finally {
+    saving.value = false
+  }
+}
+
+const deleteFreguesia = async (id) => {
+  const ruasCount = getRuasCount(id)
+  if (ruasCount > 0) {
+    alert(`Não é possível excluir esta freguesia. Existem ${ruasCount} ruas associadas.`)
+    return
+  }
+  
+  if (!confirm('Tem certeza que deseja excluir esta freguesia?')) {
+    return
+  }
+  
+  try {
+    await api.deleteFreguesia(id)
+    loadFreguesias()
+  } catch (error) {
+    console.error('Erro ao excluir freguesia:', error)
+    alert('Erro ao excluir freguesia. Tente novamente.')
+  }
+}
+
+const closeModal = () => {
+  showAddModal.value = false
+  showEditModal.value = false
+  form.value = {
+    id: null,
+    freguesia: ''
+  }
+  error.value = ''
+}
+
+const getRuasCount = (freguesiaId) => {
+  return ruas.value.filter(rua => rua.freguesias_id === freguesiaId).length
 }
 </script>
