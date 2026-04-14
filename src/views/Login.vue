@@ -1,43 +1,43 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-    <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-100">
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-sm w-full max-w-md border border-gray-200">
       <div class="text-center mb-8">
-        <img src="../assets/logo_camera.jpg" alt="Logo" class="h-20 mx-auto mb-4 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Sistema de Publicidade</h1>
+        <img src="../assets/logo_camera.jpg" alt="Logo" class="h-16 mx-auto mb-4">
+        <h1 class="text-2xl font-semibold text-gray-900 mb-2">Sistema de Publicidade</h1>
         <p class="text-gray-600 text-sm">Faça login para acessar o sistema</p>
       </div>
       
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
             v-model="email"
             type="email"
             required
             placeholder="seu@email.com"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
           />
         </div>
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
           <input
             v-model="password"
             type="password"
             required
             placeholder="••••••••"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
           />
         </div>
         
-        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm animate-pulse">
+        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
           {{ error }}
         </div>
         
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 transform hover:scale-105 shadow-md"
+          class="w-full bg-gray-900 text-white py-2 px-4 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
         >
           <span v-if="loading" class="inline-flex items-center">
             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -46,13 +46,13 @@
             </svg>
             Entrando...
           </span>
-          <span v-else class="font-medium">Entrar</span>
+          <span v-else>Entrar</span>
         </button>
       </form>
       
-      <div class="mt-8 text-center">
-        <router-link to="/registar" class="text-blue-600 hover:text-blue-800 text-sm font-medium transition duration-200">
-          Não tem conta? <span class="font-semibold">Registar-se</span>
+      <div class="mt-6 text-center">
+        <router-link to="/registar" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition duration-150">
+          Não tem conta? Registar-se
         </router-link>
       </div>
     </div>
