@@ -3,7 +3,6 @@ import { useAuthStore } from '../stores/auth'
 
 // Lazy loading de componentes
 const Login = () => import('../views/Login.vue')
-const Register = () => import('../views/Register.vue')
 const Dashboard = () => import('../views/Dashboard.vue')
 const Processos = () => import('../views/Processos.vue')
 const ProcessoForm = () => import('../views/ProcessoForm.vue')
@@ -13,7 +12,6 @@ const Freguesias = () => import('../views/Freguesias.vue')
 const FreguesiaForm = () => import('../views/FreguesiaForm.vue')
 const Tipos = () => import('../views/Tipos.vue')
 const TipoForm = () => import('../views/TipoForm.vue')
-const Profile = () => import('../views/Profile.vue')
 const NotFound = () => import('../views/NotFound.vue')
 
 const routes = [
@@ -109,12 +107,6 @@ const routes = [
     path: '/tipos/:id/editar',
     name: 'EditarTipo',
     component: TipoForm,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
     meta: { requiresAuth: true }
   },
   {

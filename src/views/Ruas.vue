@@ -1,46 +1,88 @@
 <template>
-  <div class="ruas-container">
-    <header class="page-header">
-      <h1>Gestão de Ruas</h1>
-      <router-link to="/ruas/nova" class="btn-primary">Nova Rua</router-link>
-    </header>
-    
-    <div v-if="loading" class="loading">Carregando...</div>
-    
-    <div v-else class="content">
-      <div class="search-section">
-        <input 
-          v-model="search" 
-          type="text" 
-          placeholder="Pesquisar ruas..." 
-          class="search-input"
-        />
+  <div class="min-h-screen bg-gray-50 p-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Ruas</h1>
+        <router-link 
+          to="/ruas/nova" 
+          class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800"
+        >
+          Nova Rua
+        </router-link>
+      </div>
+      
+      <div v-if="loading" class="text-center py-12">
+        <div class="text-gray-600">Carregando...</div>
       </div>
 
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nome da Rua</th>
-              <th>Freguesia</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="rua in filteredRuas" :key="rua.id">
-              <td>{{ rua.nome || rua.rua || '-' }}</td>
-              <td>{{ rua.freguesia?.nome || rua.freguesia || '-' }}</td>
-              <td>
-                <router-link :to="`/ruas/${rua.id}/editar`" class="action-link">Editar</router-link>
-                <button @click="deleteRua(rua)" class="action-delete">Excluir</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <div v-if="filteredRuas.length === 0" class="empty-state">
-          <p>{{ search ? 'Nenhuma rua encontrada para esta pesquisa.' : 'Nenhuma rua cadastrada.' }}</p>
-          <router-link v-if="!search" to="/ruas/nova" class="btn-primary">Adicionar Primeira Rua</router-link>
+      <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+          <input 
+            v-model="search" 
+            type="text" 
+            placeholder="Pesquisar ruas..." 
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          />
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Nome da Rua
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Freguesia
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="rua in filteredRuas" :key="rua.id" class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900">{{ rua.nome || rua.rua || '-' }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-600">{{ rua.freguesia?.nome || rua.freguesia || '-' }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <router-link 
+                    :to="`/ruas/${rua.id}/editar`" 
+                    class="text-gray-600 hover:text-gray-900 mr-4"
+                  >
+                    Editar
+                  </router-link>
+                  <button 
+                    @click="deleteRua(rua)" 
+                    class="text-red-600 hover:text-red-900"
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div v-if="filteredRuas.length === 0" class="text-center py-12">
+          <div class="text-gray-500">
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma rua encontrada</h3>
+            <p class="mt-1 text-sm text-gray-500">
+              {{ search ? 'Tente uma busca diferente' : 'Comece adicionando uma nova rua' }}
+            </p>
+            <div class="mt-6">
+              <router-link 
+                v-if="!search"
+                to="/ruas/nova" 
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800"
+              >
+                Nova Rua
+              </router-link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -99,132 +141,3 @@ onMounted(() => {
   loadRuas()
 })
 </script>
-
-<style scoped>
-.ruas-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  font-family: Arial, sans-serif;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.page-header h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: normal;
-}
-
-.btn-primary {
-  background: #333;
-  color: #fff;
-  text-decoration: none;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  display: inline-block;
-}
-
-.btn-primary:hover {
-  background: #555;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-}
-
-.content {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.search-section {
-  padding: 20px;
-  border-bottom: 1px solid #ddd;
-}
-
-.search-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #999;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.data-table th {
-  background: #f5f5f5;
-  font-weight: normal;
-  font-size: 14px;
-}
-
-.data-table td {
-  font-size: 14px;
-}
-
-.action-link {
-  color: #666;
-  text-decoration: none;
-  margin-right: 15px;
-  font-size: 14px;
-}
-
-.action-link:hover {
-  color: #333;
-}
-
-.action-delete {
-  background: none;
-  border: none;
-  color: #a52a2a;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.action-delete:hover {
-  color: #d32f2f;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-}
-
-.empty-state p {
-  margin: 0 0 20px 0;
-  font-size: 14px;
-}
-</style>

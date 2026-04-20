@@ -1,59 +1,71 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Painel de Controlo</h1>
-      <p>Sistema de Gestão de Publicidade</p>
-    </header>
+  <div class="min-h-screen bg-gray-50 p-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Painel</h1>
+        <p class="text-gray-600">Sistema de Gestão v2.0</p>
+      </div>
 
-    <section class="stats-section">
-      <div class="stat-card">
-        <div class="stat-number">{{ stats.total_processos || 0 }}</div>
-        <div class="stat-label">Processos</div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="text-2xl font-semibold text-gray-900">{{ stats.total_processos || 0 }}</div>
+          <div class="text-sm text-gray-600">Processos</div>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="text-2xl font-semibold text-gray-900">{{ stats.processos_validos || 0 }}</div>
+          <div class="text-sm text-gray-600">Válidos</div>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="text-2xl font-semibold text-gray-900">{{ stats.processos_invalidos || 0 }}</div>
+          <div class="text-sm text-gray-600">Inválidos</div>
+        </div>
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+          <div class="text-2xl font-semibold text-gray-900">{{ stats.total_ruas || 0 }}</div>
+          <div class="text-sm text-gray-600">Ruas</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ stats.processos_validos || 0 }}</div>
-        <div class="stat-label">Válidos</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ stats.processos_invalidos || 0 }}</div>
-        <div class="stat-label">Inválidos</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ stats.total_ruas || 0 }}</div>
-        <div class="stat-label">Ruas</div>
-      </div>
-    </section>
     
-    <nav class="dashboard-nav">
-      <router-link to="/processos" class="nav-link">Processos</router-link>
-      <router-link to="/ruas" class="nav-link">Ruas</router-link>
-      <router-link to="/freguesias" class="nav-link">Freguesias</router-link>
-    </nav>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <router-link to="/processos" class="bg-white p-6 rounded-lg border border-gray-200 text-center hover:bg-gray-50">
+          <div class="font-medium text-gray-900">Processos</div>
+        </router-link>
+        <router-link to="/ruas" class="bg-white p-6 rounded-lg border border-gray-200 text-center hover:bg-gray-50">
+          <div class="font-medium text-gray-900">Ruas</div>
+        </router-link>
+        <router-link to="/freguesias" class="bg-white p-6 rounded-lg border border-gray-200 text-center hover:bg-gray-50">
+          <div class="font-medium text-gray-900">Freguesias</div>
+        </router-link>
+      </div>
     
-    <section class="recent-processes">
-      <h2>Processos Recentes</h2>
-      <div v-if="loading" class="loading">Carregando...</div>
-      <table v-else class="processes-table">
-        <thead>
-          <tr>
-            <th>Número do Processo</th>
-            <th>Alvará</th>
-            <th>Validade</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="processo in processos" :key="processo.id">
-            <td>{{ processo.numero_processo || `#${processo.id}` }}</td>
-            <td>{{ processo.alvara || '-' }}</td>
-            <td>
-              <span :class="getStatusClass(processo.validade)">
-                {{ getValidadeText(processo.validade) }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+      <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold mb-4 text-gray-900">Processos Recentes</h2>
+        <div v-if="loading" class="text-center py-6">
+          <div class="text-gray-600">Carregando...</div>
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700">Processo</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700">Alvará</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700">Validade</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="processo in processos" :key="processo.id" class="hover:bg-gray-50">
+                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ processo.numero_processo || `#${processo.id}` }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{{ processo.alvara || '-' }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                  <span :class="getStatusClass(processo.validade)" class="px-2 py-1 text-xs rounded-full">
+                    {{ getValidadeText(processo.validade) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -87,11 +99,11 @@ const loadData = async () => {
 
 const getStatusClass = (validade) => {
   if (validade === 'valido') {
-    return 'status-valid'
+    return 'bg-green-100 text-green-800'
   } else if (validade === 'invalido') {
-    return 'status-invalid'
+    return 'bg-red-100 text-red-800'
   }
-  return 'status-pending'
+  return 'bg-yellow-100 text-yellow-800'
 }
 
 const getValidadeText = (validade) => {
@@ -100,125 +112,3 @@ const getValidadeText = (validade) => {
   return 'Pendente'
 }
 </script>
-
-<style scoped>
-.dashboard {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  font-family: Arial, sans-serif;
-}
-
-.dashboard-header h1 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  font-weight: normal;
-}
-
-.dashboard-header p {
-  margin: 0 0 30px 0;
-  color: #666;
-  font-size: 14px;
-}
-
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.stat-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 20px;
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: normal;
-  margin-bottom: 8px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #666;
-}
-
-.dashboard-nav {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.nav-link {
-  display: block;
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 15px;
-  text-align: center;
-  text-decoration: none;
-  color: #333;
-}
-
-.nav-link:hover {
-  background: #f5f5f5;
-}
-
-.recent-processes h2 {
-  margin: 0 0 20px 0;
-  font-size: 18px;
-  font-weight: normal;
-}
-
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-}
-
-.processes-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border: 1px solid #ddd;
-}
-
-.processes-table th,
-.processes-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.processes-table th {
-  background: #f5f5f5;
-  font-weight: normal;
-}
-
-.status-valid {
-  background: #e8f5e8;
-  color: #2d5a2d;
-  padding: 4px 8px;
-  border-radius: 3px;
-  font-size: 12px;
-}
-
-.status-invalid {
-  background: #ffe8e8;
-  color: #a52a2a;
-  padding: 4px 8px;
-  border-radius: 3px;
-  font-size: 12px;
-}
-
-.status-pending {
-  background: #fff8e8;
-  color: #8b6914;
-  padding: 4px 8px;
-  border-radius: 3px;
-  font-size: 12px;
-}
-</style>
