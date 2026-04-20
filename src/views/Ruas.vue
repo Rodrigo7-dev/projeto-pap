@@ -117,15 +117,23 @@ export default {
     async carregarRuas() {
       this.loading = true
       try {
+        console.log('A carregar ruas da API...')
         const response = await api.get('/ruas')
+        console.log('Resposta da API:', response)
+        console.log('Dados da resposta:', response.data)
+        
         this.ruas = response.data.data || response.data || []
         this.totalRuas = this.ruas.length
+        
+        console.log('Ruas carregadas:', this.ruas)
+        console.log('Total de ruas:', this.totalRuas)
         
         if (window.$notifications) {
           window.$notifications.add('info', 'Ruas Carregadas', `${this.totalRuas} ruas encontradas`)
         }
       } catch (error) {
         console.error('Erro ao carregar ruas:', error)
+        console.error('Detalhes do erro:', error.response)
         this.ruas = []
         if (window.$notifications) {
           window.$notifications.add('error', 'Erro', 'Não foi possível carregar as ruas')
