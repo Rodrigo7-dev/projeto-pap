@@ -19,29 +19,37 @@
               class="flex-1 px-4 py-2 border border-slate-300 rounded-lg"
             />
             <div class="text-sm text-slate-600">
-              Total: <span class="font-bold text-slate-800">{{ totalRuas }}</span>
+              Total: <span class="font-bold text-slate-800">{{ filteredRuas.length }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Ruas List -->
+        <!-- Lista -->
         <div class="bg-white rounded-lg shadow">
-          <div v-if="filteredRuas.length === 0" class="text-center py-8 text-slate-500">
+          <div v-if="paginatedRuas.length === 0" class="text-center py-8 text-slate-500">
             Nenhuma rua encontrada
           </div>
           
           <div v-else class="divide-y divide-slate-200">
-            <div v-for="rua in filteredRuas" :key="rua.id" 
+            <div v-for="rua in paginatedRuas" :key="rua.id" 
               class="p-4 hover:bg-slate-50 transition-colors">
+              
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="font-medium text-slate-800">{{ rua.rua }}</h3>
-                  <p class="text-sm text-slate-500">Freguesia ID: {{ rua.freguesias_id }}</p>
+                  <p class="text-sm text-slate-500">
+                    Freguesia: {{ rua.freguesia }}
+                  </p>
+                  <p class="text-xs text-slate-400">
+                    Coordenada: {{ rua.coordenada }}
+                  </p>
                 </div>
+
                 <div class="text-sm text-slate-400">
                   #{{ rua.id }}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -52,7 +60,7 @@
             <button 
               @click="previousPage" 
               :disabled="currentPage === 1"
-              class="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300"
             >
               Anterior
             </button>
@@ -64,12 +72,13 @@
             <button 
               @click="nextPage" 
               :disabled="currentPage === totalPages"
-              class="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300"
             >
               Próximo
             </button>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -85,27 +94,28 @@ export default {
       ruas: [],
       search: '',
       currentPage: 1,
-      perPage: 10,
-      totalRuas: 0
+      perPage: 10
     }
   },
 
   computed: {
+    // 🔍 FILTRO PRIMEIRO
     filteredRuas() {
-      if (!this.search) return this.paginatedRuas
-      return this.paginatedRuas.filter(rua => 
+      if (!this.search) return this.ruas
+
+      return this.ruas.filter(rua =>
         rua.rua.toLowerCase().includes(this.search.toLowerCase())
       )
     },
 
+    // 📄 PAGINAÇÃO DEPOIS
     paginatedRuas() {
       const start = (this.currentPage - 1) * this.perPage
-      const end = start + this.perPage
-      return this.ruas.slice(start, end)
+      return this.filteredRuas.slice(start, start + this.perPage)
     },
 
     totalPages() {
-      return Math.ceil(this.totalRuas / this.perPage)
+      return Math.ceil(this.filteredRuas.length / this.perPage)
     }
   },
 
@@ -117,42 +127,32 @@ export default {
     async carregarRuas() {
       this.loading = true
       try {
-        console.log('A carregar ruas da API...')
         const response = await api.get('/ruas')
-        console.log('Resposta da API:', response)
-        console.log('Dados da resposta:', response.data)
-        
-        this.ruas = response.data.data || response.data || []
-        this.totalRuas = this.ruas.length
-        
-        console.log('Ruas carregadas:', this.ruas)
-        console.log('Total de ruas:', this.totalRuas)
-        
-        if (window.$notifications) {
-          window.$notifications.add('info', 'Ruas Carregadas', `${this.totalRuas} ruas encontradas`)
+
+        console.log('Resposta API:', response.data)
+
+        // ⚠️ AJUSTA AQUI SE NECESSÁRIO
+        this.ruas = response.data.data || response.data
+
+        if (!Array.isArray(this.ruas)) {
+          console.error('ERRO: ruas não é um array', this.ruas)
+          this.ruas = []
         }
+
       } catch (error) {
         console.error('Erro ao carregar ruas:', error)
-        console.error('Detalhes do erro:', error.response)
         this.ruas = []
-        if (window.$notifications) {
-          window.$notifications.add('error', 'Erro', 'Não foi possível carregar as ruas')
-        }
       } finally {
         this.loading = false
       }
     },
 
     previousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--
-      }
+      if (this.currentPage > 1) this.currentPage--
     },
 
     nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++
-      }
+      if (this.currentPage < this.totalPages) this.currentPage++
     }
   }
 }

@@ -2,12 +2,12 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: 'https://myapp-api-production-a4fa.up.railway.app/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  timeout: 5000
+  timeout: 10000
 })
 
 // Adicionar token de autenticação a cada pedido
