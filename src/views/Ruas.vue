@@ -113,8 +113,8 @@ const filteredRuas = computed(() => {
 const loadRuas = async () => {
   loading.value = true
   try {
-    const data = await api.getRuas()
-    ruas.value = data.data || data || []
+    const response = await api.get('/ruas')
+    ruas.value = response.data
   } catch (error) {
     console.error('Erro ao carregar ruas:', error)
   } finally {
