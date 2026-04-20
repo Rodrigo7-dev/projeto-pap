@@ -46,10 +46,10 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="tipo in filteredTipos" :key="tipo.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ tipo.nome }}</div>
+                  <div class="text-sm font-medium text-gray-900">{{ tipo.publicidade }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ tipo.descricao || '-' }}</div>
+                  <div class="text-sm text-gray-600">-</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <router-link 
@@ -111,8 +111,7 @@ const filteredTipos = computed(() => {
   
   const searchTerm = search.value.toLowerCase()
   return tipos.value.filter(tipo => 
-    tipo.nome?.toLowerCase().includes(searchTerm) ||
-    tipo.descricao?.toLowerCase().includes(searchTerm)
+    tipo.publicidade?.toLowerCase().includes(searchTerm)
   )
 })
 
@@ -121,7 +120,7 @@ const loadTipos = async () => {
   try {
     const data = await api.getTipos()
 
-    // CORREÇÃO AQUI
+    // O backend devolve um array direto
     tipos.value = Array.isArray(data) ? data : []
 
   } catch (error) {
@@ -132,7 +131,7 @@ const loadTipos = async () => {
 }
 
 const deleteTipo = async (tipo) => {
-  if (!confirm(`Tem certeza que deseja excluir o tipo "${tipo.nome}"?`)) {
+  if (!confirm(`Tem certeza que deseja excluir o tipo "${tipo.publicidade}"?`)) {
     return
   }
 
