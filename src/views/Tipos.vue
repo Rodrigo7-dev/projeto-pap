@@ -120,7 +120,10 @@ const loadTipos = async () => {
   loading.value = true
   try {
     const data = await api.getTipos()
-    tipos.value = data.data || data || []
+
+    // CORREÇÃO AQUI
+    tipos.value = Array.isArray(data) ? data : []
+
   } catch (error) {
     console.error('Erro ao carregar tipos:', error)
   } finally {
@@ -135,7 +138,7 @@ const deleteTipo = async (tipo) => {
 
   try {
     await api.deleteTipo(tipo.id)
-    await loadTipos() // Recarregar a lista
+    await loadTipos()
   } catch (error) {
     console.error('Erro ao excluir tipo:', error)
     alert('Erro ao excluir tipo. Tente novamente.')
