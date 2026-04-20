@@ -79,7 +79,7 @@
                 to="/ruas/nova" 
                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800"
               >
-                Nova Rua
+                Nova Rua - 111
               </router-link>
             </div>
           </div>
