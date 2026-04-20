@@ -5,14 +5,14 @@
         <h1 class="text-3xl font-bold text-gray-900">Tipos de Publicidade</h1>
         <router-link 
           to="/tipos/novo" 
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150"
+          class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition duration-150"
         >
           Novo Tipo
         </router-link>
       </div>
       
       <div v-if="loading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
         <p class="text-gray-600 mt-2">Carregando...</p>
       </div>
 
@@ -23,7 +23,7 @@
             v-model="search" 
             type="text" 
             placeholder="Pesquisar tipos..." 
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           />
         </div>
 
@@ -54,7 +54,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <router-link 
                     :to="`/tipos/${tipo.id}/editar`" 
-                    class="text-blue-600 hover:text-blue-900 mr-4"
+                    class="text-gray-600 hover:text-gray-900 mr-4"
                   >
                     Editar
                   </router-link>
@@ -83,7 +83,7 @@
             <div class="mt-6">
               <router-link 
                 to="/tipos/novo" 
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
                 Novo Tipo
               </router-link>

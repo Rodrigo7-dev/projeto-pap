@@ -43,7 +43,7 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="freguesia in filteredFreguesias" :key="freguesia.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ freguesia.nome }}</div>
+                  <div class="text-sm font-medium text-gray-900">{{ freguesia.nome || `Freguesia #${freguesia.id}` }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <router-link 
@@ -122,7 +122,8 @@ const loadFreguesias = async () => {
 }
 
 const deleteFreguesia = async (freguesia) => {
-  if (!confirm(`Tem certeza que deseja excluir a freguesia "${freguesia.nome}"?`)) {
+  const freguesiaName = freguesia.nome || `Freguesia #${freguesia.id}`
+  if (!confirm(`Tem certeza que deseja excluir a freguesia "${freguesiaName}"?`)) {
     return
   }
 

@@ -26,12 +26,6 @@ const routes = [
     meta: { hideNavbar: true, guest: true }
   },
   {
-    path: '/register',
-    name: 'Register',
-    component: Register,
-    meta: { hideNavbar: true, guest: true }
-  },
-  {
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
