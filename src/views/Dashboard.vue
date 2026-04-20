@@ -179,18 +179,25 @@ onMounted(() => {
 const loadData = async () => {
   loading.value = true
   try {
-    // Buscar processos e ruas em paralelo
     const [processosData, ruasData] = await Promise.all([
       api.getProcessos(),
       api.getRuas()
     ])
 
-    // Como o teu api.js já devolve response.data,
-    // aqui processosData e ruasData já são arrays diretos
-    const listaProcessos = processosData || []
-    const listaRuas = ruasData || []
+    // Garantir que SEMPRE recebemos arrays
+    const listaProcessos =
+      Array.isArray(processosData) ? processosData :
+      Array.isArray(processosData.data) ? processosData.data :
+      Array.isArray(processosData.processos) ? processosData.processos :
+      []
 
-    // Calcular estatísticas
+    const listaRuas =
+      Array.isArray(ruasData) ? ruasData :
+      Array.isArray(ruasData.data) ? ruasData.data :
+      Array.isArray(ruasData.ruas) ? ruasData.ruas :
+      []
+
+    // Estatísticas
     stats.value = {
       total_processos: listaProcessos.length,
       processos_validos: listaProcessos.filter(p => p.validade === 'valido').length,
@@ -198,7 +205,7 @@ const loadData = async () => {
       total_ruas: listaRuas.length
     }
 
-    // Últimos 10 processos (ordenados por ID desc)
+    // Últimos 10 processos
     processos.value = listaProcessos
       .sort((a, b) => (b.id || 0) - (a.id || 0))
       .slice(0, 10)
@@ -206,7 +213,6 @@ const loadData = async () => {
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
 
-    // Valores padrão em caso de erro
     stats.value = {
       total_processos: 0,
       processos_validos: 0,
@@ -221,11 +227,8 @@ const loadData = async () => {
 }
 
 const getStatusClass = (validade) => {
-  if (validade === 'valido') {
-    return 'bg-green-100 text-green-800'
-  } else if (validade === 'invalido') {
-    return 'bg-red-100 text-red-800'
-  }
+  if (validade === 'valido') return 'bg-green-100 text-green-800'
+  if (validade === 'invalido') return 'bg-red-100 text-red-800'
   return 'bg-yellow-100 text-yellow-800'
 }
 
