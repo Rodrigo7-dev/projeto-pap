@@ -1,34 +1,33 @@
-// src/services/api.js
-import axios from 'axios'
+import axios from 'axios';
+
+const baseURL = import.meta.env.VITE_API_URL.replace(/\/$/, '');
 
 const api = axios.create({
-  baseURL: 'https://myapp-api-production-a4fa.up.railway.app/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
   timeout: 10000
-})
+});
 
-// Adicionar token de autenticação a cada pedido
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token')
+  const token = localStorage.getItem('auth_token');
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return config
-})
+  return config;
+});
 
-// Tratar erros de autenticação
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+      localStorage.removeItem('auth_token');
+      window.location.href = '/login';
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export default api
+export default api;
