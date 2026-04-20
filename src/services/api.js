@@ -1,7 +1,8 @@
 import axios from 'axios'
 
+// Instância principal da API
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL, // Deve terminar com /api
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json'
@@ -9,14 +10,14 @@ const api = axios.create({
   timeout: 10000
 })
 
-// Token automático
+// Interceptor para token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Tratamento global de erros
+// Interceptor global de erros
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
@@ -31,94 +32,117 @@ api.interceptors.response.use(
   }
 )
 
-// Métodos específicos da API
+// Métodos da API
 const apiMethods = {
-  // Processos
+  // ============================
+  // AUTH
+  // ============================
+  async login(data) {
+    return api.post('/login', data)
+  },
+
+  async register(data) {
+    return api.post('/register', data)
+  },
+
+  async logout() {
+    return api.post('/logout')
+  },
+
+  // ============================
+  // PROCESSOS
+  // ============================
   async getProcessos() {
-    return this.get('/processos')
+    return api.get('/processos')
   },
-  
+
   async getProcesso(id) {
-    return this.get(`/processos/${id}`)
+    return api.get(`/processos/${id}`)
   },
-  
+
   async createProcesso(data) {
-    return this.post('/processos', data)
+    return api.post('/processos', data)
   },
-  
+
   async updateProcesso(id, data) {
-    return this.put(`/processos/${id}`, data)
+    return api.put(`/processos/${id}`, data)
   },
-  
+
   async deleteProcesso(id) {
-    return this.delete(`/processos/${id}`)
+    return api.delete(`/processos/${id}`)
   },
-  
-  // Ruas
+
+  // ============================
+  // RUAS
+  // ============================
   async getRuas() {
-    return this.get('/ruas')
+    return api.get('/ruas')
   },
-  
+
   async getRua(id) {
-    return this.get(`/ruas/${id}`)
+    return api.get(`/ruas/${id}`)
   },
-  
+
   async createRua(data) {
-    return this.post('/ruas', data)
+    return api.post('/ruas', data)
   },
-  
+
   async updateRua(id, data) {
-    return this.put(`/ruas/${id}`, data)
+    return api.put(`/ruas/${id}`, data)
   },
-  
+
   async deleteRua(id) {
-    return this.delete(`/ruas/${id}`)
+    return api.delete(`/ruas/${id}`)
   },
-  
-  // Freguesias
+
+  // ============================
+  // FREGUESIAS
+  // ============================
   async getFreguesias() {
-    return this.get('/freguesias')
+    return api.get('/freguesias')
   },
-  
+
   async getFreguesia(id) {
-    return this.get(`/freguesias/${id}`)
+    return api.get(`/freguesias/${id}`)
   },
-  
+
   async createFreguesia(data) {
-    return this.post('/freguesias', data)
+    return api.post('/freguesias', data)
   },
-  
+
   async updateFreguesia(id, data) {
-    return this.put(`/freguesias/${id}`, data)
+    return api.put(`/freguesias/${id}`, data)
   },
-  
+
   async deleteFreguesia(id) {
-    return this.delete(`/freguesias/${id}`)
+    return api.delete(`/freguesias/${id}`)
   },
-  
-  // Tipos
+
+  // ============================
+  // TIPO PUBLICIDADE
+  // ============================
   async getTipos() {
-    return this.get('/tipos')
+    return api.get('/tipo-publicidades')
   },
-  
+
   async getTipo(id) {
-    return this.get(`/tipos/${id}`)
+    return api.get(`/tipo-publicidades/${id}`)
   },
-  
+
   async createTipo(data) {
-    return this.post('/tipos', data)
+    return api.post('/tipo-publicidades', data)
   },
-  
+
   async updateTipo(id, data) {
-    return this.put(`/tipos/${id}`, data)
+    return api.put(`/tipo-publicidades/${id}`, data)
   },
-  
+
   async deleteTipo(id) {
-    return this.delete(`/tipos/${id}`)
+    return api.delete(`/tipo-publicidades/${id}`)
   }
 }
 
-// Adicionar métodos ao objeto api
+// Junta os métodos ao axios
 Object.assign(api, apiMethods)
 
 export default api
