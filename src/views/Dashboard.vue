@@ -162,7 +162,13 @@
 import { ref, onMounted } from 'vue'
 import api from '../services/api'
 
-const stats = ref({})
+const stats = ref({
+  total_processos: 0,
+  processos_validos: 0,
+  processos_invalidos: 0,
+  total_ruas: 0
+})
+
 const processos = ref([])
 const loading = ref(false)
 
@@ -171,38 +177,43 @@ onMounted(() => {
 })
 
 const loadData = async () => {
+  loading.value = true
   try {
-    loading.value = true
+    // Buscar processos e ruas em paralelo
     const [processosData, ruasData] = await Promise.all([
       api.getProcessos(),
       api.getRuas()
     ])
-    
-    const processos = processosData.data || processosData || []
-    const ruas = ruasData.data || ruasData || []
-    
-    // Calcular estatísticas reais
+
+    // Como o teu api.js já devolve response.data,
+    // aqui processosData e ruasData já são arrays diretos
+    const listaProcessos = processosData || []
+    const listaRuas = ruasData || []
+
+    // Calcular estatísticas
     stats.value = {
-      total_processos: processos.length,
-      processos_validos: processos.filter(p => p.validade === 'valido').length,
-      processos_invalidos: processos.filter(p => p.validade === 'invalido').length,
-      total_ruas: ruas.length
+      total_processos: listaProcessos.length,
+      processos_validos: listaProcessos.filter(p => p.validade === 'valido').length,
+      processos_invalidos: listaProcessos.filter(p => p.validade === 'invalido').length,
+      total_ruas: listaRuas.length
     }
-    
-    // Ordenar por ID (mais recentes primeiro) e pegar apenas 10
-    processos.value = processos
+
+    // Últimos 10 processos (ordenados por ID desc)
+    processos.value = listaProcessos
       .sort((a, b) => (b.id || 0) - (a.id || 0))
       .slice(0, 10)
-    
+
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
-    // Em caso de erro, mostrar valores padrão
+
+    // Valores padrão em caso de erro
     stats.value = {
       total_processos: 0,
       processos_validos: 0,
       processos_invalidos: 0,
       total_ruas: 0
     }
+
     processos.value = []
   } finally {
     loading.value = false
