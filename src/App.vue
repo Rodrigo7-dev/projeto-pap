@@ -34,3 +34,21 @@ const shouldShowNavbar = computed(() => {
   opacity: 0;
 }
 </style>
+
+<style>
+/* Estilos básicos */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Animação de loading */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>

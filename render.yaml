@@ -10,34 +10,12 @@ services:
       - key: NODE_VERSION
         value: 20
       - key: VITE_API_URL
-        value: https://projeto-pap-backend.onrender.com/api
-
-  # Backend Laravel (se precisar)
-  - type: web
-    name: projeto-pap-backend
-    env: php
-    buildCommand: |
-      composer install --optimize-autoloader --no-dev
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
-    startCommand: php artisan serve --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: NODE_VERSION
-        value: 20
-      - key: PHP_VERSION
-        value: 8.2
-      - key: APP_ENV
+        value: https://myapp-api-production-a4fa.up.railway.app/api
+      - key: VITE_APP_NAME
+        value: Sistema de Gestão
+      - key: VITE_APP_ENV
         value: production
-      - key: APP_DEBUG
-        value: false
-      - key: APP_URL
-        value: https://projeto-pap-backend.onrender.com
-      - key: DB_CONNECTION
-        value: sqlite
-      - key: DB_DATABASE
-        value: /opt/render/project/src/database/database.sqlite
-      - key: APP_KEY
-        generateValue: true
-      - key: JWT_SECRET
-        generateValue: true
+
+# Auto-deploy configuration
+autoDeploy: yes
+branch: main

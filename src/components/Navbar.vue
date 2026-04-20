@@ -1,87 +1,145 @@
 <template>
-  <nav class="bg-white border-b border-slate-200 shadow-sm">
-    <div class="max-w-6xl mx-auto px-6 py-4">
-      <div class="flex items-center justify-between">
-
-        <!-- Logo -->
-        <div class="flex items-center space-x-4">
-          <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <div>
-            <span class="text-lg font-bold text-slate-800">Sistema de Gestão</span>
-          </div>
-        </div>
-
-        <!-- Navigation Links -->
-        <div class="flex items-center space-x-6">
-          <router-link 
-            to="/dashboard" 
-            class="text-slate-600 hover:text-blue-600 font-medium"
-          >
-            Painel
-          </router-link>
-
-          <router-link 
-            to="/ruas" 
-            class="text-slate-600 hover:text-blue-600 font-medium"
-          >
-            Ruas
-          </router-link>
-
-          <router-link 
-            to="/freguesias" 
-            class="text-slate-600 hover:text-blue-600 font-medium"
-          >
-            Freguesias
-          </router-link>
-
-          <router-link 
-            to="/tipopublicidade" 
-            class="text-slate-600 hover:text-blue-600 font-medium"
-          >
-            Tipos
-          </router-link>
-
-          <router-link 
-            to="/perfil" 
-            class="text-slate-600 hover:text-blue-600 font-medium"
-          >
-            Perfil
-          </router-link>
-
-          <!-- Logout -->
+  <nav class="bg-blue-600 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="text-xl font-bold">
+        <router-link to="/" class="hover:text-blue-200">
+          Sistema de Gestão
+        </router-link>
+      </div>
+      
+      <div class="flex space-x-4 items-center">
+        <router-link to="/dashboard" class="hover:text-blue-200">
+          Dashboard
+        </router-link>
+        <router-link to="/processos" class="hover:text-blue-200">
+          Processos
+        </router-link>
+        
+        <div class="relative">
           <button 
-            @click="handleLogout"
-            class="text-red-600 hover:text-red-700 font-medium"
+            @click="toggleDropdown" 
+            class="flex items-center space-x-2 hover:text-blue-200"
           >
-            Sair
+            <span>{{ user?.name || 'Usuário' }}</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
           </button>
+          
+          <div v-if="dropdownOpen" class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg z-50">
+            <router-link to="/profile" class="block px-4 py-2 hover:bg-gray-100">
+              Perfil
+            </router-link>
+            <button 
+              @click="logout" 
+              class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+            >
+              Sair
+            </button>
+          </div>
         </div>
-
       </div>
     </div>
   </nav>
 </template>
 
-<script>
-import { ref } from 'vue'
-import { useAuthStore } from '../stores/auth'
+<script setup>
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
-export default {
-  setup() {
-    const auth = useAuthStore()
-    const router = useRouter()
+const router = useRouter()
+const auth = useAuthStore()
+const dropdownOpen = ref(false)
 
-    const handleLogout = async () => {
-      await auth.logout()
-      router.push('/login')
-    }
+const user = computed(() => auth.user)
 
-    return { auth, handleLogout }
-  }
+const toggleDropdown = () => {
+  dropdownOpen.value = !dropdownOpen.value
 }
+
+const logout = async () => {
+  await auth.logout()
+  router.push('/login')
+  dropdownOpen.value = false
+}
+
+// Fechar dropdown quando clicar fora
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.relative')) {
+    dropdownOpen.value = false
+  }
+})
 </script>
+
+<style scoped>
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.right-0 {
+  right: 0;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.w-48 {
+  width: 12rem;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.text-gray-800 {
+  color: #1f2937;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+.block {
+  display: block;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.hover\:bg-gray-100:hover {
+  background-color: #f3f4f6;
+}
+
+.text-red-600 {
+  color: #dc2626;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.text-left {
+  text-align: left;
+}
+</style>

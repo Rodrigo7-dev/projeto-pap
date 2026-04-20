@@ -4,52 +4,74 @@ import api from '../services/api'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    token: localStorage.getItem('auth_token') || null
+    token: localStorage.getItem('auth_token') || null,
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token
+    isAuthenticated: (state) => !!state.user && !!state.token,
   },
 
   actions: {
-    initialize() {
-      const token = localStorage.getItem('auth_token')
-      if (token) {
-        this.token = token
-      }
-    },
-
-    async login(email, password) {
+    async login(credentials) {
       try {
-        const res = await api.post('/login', { email, password })
-
-        if (res.data.user && res.data.token) {
-          this.token = res.data.token
-          this.user = res.data.user
-
-          localStorage.setItem('auth_token', res.data.token)
-
-          return true
+        const response = await api.login(credentials)
+        
+        if (response.user && response.token) {
+          this.token = response.token
+          this.user = response.user
+          localStorage.setItem('auth_token', response.token)
+          localStorage.setItem('auth_user', JSON.stringify(response.user))
+          
+          return response
         } else {
-          throw new Error('Resposta inválida')
+          throw new Error('Resposta inválida do servidor')
         }
-
       } catch (error) {
         this.user = null
         this.token = null
         localStorage.removeItem('auth_token')
+        localStorage.removeItem('auth_user')
+        throw error
+      }
+    },
+
+    async register(userData) {
+      try {
+        const response = await api.register(userData)
+        
+        if (response.user && response.token) {
+          this.token = response.token
+          this.user = response.user
+          localStorage.setItem('auth_token', response.token)
+          localStorage.setItem('auth_user', JSON.stringify(response.user))
+          
+          return response
+        } else {
+          throw new Error('Resposta inválida do servidor')
+        }
+      } catch (error) {
+        this.user = null
+        this.token = null
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('auth_user')
         throw error
       }
     },
 
     async logout() {
-      try {
-        await api.post('/logout')
-      } catch (e) {}
-
+      await api.logout()
       this.user = null
       this.token = null
       localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
+    },
+
+    // Carregar usuário do localStorage
+    loadUser() {
+      const user = localStorage.getItem('auth_user')
+      if (user) {
+        this.user = JSON.parse(user)
+      }
     }
   }
 })
