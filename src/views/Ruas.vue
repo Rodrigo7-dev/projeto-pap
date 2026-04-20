@@ -1,94 +1,46 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Ruas</h1>
-        <router-link 
-          to="/ruas/nova" 
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150"
-        >
-          Nova Rua
-        </router-link>
+  <div class="ruas-container">
+    <header class="page-header">
+      <h1>Gestão de Ruas</h1>
+      <router-link to="/ruas/nova" class="btn-primary">Nova Rua</router-link>
+    </header>
+    
+    <div v-if="loading" class="loading">Carregando...</div>
+    
+    <div v-else class="content">
+      <div class="search-section">
+        <input 
+          v-model="search" 
+          type="text" 
+          placeholder="Pesquisar ruas..." 
+          class="search-input"
+        />
       </div>
-      
-      <div v-if="loading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="text-gray-600 mt-2">Carregando...</p>
-      </div>
 
-      <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200">
-        <!-- Search -->
-        <div class="p-4 border-b border-gray-200">
-          <input 
-            v-model="search" 
-            type="text" 
-            placeholder="Pesquisar ruas..." 
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Nome da Rua
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Freguesia
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="rua in filteredRuas" :key="rua.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ rua.nome || rua.rua }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ rua.freguesia?.nome || rua.freguesia || '-' }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <router-link 
-                    :to="`/ruas/${rua.id}/editar`" 
-                    class="text-blue-600 hover:text-blue-900 mr-4"
-                  >
-                    Editar
-                  </router-link>
-                  <button 
-                    @click="deleteRua(rua)" 
-                    class="text-red-600 hover:text-red-900"
-                  >
-                    Excluir
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="filteredRuas.length === 0" class="text-center py-12">
-          <div class="text-gray-500">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma rua encontrada</h3>
-            <p class="mt-1 text-sm text-gray-500">
-              {{ search ? 'Tente uma busca diferente' : 'Comece adicionando uma nova rua' }}
-            </p>
-            <div class="mt-6">
-              <router-link 
-                to="/ruas/nova" 
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Nova Rua
-              </router-link>
-            </div>
-          </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nome da Rua</th>
+              <th>Freguesia</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="rua in filteredRuas" :key="rua.id">
+              <td>{{ rua.nome || rua.rua || '-' }}</td>
+              <td>{{ rua.freguesia?.nome || rua.freguesia || '-' }}</td>
+              <td>
+                <router-link :to="`/ruas/${rua.id}/editar`" class="action-link">Editar</router-link>
+                <button @click="deleteRua(rua)" class="action-delete">Excluir</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div v-if="filteredRuas.length === 0" class="empty-state">
+          <p>{{ search ? 'Nenhuma rua encontrada para esta pesquisa.' : 'Nenhuma rua cadastrada.' }}</p>
+          <router-link v-if="!search" to="/ruas/nova" class="btn-primary">Adicionar Primeira Rua</router-link>
         </div>
       </div>
     </div>
@@ -129,13 +81,14 @@ const loadRuas = async () => {
 }
 
 const deleteRua = async (rua) => {
-  if (!confirm(`Tem certeza que deseja excluir a rua "${rua.nome || rua.rua}"?`)) {
+  const ruaName = rua.nome || rua.rua || `#${rua.id}`
+  if (!confirm(`Tem certeza que deseja excluir a rua "${ruaName}"?`)) {
     return
   }
 
   try {
     await api.deleteRua(rua.id)
-    await loadRuas() // Recarregar a lista
+    await loadRuas()
   } catch (error) {
     console.error('Erro ao excluir rua:', error)
     alert('Erro ao excluir rua. Tente novamente.')
@@ -146,3 +99,132 @@ onMounted(() => {
   loadRuas()
 })
 </script>
+
+<style scoped>
+.ruas-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: normal;
+}
+
+.btn-primary {
+  background: #333;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: #555;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.content {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.search-section {
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background: #f5f5f5;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.data-table td {
+  font-size: 14px;
+}
+
+.action-link {
+  color: #666;
+  text-decoration: none;
+  margin-right: 15px;
+  font-size: 14px;
+}
+
+.action-link:hover {
+  color: #333;
+}
+
+.action-delete {
+  background: none;
+  border: none;
+  color: #a52a2a;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.action-delete:hover {
+  color: #d32f2f;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.empty-state p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+}
+</style>

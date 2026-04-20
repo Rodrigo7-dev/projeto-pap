@@ -1,66 +1,58 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-sm w-full max-w-md border border-gray-200">
-      <div class="text-center mb-8">
-        <img src="../assets/logo_camera.jpg" alt="Logo" class="h-16 mx-auto mb-4">
-        <h1 class="text-2xl font-semibold text-gray-900 mb-2">Sistema de Publicidade</h1>
-        <p class="text-gray-600 text-sm">Faça login para acessar o sistema</p>
+  <div class="login-container">
+    <div class="login-form">
+      <div class="login-header">
+        <img src="../assets/logo_camera.jpg" alt="Logo" class="logo">
+        <h1>Sistema de Gestão de Publicidade</h1>
+        <p>Acesso ao Sistema</p>
       </div>
       
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+      <form @submit.prevent="handleLogin" class="form">
+        <div class="form-group">
+          <label for="email">Email</label>
           <input
+            id="email"
             v-model="email"
             type="email"
             required
-            placeholder="seu@email.com"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
+            placeholder="email@exemplo.com"
           />
         </div>
         
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+        <div class="form-group">
+          <label for="password">Senha</label>
           <input
+            id="password"
             v-model="password"
             type="password"
             required
-            placeholder="••••••••"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
+            placeholder="Senha"
           />
         </div>
         
-        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+        <div v-if="error" class="error-message">
           {{ error }}
         </div>
         
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-gray-900 text-white py-2 px-4 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+          class="submit-button"
         >
-          <span v-if="loading" class="inline-flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Entrando...
-          </span>
+          <span v-if="loading">Autenticando...</span>
           <span v-else>Entrar</span>
         </button>
       </form>
       
-      <div class="mt-6 text-center">
-        <router-link to="/register" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition duration-150">
-          Não tem conta? Registar-se
-        </router-link>
+      <div class="register-link">
+        <router-link to="/register">Não tem conta? Registar</router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -72,20 +64,13 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
-// Se já estiver logado, redireciona para o dashboard
-onMounted(() => {
-  if (auth.isAuthenticated) {
-    router.push('/dashboard')
-  }
-})
-
 const handleLogin = async () => {
   try {
     error.value = ''
     loading.value = true
 
     await auth.login({
-      email: email.value.trim(),
+      email: email.value,
       password: password.value
     })
 
@@ -95,9 +80,7 @@ const handleLogin = async () => {
     console.error('Login error:', err)
     
     if (err.response?.status === 401) {
-      error.value = 'Email ou senha incorretos'
-    } else if (err.response?.status === 422) {
-      error.value = 'Verifique os dados informados'
+      error.value = 'Credenciais inválidas'
     } else if (err.code === 'ECONNABORTED') {
       error.value = 'Tempo esgotado. Tente novamente.'
     } else if (err.message.includes('Network Error')) {
@@ -110,3 +93,114 @@ const handleLogin = async () => {
   }
 }
 </script>
+
+<style scoped>
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+.login-form {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo {
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+.login-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: normal;
+}
+
+.login-header p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.error-message {
+  background: #ffe8e8;
+  color: #a52a2a;
+  padding: 12px;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 12px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #555;
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.register-link a {
+  color: #666;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.register-link a:hover {
+  color: #333;
+}
+</style>

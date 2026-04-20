@@ -1,42 +1,31 @@
 <template>
-  <nav class="bg-blue-600 text-white p-4">
-    <div class="container mx-auto flex justify-between items-center">
-      <div class="text-xl font-bold">
-        <router-link to="/" class="hover:text-blue-200">
-          Sistema de Gestão
-        </router-link>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <img src="../assets/logo_camera.jpg" alt="Logo" class="logo">
+        <span>Sistema de Gestão</span>
       </div>
       
-      <div class="flex space-x-4 items-center">
-        <router-link to="/dashboard" class="hover:text-blue-200">
-          Dashboard
-        </router-link>
-        <router-link to="/processos" class="hover:text-blue-200">
-          Processos
-        </router-link>
-        
-        <div class="relative">
-          <button 
-            @click="toggleDropdown" 
-            class="flex items-center space-x-2 hover:text-blue-200"
-          >
-            <span>{{ user?.name || 'Usuário' }}</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
+      <div class="navbar-menu">
+        <router-link to="/dashboard" class="nav-link">Painel</router-link>
+        <router-link to="/processos" class="nav-link">Processos</router-link>
+        <router-link to="/ruas" class="nav-link">Ruas</router-link>
+        <router-link to="/freguesias" class="nav-link">Freguesias</router-link>
+      </div>
+      
+      <div class="navbar-user">
+        <div class="user-info">
+          <span>{{ user?.name || 'Utilizador' }}</span>
+          <button @click="toggleUserMenu" class="user-menu-button">
+            <div class="user-avatar">
+              {{ getUserInitials() }}
+            </div>
           </button>
-          
-          <div v-if="dropdownOpen" class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg z-50">
-            <router-link to="/profile" class="block px-4 py-2 hover:bg-gray-100">
-              Perfil
-            </router-link>
-            <button 
-              @click="logout" 
-              class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
-            >
-              Sair
-            </button>
-          </div>
+        </div>
+        
+        <div v-if="showUserMenu" class="user-dropdown">
+          <router-link to="/profile" class="dropdown-item">Perfil</router-link>
+          <button @click="logout" class="dropdown-item">Sair</button>
         </div>
       </div>
     </div>
@@ -44,102 +33,171 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
-const dropdownOpen = ref(false)
+
+const showUserMenu = ref(false)
 
 const user = computed(() => auth.user)
 
-const toggleDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value
+}
+
+const getUserInitials = () => {
+  const name = user.value?.name || ''
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 const logout = async () => {
+  showUserMenu.value = false
   await auth.logout()
   router.push('/login')
-  dropdownOpen.value = false
 }
 
-// Fechar dropdown quando clicar fora
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.relative')) {
-    dropdownOpen.value = false
+const closeUserMenu = (event) => {
+  if (!event.target.closest('.navbar-user')) {
+    showUserMenu.value = false
   }
+}
+
+onMounted(() => {
+  document.addEventListener('click', closeUserMenu)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeUserMenu)
 })
 </script>
 
 <style scoped>
-.relative {
+.navbar {
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 32px;
+}
+
+.navbar-brand span {
+  font-size: 16px;
+  font-weight: normal;
+  color: #333;
+}
+
+.navbar-menu {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #666;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.router-link-active {
+  color: #333;
+  border-bottom-color: #333;
+}
+
+.navbar-user {
   position: relative;
 }
 
-.absolute {
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info span {
+  font-size: 14px;
+  color: #666;
+}
+
+.user-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  background: #333;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.user-dropdown {
   position: absolute;
-}
-
-.right-0 {
+  top: 100%;
   right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 150px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 8px;
 }
 
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
-.w-48 {
-  width: 12rem;
-}
-
-.bg-white {
-  background-color: white;
-}
-
-.text-gray-800 {
-  color: #1f2937;
-}
-
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-
-.shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.z-50 {
-  z-index: 50;
-}
-
-.block {
+.dropdown-item {
   display: block;
-}
-
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
-.hover\:bg-gray-100:hover {
-  background-color: #f3f4f6;
-}
-
-.text-red-600 {
-  color: #dc2626;
-}
-
-.w-full {
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  border: none;
+  background: none;
   width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
-.text-left {
-  text-align: left;
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-item:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.dropdown-item:last-child {
+  border-radius: 0 0 4px 4px;
 }
 </style>
