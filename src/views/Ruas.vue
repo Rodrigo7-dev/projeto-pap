@@ -120,40 +120,44 @@ export default {
   },
 
   mounted() {
-    this.carregarRuas()
-  },
+  const token = localStorage.getItem('auth_token')
 
-  methods: {
-    async carregarRuas() {
-      this.loading = true
-      try {
-        const response = await api.get('/ruas')
+  if (!token) {
+    this.$router.push('/login')
+    return
+  }
 
-        console.log('Resposta API:', response.data)
+  this.carregarRuas()
+},
 
-        // ⚠️ AJUSTA AQUI SE NECESSÁRIO
-        this.ruas = response.data.data || response.data
+methods: {
+  async carregarRuas() {
+    this.loading = true
 
-        if (!Array.isArray(this.ruas)) {
-          console.error('ERRO: ruas não é um array', this.ruas)
-          this.ruas = []
-        }
+    try {
+      const response = await api.get('/ruas')
 
-      } catch (error) {
-        console.error('Erro ao carregar ruas:', error)
+      console.log('API:', response.data)
+
+      // 🧠 robusto contra qualquer formato
+      if (Array.isArray(response.data)) {
+        this.ruas = response.data
+      } else if (Array.isArray(response.data.data)) {
+        this.ruas = response.data.data
+      } else if (Array.isArray(response.data.data?.data)) {
+        this.ruas = response.data.data.data
+      } else {
+        console.error('Formato inválido:', response.data)
         this.ruas = []
-      } finally {
-        this.loading = false
       }
-    },
 
-    previousPage() {
-      if (this.currentPage > 1) this.currentPage--
-    },
-
-    nextPage() {
-      if (this.currentPage < this.totalPages) this.currentPage++
+    } catch (error) {
+      console.error('Erro:', error)
+      this.ruas = []
+    } finally {
+      this.loading = false
     }
   }
+}
 }
 </script>

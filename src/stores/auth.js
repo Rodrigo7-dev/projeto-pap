@@ -4,65 +4,52 @@ import api from '../services/api'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    token: localStorage.getItem('auth_token') || null,
-    isTokenValid: !!localStorage.getItem('auth_token')
+    token: localStorage.getItem('auth_token') || null
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.user && !!state.token && state.isTokenValid
+    isAuthenticated: (state) => !!state.token
   },
 
   actions: {
-    async login(email, password) {
-      try {
-        const res = await api.post('/login', { email, password })
-        
-        if (res.data.user && res.data.token) {
-          this.token = res.data.token
-          this.isTokenValid = true
-          this.user = res.data.user
-          localStorage.setItem('auth_token', res.data.token)
-          
-          return { success: true, user: res.data.user, token: res.data.token }
-        } else {
-          throw new Error('Resposta inválida do servidor')
-        }
-      } catch (error) {
-        this.user = null
-        this.token = null
-        this.isTokenValid = false
-        localStorage.removeItem('auth_token')
-        throw new Error('Credenciais inválidas')
+    initialize() {
+      const token = localStorage.getItem('auth_token')
+      if (token) {
+        this.token = token
       }
     },
 
-    async register(name, email, NIF, password) {
+    async login(email, password) {
       try {
-        const res = await api.post('/register', {
-          name,
-          email,
-          nif: NIF,
-          password,
-          password_confirmation: password
-        })
-        
-        return res.data
+        const res = await api.post('/login', { email, password })
+
+        if (res.data.user && res.data.token) {
+          this.token = res.data.token
+          this.user = res.data.user
+
+          localStorage.setItem('auth_token', res.data.token)
+
+          return true
+        } else {
+          throw new Error('Resposta inválida')
+        }
+
       } catch (error) {
-        throw new Error('Erro ao criar conta')
+        this.user = null
+        this.token = null
+        localStorage.removeItem('auth_token')
+        throw error
       }
     },
 
     async logout() {
       try {
         await api.post('/logout')
-      } catch (error) {
-        console.error('Logout error:', error)
-      } finally {
-        this.user = null
-        this.token = null
-        this.isTokenValid = false
-        localStorage.removeItem('auth_token')
-      }
+      } catch (e) {}
+
+      this.user = null
+      this.token = null
+      localStorage.removeItem('auth_token')
     }
   }
 })
