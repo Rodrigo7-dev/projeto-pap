@@ -1,161 +1,124 @@
 import axios from 'axios'
 
-// API base URL usando variável de ambiente
-const API_URL = import.meta.env.VITE_API_URL || 'https://myapp-api-production-a4fa.up.railway.app/api'
-
-// Criar instância axios
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    Accept: 'application/json'
   },
   timeout: 10000
 })
 
-// Interceptor para adicionar token
+// Token automático
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Interceptor para tratar erros 401
+// Tratamento global de erros
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response.data,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_user')
-      window.location.href = '/login'
+    const status = error.response?.status
+
+    if (status === 401) {
+      localStorage.clear()
+      window.location.replace('/login')
     }
-    return Promise.reject(error)
+
+    throw error
   }
 )
 
-// Métodos da API
-export default {
-  // Login
-  async login(credentials) {
-    try {
-      const response = await api.post('/login', credentials)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
-  
-  // Register
-  async register(userData) {
-    try {
-      const response = await api.post('/register', userData)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
-  
-  // Logout
-  async logout() {
-    try {
-      await api.post('/logout')
-    } catch (error) {
-      console.error('Logout error:', error)
-    } finally {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_user')
-    }
-  },
-  
-  // Stats
-  async getStats() {
-    const response = await api.get('/stats')
-    return response.data
-  },
-  
+// Métodos específicos da API
+const apiMethods = {
   // Processos
-  async getProcessos(params = {}) {
-    const response = await api.get('/processos', { params })
-    return response.data
+  async getProcessos() {
+    return this.get('/processos')
+  },
+  
+  async getProcesso(id) {
+    return this.get(`/processos/${id}`)
   },
   
   async createProcesso(data) {
-    const response = await api.post('/processos', data)
-    return response.data
+    return this.post('/processos', data)
   },
   
   async updateProcesso(id, data) {
-    const response = await api.put(`/processos/${id}`, data)
-    return response.data
+    return this.put(`/processos/${id}`, data)
   },
   
   async deleteProcesso(id) {
-    const response = await api.delete(`/processos/${id}`)
-    return response.data
+    return this.delete(`/processos/${id}`)
   },
   
   // Ruas
-  async getRuas(params = {}) {
-    const response = await api.get('/ruas', { params })
-    return response.data
+  async getRuas() {
+    return this.get('/ruas')
+  },
+  
+  async getRua(id) {
+    return this.get(`/ruas/${id}`)
   },
   
   async createRua(data) {
-    const response = await api.post('/ruas', data)
-    return response.data
+    return this.post('/ruas', data)
   },
   
   async updateRua(id, data) {
-    const response = await api.put(`/ruas/${id}`, data)
-    return response.data
+    return this.put(`/ruas/${id}`, data)
   },
   
   async deleteRua(id) {
-    const response = await api.delete(`/ruas/${id}`)
-    return response.data
+    return this.delete(`/ruas/${id}`)
   },
   
   // Freguesias
-  async getFreguesias(params = {}) {
-    const response = await api.get('/freguesias', { params })
-    return response.data
+  async getFreguesias() {
+    return this.get('/freguesias')
+  },
+  
+  async getFreguesia(id) {
+    return this.get(`/freguesias/${id}`)
   },
   
   async createFreguesia(data) {
-    const response = await api.post('/freguesias', data)
-    return response.data
+    return this.post('/freguesias', data)
   },
   
   async updateFreguesia(id, data) {
-    const response = await api.put(`/freguesias/${id}`, data)
-    return response.data
+    return this.put(`/freguesias/${id}`, data)
   },
   
   async deleteFreguesia(id) {
-    const response = await api.delete(`/freguesias/${id}`)
-    return response.data
+    return this.delete(`/freguesias/${id}`)
   },
   
   // Tipos
-  async getTipos(params = {}) {
-    const response = await api.get('/tipopublicidade', { params })
-    return response.data
+  async getTipos() {
+    return this.get('/tipos')
+  },
+  
+  async getTipo(id) {
+    return this.get(`/tipos/${id}`)
   },
   
   async createTipo(data) {
-    const response = await api.post('/tipopublicidade', data)
-    return response.data
+    return this.post('/tipos', data)
   },
   
   async updateTipo(id, data) {
-    const response = await api.put(`/tipopublicidade/${id}`, data)
-    return response.data
+    return this.put(`/tipos/${id}`, data)
   },
   
   async deleteTipo(id) {
-    const response = await api.delete(`/tipopublicidade/${id}`)
-    return response.data
+    return this.delete(`/tipos/${id}`)
   }
 }
+
+// Adicionar métodos ao objeto api
+Object.assign(api, apiMethods)
+
+export default api

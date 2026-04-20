@@ -189,8 +189,10 @@ const loadData = async () => {
       total_ruas: ruas.length
     }
     
-    // Pegar apenas os 10 mais recentes para a tabela
-    processos.value = processos.slice(0, 10)
+    // Ordenar por ID (mais recentes primeiro) e pegar apenas 10
+    processos.value = processos
+      .sort((a, b) => (b.id || 0) - (a.id || 0))
+      .slice(0, 10)
     
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
