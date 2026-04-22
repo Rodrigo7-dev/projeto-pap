@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth'
 
 // Lazy loading
 const Login = () => import('../views/Login.vue')
+const Registar = () => import('../views/Registar.vue')
 const Dashboard = () => import('../views/Dashboard.vue')
 const Processos = () => import('../views/Processos.vue')
 const ProcessoForm = () => import('../views/ProcessoForm.vue')
@@ -21,6 +22,13 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: { hideNavbar: true, guest: true }
+  },
+
+  {
+    path: '/registar',
+    name: 'Registar',
+    component: Registar,
     meta: { hideNavbar: true, guest: true }
   },
 
