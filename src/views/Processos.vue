@@ -49,13 +49,13 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="processo in filteredProcessos" :key="processo.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ processo.numero_processo || `#${processo.id}` }}</div>
+                  <div class="text-sm font-medium text-gray-900">{{ processo.processo }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ processo.tipo_publicidade?.nome || '-' }}</div>
+                  <div class="text-sm text-gray-600">{{ processo.tipo_publicidade?.publicidade || '-' }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ processo.rua?.nome || processo.rua?.rua || '-' }}</div>
+                  <div class="text-sm text-gray-600">{{ processo.rua?.rua || '-' }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStatusClass(processo.validade)" class="px-2 py-1 text-xs rounded-full">
@@ -117,11 +117,11 @@ const search = ref('')
 const filteredProcessos = computed(() => {
   if (!search.value) return processos.value
   
-  const searchTerm = search.value.toLowerCase()
+  const searchTerm = search.value.toLowerCase()     
   return processos.value.filter(processo => 
-    (processo.numero_processo || '').toLowerCase().includes(searchTerm) ||
-    (processo.tipo_publicidade?.nome || '').toLowerCase().includes(searchTerm) ||
-    (processo.rua?.nome || processo.rua?.rua || '').toLowerCase().includes(searchTerm)
+    (processo.processo || '').toLowerCase().includes(searchTerm) ||
+    (processo.tipo_publicidade?.publicidade || '').toLowerCase().includes(searchTerm) ||
+    (processo.rua?.rua || '').toLowerCase().includes(searchTerm)
   )
 })
 
