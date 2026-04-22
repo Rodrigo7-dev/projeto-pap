@@ -119,12 +119,13 @@ const loadTipos = async () => {
   loading.value = true
   try {
     const data = await api.getTipos()
-
-    // O backend devolve um array direto
-    tipos.value = Array.isArray(data) ? data : []
-
+    // Garantir que SEMPRE recebemos arrays
+    tipos.value = Array.isArray(data) ? data : 
+                Array.isArray(data.data) ? data.data : 
+                Array.isArray(data.tipos) ? data.tipos : []
   } catch (error) {
     console.error('Erro ao carregar tipos:', error)
+    tipos.value = []
   } finally {
     loading.value = false
   }

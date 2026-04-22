@@ -43,6 +43,13 @@
           <span v-else>Entrar</span>
         </button>
       </form>
+      
+      <div class="mt-6 text-center">
+        <span class="text-sm text-gray-600">Não tem uma conta?</span>
+        <router-link to="/registar" class="text-gray-600 hover:text-gray-900 text-sm font-medium ml-1 transition duration-150">
+          Criar Conta
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
