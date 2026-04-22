@@ -46,54 +46,29 @@
                 </th>
               </tr>
             </thead>
-
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr 
-                v-for="processo in filteredProcessos" 
-                :key="processo.id" 
-                class="hover:bg-gray-50"
-              >
-                <!-- Número -->
+              <tr v-for="processo in filteredProcessos" :key="processo.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">
-                    {{ processo.numero_processo || `#${processo.id}` }}
-                  </div>
+                  <div class="text-sm font-medium text-gray-900">{{ processo.numero_processo || `#${processo.id}` }}</div>
                 </td>
-
-                <!-- Tipo -->
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">
-                    {{ processo.tipo_publicidade?.nome || '-' }}
-                  </div>
+                  <div class="text-sm text-gray-600">{{ processo.tipo_publicidade?.nome || '-' }}</div>
                 </td>
-
-                <!-- Rua -->
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">
-                    {{ processo.rua?.nome || processo.rua?.rua || '-' }}
-                  </div>
+                  <div class="text-sm text-gray-600">{{ processo.rua?.nome || processo.rua?.rua || '-' }}</div>
                 </td>
-
-                <!-- Validade -->
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span 
-                    :class="getStatusClass(processo.validade)" 
-                    class="px-2 py-1 text-xs rounded-full"
-                  >
+                  <span :class="getStatusClass(processo.validade)" class="px-2 py-1 text-xs rounded-full">
                     {{ getValidadeText(processo.validade) }}
                   </span>
                 </td>
-
-                <!-- Ações -->
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <!-- AGORA USA numero_processo NA URL -->
                   <router-link 
-                    :to="`/processos/${processo.numero_processo || processo.id}/editar`" 
+                    :to="`/processos/${processo.id}/editar`" 
                     class="text-gray-600 hover:text-gray-900 mr-4"
                   >
                     Editar
                   </router-link>
-
                   <button 
                     @click="deleteProcesso(processo)" 
                     class="text-red-600 hover:text-red-900"
@@ -106,16 +81,12 @@
           </table>
         </div>
 
-        <!-- Estado vazio -->
         <div v-if="filteredProcessos.length === 0" class="text-center py-12">
           <div class="text-gray-500">
-            <h3 class="mt-2 text-sm font-medium text-gray-900">
-              Nenhum processo encontrado
-            </h3>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum processo encontrado</h3>
             <p class="mt-1 text-sm text-gray-500">
               {{ search ? 'Tente uma busca diferente' : 'Comece adicionando um novo processo' }}
             </p>
-
             <div class="mt-6">
               <router-link 
                 v-if="!search"
@@ -127,7 +98,6 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -135,7 +105,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '../services/api'
+
+const router = useRouter()
 
 const loading = ref(false)
 const processos = ref([])
@@ -145,7 +118,6 @@ const filteredProcessos = computed(() => {
   if (!search.value) return processos.value
   
   const searchTerm = search.value.toLowerCase()
-
   return processos.value.filter(processo => 
     (processo.numero_processo || '').toLowerCase().includes(searchTerm) ||
     (processo.tipo_publicidade?.nome || '').toLowerCase().includes(searchTerm) ||
@@ -167,13 +139,11 @@ const loadProcessos = async () => {
 
 const deleteProcesso = async (processo) => {
   const processoName = processo.numero_processo || `#${processo.id}`
-
   if (!confirm(`Tem certeza que deseja excluir o processo "${processoName}"?`)) {
     return
   }
 
   try {
-    // Mantém ID aqui (mais seguro)
     await api.deleteProcesso(processo.id)
     await loadProcessos()
   } catch (error) {
@@ -183,8 +153,11 @@ const deleteProcesso = async (processo) => {
 }
 
 const getStatusClass = (validade) => {
-  if (validade === 'valido') return 'bg-green-100 text-green-800'
-  if (validade === 'invalido') return 'bg-red-100 text-red-800'
+  if (validade === 'valido') {
+    return 'bg-green-100 text-green-800'
+  } else if (validade === 'invalido') {
+    return 'bg-red-100 text-red-800'
+  }
   return 'bg-yellow-100 text-yellow-800'
 }
 
