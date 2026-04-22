@@ -129,7 +129,7 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ processo.tipo_publicidade?.nome || '-' }}</div>
+                  <div class="text-sm text-gray-600">{{ processo.tipo_publicidade?.publicidade || '-' }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-600">{{ processo.rua?.nome || processo.rua?.rua || '-' }}</div>
