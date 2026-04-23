@@ -12,16 +12,17 @@
       
       <div v-if="loading" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="text-gray-600 mt-2">Carregando...</p>
+        <p class="text-gray-600 mt-2">A carregar dados...</p>
       </div>
 
       <form v-else @submit.prevent="handleSubmit" class="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Freguesia</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Freguesia</label>
           <input
             v-model="form.freguesia"
             type="text"
             required
+            placeholder="Insira o nome da freguesia"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -29,17 +30,17 @@
         <div class="mt-8 flex justify-end space-x-4">
           <router-link
             to="/freguesias"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
           >
             Cancelar
           </router-link>
           <button
             type="submit"
             :disabled="submitting"
-            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition font-bold"
           >
-            <span v-if="submitting">Salvando...</span>
-            <span v-else>{{ isEditing ? 'Atualizar' : 'Criar' }}</span>
+            <span v-if="submitting">A guardar...</span>
+            <span v-else>{{ isEditing ? 'Atualizar Freguesia' : 'Criar Freguesia' }}</span>
           </button>
         </div>
       </form>
@@ -69,14 +70,17 @@ const loadFreguesia = async () => {
   
   loading.value = true
   try {
-    const data = await api.getFreguesias({ id: route.params.id })
-    const freguesia = data.data || data
-    if (freguesia) {
-      form.value = { ...form.value, ...freguesia }
+    // CORREÇÃO: Usar o método específico para buscar UMA freguesia pelo ID
+    const res = await api.getFreguesia(route.params.id)
+    const data = res.data || res
+
+    if (data) {
+      // Garantimos que mapeamos apenas o campo necessário para o input
+      form.value.freguesia = data.freguesia
     }
   } catch (error) {
     console.error('Erro ao carregar freguesia:', error)
-    alert('Erro ao carregar freguesia.')
+    alert('Erro ao carregar os dados da freguesia.')
     router.push('/freguesias')
   } finally {
     loading.value = false
@@ -91,17 +95,14 @@ const handleSubmit = async () => {
     } else {
       await api.createFreguesia(form.value)
     }
-    
     router.push('/freguesias')
   } catch (error) {
-    console.error('Erro ao salvar freguesia:', error)
-    alert('Erro ao salvar freguesia. Tente novamente.')
+    console.error('Erro ao salvar:', error)
+    alert('Erro ao guardar. Verifique se o nome já existe.')
   } finally {
     submitting.value = false
   }
 }
 
-onMounted(async () => {
-  await loadFreguesia()
-})
+onMounted(loadFreguesia)
 </script>
