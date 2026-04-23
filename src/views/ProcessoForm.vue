@@ -21,7 +21,7 @@
         <select v-model="form.rua_id" required class="mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
           <option value="" disabled>Selecione a rua</option>
           <option v-for="rua in ruas" :key="rua.id" :value="rua.id">
-            {{ rua.rua }}
+            {{ rua.rua }} {{ rua.freguesia ? '- ' + rua.freguesia : '' }}
           </option>
         </select>
       </div>
@@ -61,7 +61,7 @@
           Cancelar
         </button>
         <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold">
-          {{ isEditing ? 'Atualizar Dados' : 'Criar Processo' }}
+          {{ isEditing ? 'Atualizar Dados' : 'Guardar Processo' }}
         </button>
       </div>
     </form>
@@ -91,28 +91,27 @@ const form = ref({
   validade: ''
 })
 
-onMounted(async () => {
+const fetchData = async () => {
   try {
-    // 1. Carregar todas as dependências primeiro
-    // Nota: Verifique se o endpoint /users existe na sua API
+    // Carregar todas as opções para os selects
+    // Nota: Se o teu endpoint de users for diferente, ajusta aqui
     const [resUsers, resRuas, resTipos] = await Promise.all([
       api.get('/users'), 
       api.getRuas(),
       api.getTipos()
     ])
-    
-    // O interceptor do api.js já retorna .data, mas fazemos um fallback
-    users.value = resUsers.data || resUsers || []
-    ruas.value = resRuas.data || resRuas || []
-    tipos.value = resTipos.data || resTipos || []
 
-    // 2. Se for edição, carregar os dados do processo
+    users.value = resUsers.data || resUsers
+    ruas.value = resRuas.data || resRuas
+    tipos.value = resTipos.data || resTipos
+
+    // Se estivermos a editar, carregar o processo específico
     if (route.params.id) {
       isEditing.value = true
-      const resProcesso = await api.getProcesso(route.params.id)
-      const data = resProcesso.data || resProcesso
-
-      // Mapeamento manual para garantir que os IDs liguem aos selects
+      const res = await api.getProcesso(route.params.id)
+      const data = res.data || res
+      
+      // Mapear os dados para o formulário
       form.value = {
         user_id: data.user_id,
         rua_id: data.rua_id,
@@ -120,14 +119,16 @@ onMounted(async () => {
         processo: data.processo,
         alvara: data.alvara,
         alojamento_local: data.alojamento_local,
-        // Formatar data para o input tipo date (YYYY-MM-DD)
+        // Formatar data para o input HTML (YYYY-MM-DD)
         validade: data.validade ? data.validade.split('T')[0] : ''
       }
     }
   } catch (error) {
-    console.error("Erro ao carregar dados do formulário:", error)
+    console.error("Erro ao carregar dados:", error)
   }
-})
+}
+
+onMounted(fetchData)
 
 const saveProcesso = async () => {
   try {
@@ -138,8 +139,7 @@ const saveProcesso = async () => {
     }
     router.push('/processos')
   } catch (error) {
-    console.error(error)
-    alert("Erro ao guardar o processo. Verifique se todos os campos obrigatórios estão preenchidos.")
+    alert("Erro ao guardar. Verifique os campos.")
   }
 }
 </script>
