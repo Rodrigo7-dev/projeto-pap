@@ -46,7 +46,7 @@
                 </td>
                 <td class="px-6 py-4">
                   <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
-                    {{ ruaItem.freguesia }}
+                    {{ ruaItem.freguesia?.freguesia || ruaItem.freguesia || 'N/D' }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right space-x-3">
