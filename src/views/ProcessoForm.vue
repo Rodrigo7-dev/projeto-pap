@@ -71,12 +71,16 @@ const loading = ref(false)
 const submitting = ref(false)
 const tipos = ref([])
 const ruas = ref([])
+const utilizadores = ref([]) // Adicionado se precisares de listar utilizadores
 
 const form = ref({
   processo: '',
   tipo_publicidade_id: '',
   rua_id: '',
-  validade: ''
+  validade: '',
+  alvara: '',           // Campo da imagem
+  alojamento_local: '',  // Campo da imagem
+  user_id: ''           // Campo "Utilizador (Requerente)"
 })
 
 const isEditing = computed(() => !!route.params.id)
@@ -84,7 +88,6 @@ const isEditing = computed(() => !!route.params.id)
 const fetchData = async () => {
   loading.value = true
   try {
-    // Carregar listas para os selects
     const [resTipos, resRuas] = await Promise.all([
       api.getTipos(),
       api.getRuas()
@@ -92,20 +95,22 @@ const fetchData = async () => {
     tipos.value = resTipos.data || resTipos
     ruas.value = resRuas.data || resRuas
 
-    // Se estiver a editar, carregar os dados do processo
     if (isEditing.value) {
       const resProc = await api.getProcesso(route.params.id)
       const data = resProc.data || resProc
       
       form.value = {
-        processo: data.processo,
-        tipo_publicidade_id: data.tipo_publicidade_id || data.tipo_publicidade?.id,
-        rua_id: data.rua_id || data.rua?.id,
-        validade: data.validade ? data.validade.split('T')[0] : '' // Formata data para o input type="date"
+        processo: data.processo || '',
+        tipo_publicidade_id: data.tipo_publicidade_id || data.tipo_publicidade?.id || '',
+        rua_id: data.rua_id || data.rua?.id || '',
+        validade: data.validade ? data.validade.split('T')[0] : '',
+        alvara: data.alvara || '',
+        alojamento_local: data.alojamento_local || '',
+        user_id: data.user_id || data.user?.id || ''
       }
     }
   } catch (error) {
-    console.error("Erro ao carregar dados:", error)
+    console.error("Erro ao carregar:", error)
   } finally {
     loading.value = false
   }
@@ -114,17 +119,20 @@ const fetchData = async () => {
 const handleSubmit = async () => {
   submitting.value = true
   try {
+    // IMPORTANTE: Verifica se o backend espera 'rua_id' ou 'rua'
+    // Se o erro persistir, o problema pode estar nos nomes destas chaves
+    const payload = { ...form.value }
+
     if (isEditing.value) {
-      // ATUALIZAR
-      await api.updateProcesso(route.params.id, form.value)
+      await api.updateProcesso(route.params.id, payload)
     } else {
-      // CRIAR NOVO
-      await api.createProcesso(form.value)
+      await api.createProcesso(payload)
     }
     router.push('/processos')
   } catch (error) {
-    alert("Erro ao salvar o processo. Verifique os campos.")
-    console.error(error)
+    // Tenta mostrar o erro real do servidor no console para depurar
+    console.error("Erro detalhado do servidor:", error.response?.data)
+    alert("Erro ao salvar: " + (error.response?.data?.message || "Verifique os campos."))
   } finally {
     submitting.value = false
   }
