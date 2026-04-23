@@ -5,58 +5,56 @@
         <h1 class="text-3xl font-bold text-gray-900">Freguesias</h1>
         <router-link 
           to="/freguesias/nova" 
-          class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition duration-150"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium"
         >
-          Nova Freguesia
+          + Nova Freguesia
         </router-link>
       </div>
       
       <div v-if="loading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-        <p class="text-gray-600 mt-2">Carregando...</p>
+        <div class="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mb-2"></div>
+        <p class="text-gray-600">A carregar freguesias...</p>
       </div>
 
-      <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200">
-        <!-- Search -->
-        <div class="p-4 border-b border-gray-200">
+      <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 bg-white">
           <input 
             v-model="search" 
             type="text" 
-            placeholder="Pesquisar freguesias..." 
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            placeholder="Pesquisar por nome da freguesia..." 
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
 
-        <!-- Table -->
         <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50">
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Nome da Freguesia
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="freguesia in filteredFreguesias" :key="freguesia.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ freguesia.nome || `Freguesia #${freguesia.id}` }}</div>
+            <tbody class="divide-y divide-gray-100 bg-white">
+              <tr v-for="f in filteredFreguesias" :key="f.id" class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ f.freguesia }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <router-link 
-                    :to="`/freguesias/${freguesia.id}/editar`" 
-                    class="text-gray-600 hover:text-gray-900 mr-4"
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                  <button 
+                    @click="editFreguesia(f.id)" 
+                    class="text-blue-600 hover:text-blue-800"
                   >
                     Editar
-                  </router-link>
+                  </button>
                   <button 
-                    @click="deleteFreguesia(freguesia)" 
-                    class="text-red-600 hover:text-red-900"
+                    @click="handleDelete(f.id, f.freguesia)" 
+                    class="text-red-600 hover:text-red-800"
                   >
-                    Excluir
+                    Eliminar
                   </button>
                 </td>
               </tr>
@@ -64,25 +62,8 @@
           </table>
         </div>
 
-        <!-- Empty State -->
-        <div v-if="filteredFreguesias.length === 0" class="text-center py-12">
-          <div class="text-gray-500">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma freguesia encontrada</h3>
-            <p class="mt-1 text-sm text-gray-500">
-              {{ search ? 'Tente uma busca diferente' : 'Comece adicionando uma nova freguesia' }}
-            </p>
-            <div class="mt-6">
-              <router-link 
-                to="/freguesias/nova" 
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                Nova Freguesia
-              </router-link>
-            </div>
-          </div>
+        <div v-if="filteredFreguesias.length === 0" class="text-center py-12 bg-white">
+          <p class="text-gray-500">Nenhuma freguesia encontrada.</p>
         </div>
       </div>
     </div>
@@ -95,25 +76,16 @@ import { useRouter } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
-
 const loading = ref(false)
 const freguesias = ref([])
 const search = ref('')
 
-const filteredFreguesias = computed(() => {
-  if (!search.value) return freguesias.value
-  
-  const searchTerm = search.value.toLowerCase()
-  return freguesias.value.filter(freguesia => 
-    freguesia.nome?.toLowerCase().includes(searchTerm)
-  )
-})
-
 const loadFreguesias = async () => {
   loading.value = true
   try {
-    const data = await api.getFreguesias()
-    freguesias.value = data.data || data || []
+    const res = await api.getFreguesias()
+    // O teu interceptor no api.js já retorna response.data
+    freguesias.value = res.data || res || []
   } catch (error) {
     console.error('Erro ao carregar freguesias:', error)
   } finally {
@@ -121,22 +93,27 @@ const loadFreguesias = async () => {
   }
 }
 
-const deleteFreguesia = async (freguesia) => {
-  const freguesiaName = freguesia.nome || `Freguesia #${freguesia.id}`
-  if (!confirm(`Tem certeza que deseja excluir a freguesia "${freguesiaName}"?`)) {
-    return
-  }
+const filteredFreguesias = computed(() => {
+  const t = search.value.toLowerCase()
+  return freguesias.value.filter(f => 
+    (f.freguesia || '').toLowerCase().includes(t)
+  )
+})
 
-  try {
-    await api.deleteFreguesia(freguesia.id)
-    await loadFreguesias() // Recarregar a lista
-  } catch (error) {
-    console.error('Erro ao excluir freguesia:', error)
-    alert('Erro ao excluir freguesia. Tente novamente.')
+const editFreguesia = (id) => {
+  router.push(`/freguesias/${id}/editar`)
+}
+
+const handleDelete = async (id, nome) => {
+  if (confirm(`Deseja eliminar a freguesia "${nome}"?`)) {
+    try {
+      await api.deleteFreguesia(id)
+      await loadFreguesias()
+    } catch (error) {
+      alert('Erro ao eliminar freguesia. Verifique se existem ruas associadas.')
+    }
   }
 }
 
-onMounted(() => {
-  loadFreguesias()
-})
+onMounted(loadFreguesias)
 </script>
