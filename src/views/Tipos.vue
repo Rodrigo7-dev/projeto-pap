@@ -5,62 +5,62 @@
         <h1 class="text-3xl font-bold text-gray-900">Tipos de Publicidade</h1>
         <router-link 
           to="/tipos/novo" 
-          class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition duration-150"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium"
         >
-          Novo Tipo
+          + Novo Tipo
         </router-link>
       </div>
       
       <div v-if="loading" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-        <p class="text-gray-600 mt-2">Carregando...</p>
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-2"></div>
+        <p class="text-gray-600">A carregar tipos...</p>
       </div>
 
-      <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200">
-        <!-- Search -->
-        <div class="p-4 border-b border-gray-200">
+      <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 bg-white">
           <input 
             v-model="search" 
             type="text" 
-            placeholder="Pesquisar tipos..." 
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            placeholder="Pesquisar por nome de publicidade..." 
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
 
-        <!-- Table -->
         <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50">
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Nome
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Publicidade
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Descrição
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Processos / Observações
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="tipo in filteredTipos" :key="tipo.id" class="hover:bg-gray-50">
+            <tbody class="divide-y divide-gray-100 bg-white">
+              <tr v-for="tipo in filteredTipos" :key="tipo.id" class="hover:bg-gray-50 transition">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ tipo.publicidade }}</div>
+                  <div class="text-sm font-bold text-gray-900">{{ tipo.publicidade }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">-</div>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-600">
+                    {{ tipo.processos || 'Sem observações' }}
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <router-link 
-                    :to="`/tipos/${tipo.id}/editar`" 
-                    class="text-gray-600 hover:text-gray-900 mr-4"
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                  <button 
+                    @click="editTipo(tipo.id)" 
+                    class="text-blue-600 hover:text-blue-800"
                   >
                     Editar
-                  </router-link>
+                  </button>
                   <button 
                     @click="deleteTipo(tipo)" 
-                    class="text-red-600 hover:text-red-900"
+                    class="text-red-600 hover:text-red-800"
                   >
                     Excluir
                   </button>
@@ -70,25 +70,8 @@
           </table>
         </div>
 
-        <!-- Empty State -->
-        <div v-if="filteredTipos.length === 0" class="text-center py-12">
-          <div class="text-gray-500">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum tipo encontrado</h3>
-            <p class="mt-1 text-sm text-gray-500">
-              {{ search ? 'Tente uma busca diferente' : 'Comece adicionando um novo tipo' }}
-            </p>
-            <div class="mt-6">
-              <router-link 
-                to="/tipos/novo" 
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                Novo Tipo
-              </router-link>
-            </div>
-          </div>
+        <div v-if="filteredTipos.length === 0" class="text-center py-12 bg-white">
+          <p class="text-gray-500">Nenhum tipo de publicidade encontrado.</p>
         </div>
       </div>
     </div>
@@ -101,51 +84,45 @@ import { useRouter } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
-
 const loading = ref(false)
 const tipos = ref([])
 const search = ref('')
 
-const filteredTipos = computed(() => {
-  if (!search.value) return tipos.value
-  
-  const searchTerm = search.value.toLowerCase()
-  return tipos.value.filter(tipo => 
-    tipo.publicidade?.toLowerCase().includes(searchTerm)
-  )
-})
-
 const loadTipos = async () => {
   loading.value = true
   try {
-    const data = await api.getTipos()
-    // Garantir que SEMPRE recebemos arrays
-    tipos.value = Array.isArray(data) ? data : 
-                Array.isArray(data.data) ? data.data : 
-                Array.isArray(data.tipos) ? data.tipos : []
+    const res = await api.getTipos()
+    // Aceita o formato direto ou dentro de .data
+    tipos.value = res.data || res || []
   } catch (error) {
     console.error('Erro ao carregar tipos:', error)
-    tipos.value = []
   } finally {
     loading.value = false
   }
 }
 
+const filteredTipos = computed(() => {
+  const t = search.value.toLowerCase()
+  return tipos.value.filter(tipo => 
+    (tipo.publicidade || '').toLowerCase().includes(t) ||
+    (tipo.processos || '').toLowerCase().includes(t)
+  )
+})
+
+const editTipo = (id) => {
+  router.push(`/tipos/${id}/editar`)
+}
+
 const deleteTipo = async (tipo) => {
-  if (!confirm(`Tem certeza que deseja excluir o tipo "${tipo.publicidade}"?`)) {
-    return
-  }
+  if (!confirm(`Tem certeza que deseja excluir "${tipo.publicidade}"?`)) return
 
   try {
     await api.deleteTipo(tipo.id)
     await loadTipos()
   } catch (error) {
-    console.error('Erro ao excluir tipo:', error)
-    alert('Erro ao excluir tipo. Tente novamente.')
+    alert('Erro ao excluir tipo. Pode haver processos que dependem deste tipo.')
   }
 }
 
-onMounted(() => {
-  loadTipos()
-})
+onMounted(loadTipos)
 </script>
