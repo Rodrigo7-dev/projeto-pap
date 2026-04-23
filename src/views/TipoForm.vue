@@ -17,9 +17,9 @@
 
       <form v-else @submit.prevent="handleSubmit" class="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Tipo</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Publicidade</label>
           <input
-            v-model="form.nome"
+            v-model="form.publicidade"
             type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -27,9 +27,9 @@
         </div>
         
         <div class="mt-6">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Processos</label>
           <textarea
-            v-model="form.descricao"
+            v-model="form.processos"
             rows="4"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           ></textarea>
@@ -70,8 +70,8 @@ const submitting = ref(false)
 const isEditing = computed(() => !!route.params.id)
 
 const form = ref({
-  nome: '',
-  descricao: ''
+  publicidade: '',
+  processos: ''
 })
 
 const loadTipo = async () => {
