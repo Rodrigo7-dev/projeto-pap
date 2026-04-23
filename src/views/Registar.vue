@@ -14,9 +14,13 @@
             v-model="form.name"
             type="text"
             placeholder="João Silva"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
+            :class="['w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:border-transparent', 
+                      fieldErrors.name ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-gray-500']"
             required
           />
+          <div v-if="fieldErrors.name" class="mt-1 text-sm text-red-600">
+            {{ fieldErrors.name }}
+          </div>
         </div>
 
         <div>
@@ -25,9 +29,13 @@
             v-model="form.email"
             type="email"
             placeholder="seu@email.com"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
+            :class="['w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:border-transparent', 
+                      fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-gray-500']"
             required
           />
+          <div v-if="fieldErrors.email" class="mt-1 text-sm text-red-600">
+            {{ fieldErrors.email }}
+          </div>
         </div>
 
         <div>
@@ -37,8 +45,12 @@
             type="text"
             placeholder="123456789"
             maxlength="9"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
+            :class="['w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:border-transparent', 
+                      fieldErrors.nif ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-gray-500']"
           />
+          <div v-if="fieldErrors.nif" class="mt-1 text-sm text-red-600">
+            {{ fieldErrors.nif }}
+          </div>
         </div>
 
         <div>
@@ -47,9 +59,13 @@
             v-model="form.password"
             type="password"
             placeholder="Mínimo 6 caracteres"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent"
+            :class="['w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:border-transparent', 
+                      fieldErrors.password ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-gray-500']"
             required
           />
+          <div v-if="fieldErrors.password" class="mt-1 text-sm text-red-600">
+            {{ fieldErrors.password }}
+          </div>
         </div>
 
         <div>
@@ -100,10 +116,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import api from '../services/api'
 
 const router = useRouter()
-const auth = useAuthStore()
 
 const form = ref({
   name: '',
@@ -116,12 +131,26 @@ const form = ref({
 const error = ref(null)
 const success = ref(null)
 const loading = ref(false)
+const fieldErrors = ref({
+  name: '',
+  email: '',
+  nif: '',
+  password: ''
+})
 
 const handleRegister = async () => {
   try {
     error.value = null
     success.value = null
     loading.value = true
+    
+    // Limpar erros dos campos
+    fieldErrors.value = {
+      name: '',
+      email: '',
+      nif: '',
+      password: ''
+    }
 
     // Validações básicas
     if (form.value.password !== form.value.confirmPassword) {
@@ -134,8 +163,8 @@ const handleRegister = async () => {
       return
     }
 
-    // Enviar para API usando o auth store
-    const response = await auth.register({
+    // Enviar para API
+    await api.register({
       name: form.value.name.trim(),
       email: form.value.email.trim(),
       nif: form.value.nif.trim(),
@@ -152,15 +181,25 @@ const handleRegister = async () => {
     
   } catch (err) {
     console.error('Registration error:', err)
-if (err.response?.status === 422) {
+    if (err.response?.status === 422) {
       const errors = err.response.data?.errors
+      
+      // Mostrar erros específicos de cada campo
+      if (errors?.name) {
+        fieldErrors.value.name = Array.isArray(errors.name) ? errors.name[0] : errors.name
+      }
       if (errors?.email) {
-        error.value = 'Email já está em uso'
-      } else if (errors?.name) {
-        error.value = 'Nome inválido'
-      } else if (errors?.password) {
-        error.value = 'A senha deve ter pelo menos 6 caracteres'
-      } else {
+        fieldErrors.value.email = Array.isArray(errors.email) ? errors.email[0] : errors.email
+      }
+      if (errors?.nif) {
+        fieldErrors.value.nif = Array.isArray(errors.nif) ? errors.nif[0] : errors.nif
+      }
+      if (errors?.password) {
+        fieldErrors.value.password = Array.isArray(errors.password) ? errors.password[0] : errors.password
+      }
+      
+      // Se não houver erros específicos, mostrar erro geral
+      if (!errors || Object.keys(errors).length === 0) {
         error.value = 'Verifique os dados informados'
       }
     } else if (err.response?.status === 500) {
