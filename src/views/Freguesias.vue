@@ -13,7 +13,7 @@
       
       <div v-if="loading" class="text-center py-12">
         <div class="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mb-2"></div>
-        <p class="text-gray-600">A carregar freguesias...</p>
+        <p class="text-gray-600">A carregar...</p>
       </div>
 
       <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
@@ -30,12 +30,8 @@
           <table class="w-full text-left">
             <thead class="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Nome da Freguesia
-                </th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
-                  Ações
-                </th>
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Nome da Freguesia</th>
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase text-right">Ações</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white">
@@ -84,10 +80,10 @@ const loadFreguesias = async () => {
   loading.value = true
   try {
     const res = await api.getFreguesias()
-    // O teu interceptor no api.js já retorna response.data
+    // Ajuste para capturar os dados conforme a estrutura do teu backend
     freguesias.value = res.data || res || []
   } catch (error) {
-    console.error('Erro ao carregar freguesias:', error)
+    console.error('Erro:', error)
   } finally {
     loading.value = false
   }
@@ -105,12 +101,12 @@ const editFreguesia = (id) => {
 }
 
 const handleDelete = async (id, nome) => {
-  if (confirm(`Deseja eliminar a freguesia "${nome}"?`)) {
+  if (confirm(`Eliminar a freguesia "${nome}"?`)) {
     try {
       await api.deleteFreguesia(id)
       await loadFreguesias()
     } catch (error) {
-      alert('Erro ao eliminar freguesia. Verifique se existem ruas associadas.')
+      alert('Não foi possível eliminar. Verifique se existem ruas associadas a esta freguesia.')
     }
   }
 }
