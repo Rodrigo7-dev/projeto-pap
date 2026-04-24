@@ -138,55 +138,52 @@ const loadRuaData = async () => {
 
 // 3. Submissão com tratamento detalhado de erros
 const handleSubmit = async () => {
-  showErrors.value = true
+  showErrors.value = true;
   
+  // Validação básica no frontend
   if (!form.value.rua || !form.value.freguesia_id) {
-    return
+    return;
   }
 
-  submitting.value = true
+  submitting.value = true;
   try {
-    // 1. Garantir que os dados vão no formato exato que o backend exige
+    // Garantir que os dados estão no formato correto
     const payload = {
       rua: form.value.rua.trim(),
-      freguesia_id: Number(form.value.freguesia_id),
-      // Se a coordenada estiver vazia, não a enviamos ou enviamos null
+      freguesia_id: parseInt(form.value.freguesia_id), // Forçar número inteiro
       coordenada: form.value.coordenada ? form.value.coordenada.trim() : null
-    }
+    };
+
+    console.log("Enviando dados:", payload);
 
     if (isEditing.value) {
-      await api.updateRua(route.params.id, payload)
+      await api.updateRua(route.params.id, payload);
     } else {
-      await api.createRua(payload)
+      await api.createRua(payload);
     }
     
-    router.push('/ruas')
+    router.push('/ruas');
   } catch (error) {
-    console.error('Erro 422 Detalhado:', error.response?.data)
+    console.error('Erro completo do servidor:', error.response?.data);
     
-    // 2. Tratamento de erro ultra-robusto para evitar o "join is not a function"
-    let errorMsg = 'Erro desconhecido.'
-    const data = error.response?.data
+    // Tratamento de erro simplificado para evitar o erro de ".join"
+    let msg = "Erro ao salvar os dados.";
+    const data = error.response?.data;
 
     if (data?.errors) {
-      // Se os erros forem objetos com arrays ou strings
-      errorMsg = Object.entries(data.errors)
-        .map(([key, value]) => {
-          const message = Array.isArray(value) ? value.join(', ') : value
-          return `${key}: ${message}`
-        })
-        .join('\n')
+      // Se houver erros de validação, extraímos a primeira mensagem encontrada
+      const firstKey = Object.keys(data.errors)[0];
+      const errorValue = data.errors[firstKey];
+      msg = Array.isArray(errorValue) ? errorValue[0] : errorValue;
     } else if (data?.message) {
-      errorMsg = data.message
-    } else if (typeof data === 'string') {
-      errorMsg = data
+      msg = data.message;
     }
 
-    alert(`Não foi possível salvar a rua:\n${errorMsg}`)
+    alert(`Atenção: ${msg}`);
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
-}
+};
 
 onMounted(async () => {
   await loadFreguesias()
