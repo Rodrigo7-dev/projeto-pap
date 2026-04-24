@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
       <div class="flex justify-between items-center mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Gestão de Ruas</h1>
+        <h1 class="text-3xl font-bold text-gray-900">Gestão de Ruas</h1>
         <router-link 
           to="/ruas/nova" 
           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium"
@@ -27,16 +27,16 @@
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-left">
+          <table class="w-full text-left border-collapse">
             <thead class="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Nome da Rua</th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Coordenada</th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Freguesia</th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase text-right">Ações</th>
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome da Rua</th>
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Coordenada</th>
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Freguesia</th>
+                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Ações</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="divide-y divide-gray-100 bg-white">
               <tr v-for="ruaItem in filteredRuas" :key="ruaItem.id" class="hover:bg-gray-50 transition">
                 <td class="px-6 py-4 font-medium text-gray-900">
                   {{ ruaItem.rua }}
@@ -45,20 +45,20 @@
                   {{ ruaItem.coordenada || 'N/D' }}
                 </td>
                 <td class="px-6 py-4">
-                  <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
-                    {{ ruaItem.freguesia?.freguesia || ruaItem.freguesia || 'N/D' }}
+                  <span class="px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded">
+                    {{ ruaItem.freguesia?.freguesia || 'Sem Freguesia' }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-right space-x-3">
+                <td class="px-6 py-4 text-right space-x-4">
                   <button 
                     @click="editRua(ruaItem.id)" 
-                    class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    class="text-blue-600 hover:text-blue-900 font-semibold text-sm"
                   >
                     Editar
                   </button>
                   <button 
                     @click="handleDelete(ruaItem.id, ruaItem.rua)" 
-                    class="text-red-600 hover:text-red-800 font-medium text-sm"
+                    class="text-red-600 hover:text-red-900 font-semibold text-sm"
                   >
                     Excluir
                   </button>
@@ -68,8 +68,12 @@
           </table>
         </div>
 
-        <div v-if="filteredRuas.length === 0" class="text-center py-12">
-          <p class="text-gray-500">Nenhuma rua encontrada.</p>
+        <div v-if="filteredRuas.length === 0" class="text-center py-12 bg-white">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <p class="text-gray-500">Nenhuma rua encontrada com o termo "{{ search }}".</p>
         </div>
       </div>
     </div>
@@ -79,18 +83,19 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../services/api'
+import api from '../services/api' //
 
 const router = useRouter()
 const loading = ref(false)
 const ruas = ref([])
 const search = ref('')
 
+// Carregar dados da API
 const loadRuas = async () => {
   loading.value = true
   try {
-    const res = await api.getRuas()
-    // O teu interceptor no api.js já retorna response.data
+    const res = await api.getRuas() //
+    // O interceptor já trata o response.data
     ruas.value = res.data || res || []
   } catch (error) {
     console.error('Erro ao carregar ruas:', error)
@@ -99,12 +104,14 @@ const loadRuas = async () => {
   }
 }
 
+// Lógica de pesquisa melhorada para procurar dentro do objeto Freguesia
 const filteredRuas = computed(() => {
   const t = search.value.toLowerCase()
-  return ruas.value.filter(r => 
-    (r.rua || '').toLowerCase().includes(t) ||
-    (r.freguesia || '').toLowerCase().includes(t)
-  )
+  return ruas.value.filter(r => {
+    const nomeRua = (r.rua || '').toLowerCase()
+    const nomeFreguesia = (r.freguesia?.freguesia || '').toLowerCase()
+    return nomeRua.includes(t) || nomeFreguesia.includes(t)
+  })
 })
 
 const editRua = (id) => {
@@ -112,12 +119,13 @@ const editRua = (id) => {
 }
 
 const handleDelete = async (id, nome) => {
-  if (confirm(`Deseja eliminar a rua "${nome}"?`)) {
+  if (confirm(`Tem a certeza que deseja eliminar a rua "${nome}"?`)) {
     try {
-      await api.deleteRua(id)
+      await api.deleteRua(id) //
       await loadRuas()
     } catch (error) {
-      alert('Erro ao eliminar rua.')
+      console.error('Erro ao eliminar:', error)
+      alert('Não foi possível eliminar a rua. Pode estar em uso por um processo.')
     }
   }
 }

@@ -62,25 +62,27 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import api from '../services/api'
+import api from '../services/api' // Onde estão os teus métodos axios
 
 const router = useRouter()
 const route = useRoute()
-
 const loading = ref(false)
 const submitting = ref(false)
+
+// Listas para os menus de seleção
 const tipos = ref([])
 const ruas = ref([])
-const utilizadores = ref([]) // Adicionado se precisares de listar utilizadores
+const utilizadores = ref([])
 
+// O formulário deve usar estas chaves exatas para o backend
 const form = ref({
   processo: '',
-  tipo_publicidade_id: '',
-  rua_id: '',
+  alvara: '',
+  alojamento_local: '',
   validade: '',
-  alvara: '',           // Campo da imagem
-  alojamento_local: '',  // Campo da imagem
-  user_id: ''           // Campo "Utilizador (Requerente)"
+  user_id: '',             // "user" no backend, mas enviamos o ID
+  rua_id: '',              // "rua" no backend, mas enviamos o ID
+  tipo_publicidade_id: ''  // "tipo_publicidade" no backend, mas enviamos o ID
 })
 
 const isEditing = computed(() => !!route.params.id)
@@ -88,29 +90,32 @@ const isEditing = computed(() => !!route.params.id)
 const fetchData = async () => {
   loading.value = true
   try {
+    // Carregar dependências (Dropdowns)
     const [resTipos, resRuas] = await Promise.all([
-      api.getTipos(),
-      api.getRuas()
+      api.getTipos(), // Endpoint: /tipo-publicidades
+      api.getRuas()   // Endpoint: /ruas
     ])
     tipos.value = resTipos.data || resTipos
     ruas.value = resRuas.data || resRuas
 
+    // Se estiver a editar, preencher o formulário
     if (isEditing.value) {
-      const resProc = await api.getProcesso(route.params.id)
-      const data = resProc.data || resProc
+      const res = await api.getProcesso(route.params.id)
+      const data = res.data || res
       
       form.value = {
         processo: data.processo || '',
-        tipo_publicidade_id: data.tipo_publicidade_id || data.tipo_publicidade?.id || '',
-        rua_id: data.rua_id || data.rua?.id || '',
-        validade: data.validade ? data.validade.split('T')[0] : '',
         alvara: data.alvara || '',
         alojamento_local: data.alojamento_local || '',
-        user_id: data.user_id || data.user?.id || ''
+        validade: data.validade ? data.validade.split('T')[0] : '',
+        // Extrair IDs dos objetos que o backend devolve
+        user_id: data.user?.id || data.user_id || '',
+        rua_id: data.rua?.id || data.rua_id || '',
+        tipo_publicidade_id: data.tipo_publicidade?.id || data.tipo_publicidade_id || ''
       }
     }
   } catch (error) {
-    console.error("Erro ao carregar:", error)
+    console.error("Erro ao carregar dados:", error)
   } finally {
     loading.value = false
   }
@@ -119,8 +124,7 @@ const fetchData = async () => {
 const handleSubmit = async () => {
   submitting.value = true
   try {
-    // IMPORTANTE: Verifica se o backend espera 'rua_id' ou 'rua'
-    // Se o erro persistir, o problema pode estar nos nomes destas chaves
+    // Objeto limpo para enviar ao servidor
     const payload = { ...form.value }
 
     if (isEditing.value) {
@@ -130,9 +134,8 @@ const handleSubmit = async () => {
     }
     router.push('/processos')
   } catch (error) {
-    // Tenta mostrar o erro real do servidor no console para depurar
-    console.error("Erro detalhado do servidor:", error.response?.data)
-    alert("Erro ao salvar: " + (error.response?.data?.message || "Verifique os campos."))
+    console.error("Erro detalhado:", error.response?.data)
+    alert("Erro ao salvar. Verifique se escolheu o Utilizador, Rua e Tipo de Publicidade.")
   } finally {
     submitting.value = false
   }
