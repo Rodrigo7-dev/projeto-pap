@@ -138,48 +138,36 @@ const loadRuaData = async () => {
 
 // 3. Submissão com tratamento detalhado de erros
 const handleSubmit = async () => {
-  showErrors.value = true;
-  
-  // Validação básica no frontend
-  if (!form.value.rua || !form.value.freguesia_id) {
-    return;
-  }
-
   submitting.value = true;
   try {
-    // Garantir que os dados estão no formato correto
     const payload = {
-      rua: form.value.rua.trim(),
-      freguesia_id: parseInt(form.value.freguesia_id), // Forçar número inteiro
-      coordenada: form.value.coordenada ? form.value.coordenada.trim() : null
+      rua: form.value.rua,
+      freguesia_id: Number(form.value.freguesia_id),
+      coordenada: form.value.coordenada || null,
+      // TESTE: Adiciona campos que podem ser obrigatórios no teu backend
+      // processo_id: null, 
     };
-
-    console.log("Enviando dados:", payload);
 
     if (isEditing.value) {
       await api.updateRua(route.params.id, payload);
     } else {
       await api.createRua(payload);
     }
-    
     router.push('/ruas');
   } catch (error) {
-    console.error('Erro completo do servidor:', error.response?.data);
-    
-    // Tratamento de erro simplificado para evitar o erro de ".join"
-    let msg = "Erro ao salvar os dados.";
     const data = error.response?.data;
+    console.log("DADOS EXATOS DO ERRO:", data); // Verifica isto no F12!
 
-    if (data?.errors) {
-      // Se houver erros de validação, extraímos a primeira mensagem encontrada
-      const firstKey = Object.keys(data.errors)[0];
-      const errorValue = data.errors[firstKey];
-      msg = Array.isArray(errorValue) ? errorValue[0] : errorValue;
-    } else if (data?.message) {
-      msg = data.message;
+    if (Array.isArray(data.errors)) {
+      // Se o erro vier como Array(5), vamos listar todos
+      alert("Erros do Servidor:\n" + data.errors.join("\n"));
+    } else if (data.errors) {
+      // Se vier como objeto
+      const msg = Object.entries(data.errors).map(([k, v]) => `${k}: ${v}`).join("\n");
+      alert(msg);
+    } else {
+      alert(data.message || "Erro desconhecido");
     }
-
-    alert(`Atenção: ${msg}`);
   } finally {
     submitting.value = false;
   }
