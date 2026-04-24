@@ -140,33 +140,44 @@ const loadRuaData = async () => {
 const handleSubmit = async () => {
   showErrors.value = true
   
-  // Validação simples de front-end
   if (!form.value.rua || !form.value.freguesia_id) {
     return
   }
 
   submitting.value = true
   try {
+    // Criamos um objeto limpo para garantir que não enviamos lixo para o backend
+    const payload = {
+      rua: form.value.rua,
+      freguesia_id: Number(form.value.freguesia_id), // Garante que é um número
+      coordenada: form.value.coordenada || null      // Envia null se estiver vazio
+    }
+
     if (isEditing.value) {
-      await api.updateRua(route.params.id, form.value)
+      await api.updateRua(route.params.id, payload)
     } else {
-      await api.createRua(form.value)
+      await api.createRua(payload)
     }
     router.push('/ruas')
   } catch (error) {
-    const serverMsg = error.response?.data?.message
-    const validationErrors = error.response?.data?.errors
+    console.error('Erro completo detetado:', error)
     
-    if (validationErrors) {
-      // Pega todos os erros detalhados e junta-os numa frase
-      const detail = Object.values(validationErrors).flat().join(', ')
-      alert(`Erro de Validação: ${detail}`)
-    } else if (serverMsg) {
-      alert(`Servidor diz: ${serverMsg}`)
-    } else {
-      alert('Erro ao guardar. Verifique se a Rua já existe ou se os campos são válidos.')
+    // TRATAMENTO DE ERRO MELHORADO:
+    let errorMsg = 'Erro ao salvar.'
+    
+    if (error.response?.data?.errors) {
+      // Se o erro vier como um objeto de validação do Laravel/Node
+      const errors = error.response.data.errors
+      errorMsg = Object.keys(errors)
+        .map(key => `${key}: ${errors[key].join(', ')}`)
+        .join('\n')
+    } else if (typeof error.response?.data === 'string') {
+      errorMsg = error.response.data
+    } else if (error.response?.data?.message) {
+      errorMsg = error.response.data.message
     }
-    console.error('Erro completo:', error)
+
+    alert(`Não foi possível salvar:\n${errorMsg}`)
   } finally {
     submitting.value = false
   }
