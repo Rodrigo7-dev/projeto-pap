@@ -146,11 +146,12 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    // Criamos um objeto limpo para garantir que não enviamos lixo para o backend
+    // 1. Garantir que os dados vão no formato exato que o backend exige
     const payload = {
-      rua: form.value.rua,
-      freguesia_id: Number(form.value.freguesia_id), // Garante que é um número
-      coordenada: form.value.coordenada || null      // Envia null se estiver vazio
+      rua: form.value.rua.trim(),
+      freguesia_id: Number(form.value.freguesia_id),
+      // Se a coordenada estiver vazia, não a enviamos ou enviamos null
+      coordenada: form.value.coordenada ? form.value.coordenada.trim() : null
     }
 
     if (isEditing.value) {
@@ -158,26 +159,30 @@ const handleSubmit = async () => {
     } else {
       await api.createRua(payload)
     }
+    
     router.push('/ruas')
   } catch (error) {
-    console.error('Erro completo detetado:', error)
+    console.error('Erro 422 Detalhado:', error.response?.data)
     
-    // TRATAMENTO DE ERRO MELHORADO:
-    let errorMsg = 'Erro ao salvar.'
-    
-    if (error.response?.data?.errors) {
-      // Se o erro vier como um objeto de validação do Laravel/Node
-      const errors = error.response.data.errors
-      errorMsg = Object.keys(errors)
-        .map(key => `${key}: ${errors[key].join(', ')}`)
+    // 2. Tratamento de erro ultra-robusto para evitar o "join is not a function"
+    let errorMsg = 'Erro desconhecido.'
+    const data = error.response?.data
+
+    if (data?.errors) {
+      // Se os erros forem objetos com arrays ou strings
+      errorMsg = Object.entries(data.errors)
+        .map(([key, value]) => {
+          const message = Array.isArray(value) ? value.join(', ') : value
+          return `${key}: ${message}`
+        })
         .join('\n')
-    } else if (typeof error.response?.data === 'string') {
-      errorMsg = error.response.data
-    } else if (error.response?.data?.message) {
-      errorMsg = error.response.data.message
+    } else if (data?.message) {
+      errorMsg = data.message
+    } else if (typeof data === 'string') {
+      errorMsg = data
     }
 
-    alert(`Não foi possível salvar:\n${errorMsg}`)
+    alert(`Não foi possível salvar a rua:\n${errorMsg}`)
   } finally {
     submitting.value = false
   }
