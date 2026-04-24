@@ -60,7 +60,7 @@
         </div>
         
         <div class="mt-10 pt-6 border-t border-gray-100 flex justify-end space-x-4">
-          <router-link to="/ruas" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">
+          <router-link to="/ruas" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium transition-colors">
             Cancelar
           </router-link>
           <button
@@ -79,7 +79,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import api from '../services/api'
+import api from '../services/api' //
 
 const router = useRouter()
 const route = useRoute()
@@ -128,17 +128,16 @@ const handleSubmit = async () => {
   showErrors.value = true
   
   if (!form.value.rua || !form.value.freguesia_id || !form.value.coordenada) {
-    alert("Por favor, preencha todos os campos obrigatórios (Rua, Freguesia e Coordenada).")
     return
   }
 
   submitting.value = true
   try {
-    // Payload ajustado conforme os logs do teu backend
+    // CORREÇÃO DAS VARIÁVEIS CONFORME O TEU BACKEND:
     const payload = {
       rua: form.value.rua.trim(),
-      freguesia: Number(form.value.freguesia_id), // Teu backend espera 'freguesia'
-      coordenada: form.value.coordenada.trim()     // Teu backend exige coordenada
+      freguesia: Number(form.value.freguesia_id), // O servidor espera 'freguesia'
+      coordenada: form.value.coordenada.trim()     // O servidor exige este campo
     }
 
     if (isEditing.value) {
@@ -149,17 +148,16 @@ const handleSubmit = async () => {
     router.push('/ruas')
   } catch (error) {
     const data = error.response?.data
-    console.log("DADOS DO ERRO:", data)
-
     let msg = "Erro ao salvar."
+    
+    // Tratamento para extrair as mensagens do array de erros
     if (data?.errors && Array.isArray(data.errors)) {
-      // Lê o campo 'msg' de cada objeto de erro do teu log
       msg = data.errors.map(err => err.msg).join('\n')
     } else if (data?.message) {
       msg = data.message
     }
 
-    alert(`Atenção:\n${msg}`)
+    alert(`Atenção:\n${msg}`) //
   } finally {
     submitting.value = false
   }
