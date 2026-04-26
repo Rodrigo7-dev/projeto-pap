@@ -97,21 +97,20 @@ const filteredProcessos = computed(() => {
   )
 })
 
-const editProcesso = (id) => {
-  router.push(`/processos/${id}/editar`)
-}
-
 const handleDelete = async (id, num) => {
   if (!id) return
   if (confirm(`Eliminar definitivamente o processo ${num}?`)) {
     try {
       await api.deleteProcesso(id)
-      // Remove do visual imediatamente após sucesso na API
-      processos.value = procesos.value.filter(p => p.id !== id)
+      
+      // CORREÇÃO AQUI: Mudado de 'procesos' para 'processos'
+      processos.value = processos.value.filter(p => p.id !== id)
+      
       alert('Eliminado com sucesso!')
     } catch (error) {
-      console.error(error)
-      alert('Erro ao eliminar na base de dados.')
+      console.error("Erro na API:", error)
+      // Se o backend der erro (ex: 500 ou 403), ele entra aqui
+      alert('Erro ao eliminar na base de dados. Verifique se tem permissões.')
     }
   }
 }
