@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-2xl mx-auto">
       <div class="flex items-center mb-8">
         <router-link to="/tipos" class="text-blue-600 hover:text-blue-800 mr-4 font-bold">
           ← Voltar
@@ -12,7 +12,7 @@
       
       <div v-if="loading" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-2"></div>
-        <p class="text-gray-600">A carregar dados...</p>
+        <p class="text-gray-600">A carregar...</p>
       </div>
 
       <form v-else @submit.prevent="handleSubmit" class="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
@@ -22,19 +22,9 @@
             v-model="form.publicidade"
             type="text"
             required
-            placeholder="Ex: Painel, Reclame..."
+            placeholder="Ex: Painel, Outdoor, Placa..."
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
           />
-        </div>
-        
-        <div class="mt-6">
-          <label class="block text-sm font-bold text-gray-700 mb-2">Observações / Processos</label>
-          <textarea
-            v-model="form.processos"
-            rows="4"
-            placeholder="Notas adicionais sobre este tipo de publicidade..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-          ></textarea>
         </div>
         
         <div class="mt-8 flex justify-end space-x-4">
@@ -71,28 +61,20 @@ const submitting = ref(false)
 const isEditing = computed(() => !!route.params.id)
 
 const form = ref({
-  publicidade: '',
-  processos: ''
+  publicidade: ''
 })
 
 const loadTipo = async () => {
   if (!isEditing.value) return
-  
   loading.value = true
   try {
-    // CORREÇÃO: Chama o método getTipo(id) específico que está no teu api.js
     const data = await api.getTipo(route.params.id)
     const tipo = data.data || data
-    
     if (tipo) {
-      form.value = {
-        publicidade: tipo.publicidade || tipo.tipo || '', // Aceita ambas as nomenclaturas
-        processos: tipo.processos || tipo.observacoes || ''
-      }
+      form.value.publicidade = tipo.publicidade || tipo.tipo || ''
     }
   } catch (error) {
-    console.error('Erro ao carregar tipo:', error)
-    alert('Não foi possível carregar os dados deste tipo.')
+    console.error('Erro ao carregar:', error)
     router.push('/tipos')
   } finally {
     loading.value = false
@@ -100,48 +82,30 @@ const loadTipo = async () => {
 }
 
 const handleSubmit = async () => {
-  if (!form.value.publicidade.trim()) {
-    alert("O campo Nome da Publicidade é obrigatório.");
-    return;
-  }
+  if (!form.value.publicidade.trim()) return
 
-  submitting.value = true;
+  submitting.value = true
   try {
-    // Criamos o objeto com as duas variações possíveis para garantir compatibilidade
+    // ENVIAR APENAS A VARIÁVEL 'publicidade'
     const payload = {
-      publicidade: form.value.publicidade.trim(),
-      tipo: form.value.publicidade.trim(), // Alguns backends usam 'tipo'
-      processos: form.value.processos.trim(),
-      observacoes: form.value.processos.trim() // Alguns backends usam 'observacoes'
-    };
-
-    console.log("A enviar para o servidor:", payload);
+      publicidade: form.value.publicidade.trim()
+    }
 
     if (isEditing.value) {
-      await api.updateTipo(route.params.id, payload);
+      await api.updateTipo(route.params.id, payload)
     } else {
-      await api.createTipo(payload);
+      await api.createTipo(payload)
     }
     
-    router.push('/tipos');
+    router.push('/tipos')
   } catch (error) {
-    console.error('Erro detalhado do servidor:', error.response?.data || error);
-    
-    // Captura o erro 422 (Unprocessable Entity)
-    const errorData = error.response?.data;
-    let msg = "Erro ao salvar. Verifique se o nome já existe ou se os campos estão corretos.";
-    
-    if (errorData?.message) {
-      msg = errorData.message;
-    } else if (errorData?.error) {
-      msg = errorData.error;
-    }
-
-    alert(`Atenção: ${msg}`);
+    console.error('Erro detalhado:', error.response?.data)
+    const msg = error.response?.data?.error || "Erro ao salvar. Verifique se o nome já existe."
+    alert(msg)
   } finally {
-    submitting.value = false;
+    submitting.value = false
   }
-};
+}
 
 onMounted(loadTipo)
 </script>
