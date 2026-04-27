@@ -5,7 +5,7 @@
         <h1 class="text-3xl font-bold text-gray-900">Tipos de Publicidade</h1>
         <router-link 
           to="/tipos/novo" 
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-bold"
         >
           + Novo Tipo
         </router-link>
@@ -13,7 +13,7 @@
       
       <div v-if="loading" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-2"></div>
-        <p class="text-gray-600">A carregar tipos...</p>
+        <p class="text-gray-600 font-medium">A carregar tipos...</p>
       </div>
 
       <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
@@ -22,7 +22,7 @@
             v-model="search" 
             type="text" 
             placeholder="Pesquisar por nome de publicidade..." 
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
           />
         </div>
 
@@ -30,13 +30,13 @@
           <table class="w-full text-left">
             <thead class="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th class="px-6 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">
                   Publicidade
                 </th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Processos / Observações
+                <th class="px-6 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                  Observações
                 </th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
+                <th class="px-6 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider text-right">
                   Ações
                 </th>
               </tr>
@@ -44,14 +44,14 @@
             <tbody class="divide-y divide-gray-100 bg-white">
               <tr v-for="tipo in filteredTipos" :key="tipo.id" class="hover:bg-gray-50 transition">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-bold text-gray-900">{{ tipo.publicidade }}</div>
+                  <div class="text-sm font-bold text-gray-900">{{ tipo.publicidade || tipo.tipo || '---' }}</div>
                 </td>
                 <td class="px-6 py-4">
-                  <div class="text-sm text-gray-600">
-                    {{ tipo.processos || 'Sem observações' }}
+                  <div class="text-sm text-gray-600 italic">
+                    {{ tipo.observacoes || tipo.processos || 'Sem observações' }}
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold space-x-3">
                   <button 
                     @click="editTipo(tipo.id)" 
                     class="text-blue-600 hover:text-blue-800"
@@ -59,10 +59,10 @@
                     Editar
                   </button>
                   <button 
-                    @click="deleteTipo(tipo)" 
+                    @click="handleDelete(tipo)" 
                     class="text-red-600 hover:text-red-800"
                   >
-                    Excluir
+                    Eliminar
                   </button>
                 </td>
               </tr>
@@ -71,7 +71,7 @@
         </div>
 
         <div v-if="filteredTipos.length === 0" class="text-center py-12 bg-white">
-          <p class="text-gray-500">Nenhum tipo de publicidade encontrado.</p>
+          <p class="text-gray-500 font-medium">Nenhum tipo de publicidade encontrado.</p>
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@ const loadTipos = async () => {
   loading.value = true
   try {
     const res = await api.getTipos()
-    // Aceita o formato direto ou dentro de .data
+    // Aceita o formato direto ou dentro de .data conforme definido no api.js
     tipos.value = res.data || res || []
   } catch (error) {
     console.error('Erro ao carregar tipos:', error)
@@ -102,25 +102,36 @@ const loadTipos = async () => {
 }
 
 const filteredTipos = computed(() => {
-  const t = search.value.toLowerCase()
+  const t = search.value.toLowerCase().trim()
   return tipos.value.filter(tipo => 
     (tipo.publicidade || '').toLowerCase().includes(t) ||
-    (tipo.processos || '').toLowerCase().includes(t)
+    (tipo.tipo || '').toLowerCase().includes(t) ||
+    (tipo.observacoes || '').toLowerCase().includes(t)
   )
 })
 
 const editTipo = (id) => {
+  // Ajuste de rota conforme o padrão do projeto
   router.push(`/tipos/${id}/editar`)
 }
 
-const deleteTipo = async (tipo) => {
-  if (!confirm(`Tem certeza que deseja excluir "${tipo.publicidade}"?`)) return
+const handleDelete = async (tipo) => {
+  if (!tipo.id) return
+  
+  const nome = tipo.publicidade || tipo.tipo || 'este tipo'
+  if (!confirm(`Tem certeza que deseja excluir "${nome}"?`)) return
 
   try {
     await api.deleteTipo(tipo.id)
-    await loadTipos()
+    
+    // ATUALIZAÇÃO OTIMISTA: Remove da lista local para o utilizador ver a mudança na hora
+    tipos.value = tipos.value.filter(t => t.id !== tipo.id)
+    
+    alert('Eliminado com sucesso!')
   } catch (error) {
-    alert('Erro ao excluir tipo. Pode haver processos que dependem deste tipo.')
+    console.error('Erro ao excluir:', error)
+    // Mensagem amigável para erro de integridade referencial (FK)
+    alert('Não foi possível eliminar. Certifique-se que não existem processos que utilizam este tipo de publicidade.')
   }
 }
 
