@@ -100,40 +100,48 @@ const loadTipo = async () => {
 }
 
 const handleSubmit = async () => {
-  if (!form.value.publicidade.trim()) return
+  if (!form.value.publicidade.trim()) {
+    alert("O campo Nome da Publicidade é obrigatório.");
+    return;
+  }
 
-  submitting.value = true
+  submitting.value = true;
   try {
+    // Criamos o objeto com as duas variações possíveis para garantir compatibilidade
     const payload = {
       publicidade: form.value.publicidade.trim(),
-      processos: form.value.processos.trim()
-    }
+      tipo: form.value.publicidade.trim(), // Alguns backends usam 'tipo'
+      processos: form.value.processos.trim(),
+      observacoes: form.value.processos.trim() // Alguns backends usam 'observacoes'
+    };
+
+    console.log("A enviar para o servidor:", payload);
 
     if (isEditing.value) {
-      await api.updateTipo(route.params.id, payload)
+      await api.updateTipo(route.params.id, payload);
     } else {
-      await api.createTipo(payload)
+      await api.createTipo(payload);
     }
     
-    router.push('/tipos')
+    router.push('/tipos');
   } catch (error) {
-    console.error('Erro ao salvar tipo:', error.response?.data || error)
+    console.error('Erro detalhado do servidor:', error.response?.data || error);
     
-    // Tratamento de erro 422 (Validação do Backend)
-    const errorData = error.response?.data
-    let msg = "Erro ao salvar tipo."
+    // Captura o erro 422 (Unprocessable Entity)
+    const errorData = error.response?.data;
+    let msg = "Erro ao salvar. Verifique se o nome já existe ou se os campos estão corretos.";
     
-    if (errorData?.errors && Array.isArray(errorData.errors)) {
-      msg = errorData.errors.map(e => e.msg).join('\n')
-    } else if (errorData?.message) {
-      msg = errorData.message
+    if (errorData?.message) {
+      msg = errorData.message;
+    } else if (errorData?.error) {
+      msg = errorData.error;
     }
 
-    alert(`Atenção:\n${msg}`)
+    alert(`Atenção: ${msg}`);
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
-}
+};
 
 onMounted(loadTipo)
 </script>
