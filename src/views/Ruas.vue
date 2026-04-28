@@ -83,20 +83,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../services/api' //
+import api from '../services/api'
 
 const router = useRouter()
 const loading = ref(false)
 const ruas = ref([])
 const search = ref('')
 
-// Carregar dados da API
 const loadRuas = async () => {
   loading.value = true
   try {
-    const res = await api.getRuas() //
-    // O interceptor já trata o response.data
-    ruas.value = res.data || res || []
+    const res = await api.getRuas()
+    ruas.value = res
   } catch (error) {
     console.error('Erro ao carregar ruas:', error)
   } finally {
@@ -104,13 +102,17 @@ const loadRuas = async () => {
   }
 }
 
-// Lógica de pesquisa melhorada para procurar dentro do objeto Freguesia
 const filteredRuas = computed(() => {
   const t = search.value.toLowerCase()
+
   return ruas.value.filter(r => {
-    const nomeRua = (r.rua || '').toLowerCase()
-    const nomeFreguesia = (r.freguesia?.freguesia || '').toLowerCase()
-    return nomeRua.includes(t) || nomeFreguesia.includes(t)
+    const rua = (r.rua || '').toLowerCase()
+
+    // suporta object (populate) OU string
+    const freguesia =
+      (r.freguesia?.freguesia || r.freguesia || '').toLowerCase()
+
+    return rua.includes(t) || freguesia.includes(t)
   })
 })
 
@@ -119,14 +121,14 @@ const editRua = (id) => {
 }
 
 const handleDelete = async (id, nome) => {
-  if (confirm(`Tem a certeza que deseja eliminar a rua "${nome}"?`)) {
-    try {
-      await api.deleteRua(id) //
-      await loadRuas()
-    } catch (error) {
-      console.error('Erro ao eliminar:', error)
-      alert('Não foi possível eliminar a rua. Pode estar em uso por um processo.')
-    }
+  if (!confirm(`Eliminar "${nome}"?`)) return
+
+  try {
+    await api.deleteRua(id)
+    await loadRuas()
+  } catch (error) {
+    console.error(error)
+    alert('Erro ao eliminar rua')
   }
 }
 

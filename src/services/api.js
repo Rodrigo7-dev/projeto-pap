@@ -1,8 +1,7 @@
 import axios from 'axios'
 
-// Instância principal da API
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // Deve terminar com /api
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json'
@@ -10,14 +9,14 @@ const api = axios.create({
   timeout: 10000
 })
 
-// Interceptor para token
+// TOKEN
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Interceptor global de erros
+// RESPONSE NORMALIZADO (IMPORTANTE)
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
@@ -25,124 +24,41 @@ api.interceptors.response.use(
 
     if (status === 401) {
       localStorage.clear()
-      window.location.replace('/login')
+      window.location.href = '/login'
     }
 
-    throw error
+    return Promise.reject(error)
   }
 )
 
-// Métodos da API
 const apiMethods = {
-  // ============================
   // AUTH
-  // ============================
-  async login(data) {
-    return api.post('/login', data)
-  },
+  login: (data) => api.post('/login', data),
+  register: (data) => api.post('/register', data),
+  logout: () => api.post('/logout'),
 
-  async register(data) {
-    return api.post('/register', data)
-  },
-
-  async logout() {
-    return api.post('/logout')
-  },
-
-  // ============================
-  // PROCESSOS
-  // ============================
-  async getProcessos() {
-    return api.get('/processos')
-  },
-
-  async getProcesso(id) {
-    return api.get(`/processos/${id}`)
-  },
-
-  async createProcesso(data) {
-    return api.post('/processos', data)
-  },
-
-  async updateProcesso(id, data) {
-    return api.put(`/processos/${id}`, data)
-  },
-
-  async deleteProcesso(id) {
-    return api.delete(`/processos/${id}`)
-  },
-
-  // ============================
   // RUAS
-  // ============================
-  async getRuas() {
-    return api.get('/ruas')
-  },
+  getRuas: () => api.get('/ruas'),
+  getRua: (id) => api.get(`/ruas/${id}`),
+  createRua: (data) => api.post('/ruas', data),
+  updateRua: (id, data) => api.put(`/ruas/${id}`, data),
+  deleteRua: (id) => api.delete(`/ruas/${id}`),
 
-  async getRua(id) {
-    return api.get(`/ruas/${id}`)
-  },
-
-  async createRua(data) {
-    return api.post('/ruas', data)
-  },
-
-  async updateRua(id, data) {
-    return api.put(`/ruas/${id}`, data)
-  },
-
-  async deleteRua(id) {
-    return api.delete(`/ruas/${id}`)
-  },
-
-  // ============================
   // FREGUESIAS
-  // ============================
-  async getFreguesias() {
-    return api.get('/freguesias')
-  },
+  getFreguesias: () => api.get('/freguesias'),
+  getFreguesia: (id) => api.get(`/freguesias/${id}`),
+  createFreguesia: (data) => api.post('/freguesias', data),
+  updateFreguesia: (id, data) => api.put(`/freguesias/${id}`, data),
+  deleteFreguesia: (id) => api.delete(`/freguesias/${id}`),
 
-  async getFreguesia(id) {
-    return api.get(`/freguesias/${id}`)
-  },
-
-  async createFreguesia(data) {
-    return api.post('/freguesias', data)
-  },
-
-  async updateFreguesia(id, data) {
-    return api.put(`/freguesias/${id}`, data)
-  },
-
-  async deleteFreguesia(id) {
-    return api.delete(`/freguesias/${id}`)
-  },
-
-  // ============================
-  // TIPO PUBLICIDADE
-  // ============================
-  async getTipos() {
-    return api.get('/tipo-publicidades')
-  },
-
-  async getTipo(id) {
-    return api.get(`/tipo-publicidades/${id}`)
-  },
-
-  async createTipo(data) {
-    return api.post('/tipo-publicidades', data)
-  },
-
-  async updateTipo(id, data) {
-    return api.put(`/tipo-publicidades/${id}`, data)
-  },
-
-  async deleteTipo(id) {
-    return api.delete(`/tipo-publicidades/${id}`)
-  }
+  // TIPOS
+  getTipos: () => api.get('/tipo-publicidades'),
+  getTipo: (id) => api.get(`/tipo-publicidades/${id}`),
+  createTipo: (data) => api.post('/tipo-publicidades', data),
+  updateTipo: (id, data) => api.put(`/tipo-publicidades/${id}`, data),
+  deleteTipo: (id) => api.delete(`/tipo-publicidades/${id}`)
 }
 
-// Junta os métodos ao axios
 Object.assign(api, apiMethods)
 
 export default api

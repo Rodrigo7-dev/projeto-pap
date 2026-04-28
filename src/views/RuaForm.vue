@@ -106,51 +106,49 @@ const form = ref({
 
 const isEditing = computed(() => !!route.params.id)
 
-// 🔹 Carregar freguesias
+// FREGUESIAS
 const loadFreguesias = async () => {
   try {
     const res = await api.getFreguesias()
-    freguesias.value = res.data?.data || res.data || []
+    freguesias.value = res
   } catch (error) {
-    console.error('Erro ao carregar freguesias:', error)
+    console.error(error)
   }
 }
 
-// 🔹 Carregar dados da rua (edição)
+// EDIT MODE
 const loadRuaData = async () => {
   if (!isEditing.value) return
 
   loading.value = true
   try {
     const res = await api.getRua(route.params.id)
-    const data = res.data?.data || res.data || res
 
     form.value = {
-      rua: data.rua || '',
-      freguesia: data.freguesia || '',
-      coordenada: data.coordenada || ''
+      rua: res.rua || '',
+      freguesia: res.freguesia?._id || res.freguesia || '',
+      coordenada: res.coordenada || ''
     }
   } catch (error) {
-    console.error('Erro ao carregar rua:', error)
+    console.error(error)
     router.push('/ruas')
   } finally {
     loading.value = false
   }
 }
 
-// 🔹 Submeter formulário
+// SUBMIT
 const handleSubmit = async () => {
   showErrors.value = true
 
-  if (!form.value.rua || !form.value.freguesia || !form.value.coordenada) {
-    return
-  }
+  if (!form.value.rua || !form.value.freguesia || !form.value.coordenada) return
 
   submitting.value = true
+
   try {
     const payload = {
       rua: form.value.rua.trim(),
-      freguesia: form.value.freguesia, // STRING
+      freguesia: form.value.freguesia,
       coordenada: form.value.coordenada.trim()
     }
 
@@ -162,25 +160,18 @@ const handleSubmit = async () => {
 
     router.push('/ruas')
   } catch (error) {
-    const data = error.response?.data
-    let msg = "Erro ao salvar."
+    const msg =
+      error.response?.data?.message ||
+      'Erro ao guardar'
 
-    if (data?.errors && Array.isArray(data.errors)) {
-      msg = data.errors.map(err => err.msg).join('\n')
-    } else if (data?.message) {
-      msg = data.message
-    }
-
-    alert(`Atenção:\n${msg}`)
+    alert(msg)
   } finally {
     submitting.value = false
   }
 }
 
-// 🔹 Init
 onMounted(async () => {
   await loadFreguesias()
-  if (isEditing.value) await loadRuaData()
+  await loadRuaData()
 })
 </script>
-```
