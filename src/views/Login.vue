@@ -1,55 +1,49 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex items-center justify-center">
     <div class="bg-white p-8 rounded-lg shadow-sm w-full max-w-md border border-gray-200">
+
       <div class="text-center mb-8">
         <img src="../assets/logo_camera.jpg" alt="Logo" class="h-16 mx-auto mb-4">
         <h1 class="text-2xl font-semibold text-gray-900 mb-2">Sistema</h1>
         <p class="text-gray-600 text-sm">Acesso ao Sistema v2.0</p>
       </div>
-      
+
       <form @submit.prevent="handleLogin" class="space-y-4">
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
             v-model="email"
             type="email"
             required
-            placeholder="email@exemplo.com"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 outline-none"
           />
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
           <input
             v-model="password"
             type="password"
             required
-            placeholder="Senha"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 outline-none"
           />
         </div>
-        
+
         <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
           {{ error }}
         </div>
-        
+
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-gray-900 text-white py-2 px-4 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+          class="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
         >
-          <span v-if="loading">Entrando...</span>
-          <span v-else>Entrar</span>
+          {{ loading ? 'A entrar...' : 'Entrar' }}
         </button>
+
       </form>
-      
-      <div class="mt-6 text-center">
-        <span class="text-sm text-gray-600">Não tem uma conta?</span>
-        <router-link to="/registar" class="text-gray-600 hover:text-gray-900 text-sm font-medium ml-1 transition duration-150">
-          Criar Conta
-        </router-link>
-      </div>
+
     </div>
   </div>
 </template>
@@ -68,29 +62,37 @@ const error = ref('')
 const loading = ref(false)
 
 const handleLogin = async () => {
-  try {
-    error.value = ''
-    loading.value = true
+  error.value = ''
+  loading.value = true
 
-    await auth.login({
-      email: email.value,
+  try {
+    const res = await auth.login({
+      email: email.value.trim(),
       password: password.value
     })
 
+    // segurança extra (caso store não redirecione)
+    if (res?.token) {
+      localStorage.setItem('auth_token', res.token)
+    }
+
     router.push('/dashboard')
-    
+
   } catch (err) {
     console.error('Login error:', err)
-    
-    if (err.response?.status === 401) {
+
+    const status = err.response?.status
+
+    if (status === 401) {
       error.value = 'Credenciais inválidas'
-    } else if (err.code === 'ECONNABORTED') {
-      error.value = 'Tempo esgotado. Tente novamente.'
-    } else if (err.message.includes('Network Error')) {
-      error.value = 'Erro de conexão. Verifique sua internet.'
+    } else if (status === 500) {
+      error.value = 'Erro no servidor. Tenta mais tarde.'
+    } else if (!err.response) {
+      error.value = 'Sem ligação ao servidor'
     } else {
-      error.value = 'Ocorreu um erro. Tente novamente.'
+      error.value = 'Erro inesperado'
     }
+
   } finally {
     loading.value = false
   }
