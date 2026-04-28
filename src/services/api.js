@@ -32,6 +32,7 @@ api.interceptors.response.use(
 )
 
 const apiMethods = {
+
   // AUTH
   login: (data) => api.post('/login', data),
   register: (data) => api.post('/register', data),
@@ -48,15 +49,22 @@ const apiMethods = {
   getFreguesias: () => api.get('/freguesias'),
   getFreguesia: (id) => api.get(`/freguesias/${id}`),
   createFreguesia: (data) => api.post('/freguesias', data),
-  updateFreguesia: (id, data) => api.put(`/freguesias/${id}`, data),
+  updateFreguesia: (id, data) => api.put(`/freguesias/${id}`),
   deleteFreguesia: (id) => api.delete(`/freguesias/${id}`),
 
   // TIPOS
   getTipos: () => api.get('/tipo-publicidades'),
   getTipo: (id) => api.get(`/tipo-publicidades/${id}`),
   createTipo: (data) => api.post('/tipo-publicidades', data),
-  updateTipo: (id, data) => api.put(`/tipo-publicidades/${id}`, data),
-  deleteTipo: (id) => api.delete(`/tipo-publicidades/${id}`)
+  updateTipo: (id, data) => api.put(`/tipo-publicidades/${id}`),
+  deleteTipo: (id) => api.delete(`/tipo-publicidades/${id}`),
+
+  // 🔴 PROCESSOS (FALTAVA ISTO)
+  getProcessos: () => api.get('/processos'),
+  getProcesso: (id) => api.get(`/processos/${id}`),
+  createProcesso: (data) => api.post('/processos', data),
+  updateProcesso: (id, data) => api.put(`/processos/${id}`),
+  deleteProcesso: (id) => api.delete(`/processos/${id}`)
 }
 
 Object.assign(api, apiMethods)
