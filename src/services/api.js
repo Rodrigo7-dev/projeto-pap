@@ -1,10 +1,12 @@
 import axios from 'axios'
 
+// src/services/api.js
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  // Escreve o link diretamente aqui para descartar erro de variável
+  baseURL: 'https://myapp-api-production-a4fa.up.railway.app/api', 
   headers: {
     'Content-Type': 'application/json',
-    Accept: 'application/json'
+    'Accept': 'application/json'
   },
   timeout: 10000
 })
