@@ -36,29 +36,35 @@
           </thead>
 
           <tbody>
-            <tr v-for="p in filteredProcessos" :key="p.id || p._id">
+            <tr v-for="p in filteredProcessos" :key="p.id">
 
               <td>{{ p.processo }}</td>
               <td>{{ p.alvara || '-' }}</td>
 
               <td>
-                {{ p.tipoPublicidade?.publicidade || p.tipoPublicidade?.tipo || '-' }}
-              </td>
-
-              <td>{{ p.rua?.rua || '-' }}</td>
-
-              <td>
-                {{ p.validade === 'valido' ? 'Válido' : 'Expirado' }}
+                {{ p.tipo_publicidade?.publicidade || '-' }}
               </td>
 
               <td>
-                <button @click="editProcesso(p.id || p._id)">Editar</button>
-                <button @click="handleDelete(p.id || p._id, p.processo)">Eliminar</button>
+                {{ p.rua?.rua || '-' }}
+              </td>
+
+              <td>
+                {{ p.validade === 'valido' ? 'Válido' : 'Inválido' }}
+              </td>
+
+              <td>
+                <button @click="editProcesso(p.id)">Editar</button>
+                <button @click="handleDelete(p.id, p.processo)">Eliminar</button>
               </td>
 
             </tr>
           </tbody>
         </table>
+
+        <div v-if="filteredProcessos.length === 0" class="p-4 text-gray-500">
+          Nenhum processo encontrado.
+        </div>
 
       </div>
     </div>
@@ -79,7 +85,11 @@ const loadProcessos = async () => {
   try {
     const res = await api.getProcessos()
 
-    processos.value = Array.isArray(res) ? res : []
+    // 🔥 CORREÇÃO PRINCIPAL
+    const lista = res?.data ?? []
+
+    processos.value = Array.isArray(lista) ? lista : []
+
   } catch (err) {
     console.error('Erro:', err)
     processos.value = []
@@ -93,7 +103,7 @@ const filteredProcessos = computed(() => {
     p.processo?.toLowerCase().includes(t) ||
     p.alvara?.toLowerCase().includes(t) ||
     p.rua?.rua?.toLowerCase().includes(t) ||
-    p.tipoPublicidade?.publicidade?.toLowerCase().includes(t)
+    p.tipo_publicidade?.publicidade?.toLowerCase().includes(t)
   )
 })
 
@@ -103,7 +113,7 @@ const handleDelete = async (id, nome) => {
   try {
     await api.deleteProcesso(id)
 
-    processos.value = processos.value.filter(p => p._id !== id)
+    processos.value = processos.value.filter(p => p.id !== id)
   } catch (err) {
     console.error(err)
   }
