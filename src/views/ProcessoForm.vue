@@ -21,9 +21,9 @@ const form = ref({
   tipo_publicidade: null
 })
 
-// =========================
+// =====================
 // LOAD DATA
-// =========================
+// =====================
 const fetchData = async () => {
   try {
     const [t, r] = await Promise.all([
@@ -44,7 +44,6 @@ const fetchData = async () => {
         alojamento_local: d.alojamento_local ?? '',
         validade: d.validade ?? 'valido',
 
-        // normalização segura
         rua: d.rua?.id ?? d.rua ?? null,
         tipo_publicidade: d.tipo_publicidade?.id ?? d.tipo_publicidade ?? null
       }
@@ -55,37 +54,36 @@ const fetchData = async () => {
   }
 }
 
-// =========================
-// PAYLOAD (compatível backend)
-// =========================
+// =====================
+// PAYLOAD CORRIGIDO (backend espera camelCase)
+// =====================
 const buildPayload = () => {
-  const payload = {
+  return {
     processo: form.value.processo,
     alvara: form.value.alvara,
-    alojamento_local: form.value.alojamento_local,
-    validade: form.value.validade
+
+    // 🔥 CORRETO (backend exige camelCase)
+    alojamentoLocal: form.value.alojamento_local,
+
+    validade: form.value.validade,
+
+    // 🔥 garantir números
+    tipoPublicidade: Number(form.value.tipo_publicidade),
+    rua: Number(form.value.rua)
   }
-
-  // 🔥 envio dual compatível (resolve 90% dos 422)
-  // alguns backends querem "rua", outros "rua_id"
-  payload.rua = form.value.rua
-  payload.rua_id = form.value.rua
-
-  payload.tipo_publicidade = form.value.tipo_publicidade
-  payload.tipo_publicidade_id = form.value.tipo_publicidade
-
-  return payload
 }
 
-// =========================
+// =====================
 // SUBMIT
-// =========================
+// =====================
 const handleSubmit = async () => {
   if (loading.value) return
   loading.value = true
 
   try {
     const payload = buildPayload()
+
+    console.log('PAYLOAD ENVIADO:', payload)
 
     if (isEditing.value) {
       await api.updateProcesso(route.params.id, payload)
@@ -96,8 +94,8 @@ const handleSubmit = async () => {
     router.push('/processos')
 
   } catch (error) {
-    console.error('Erro backend:', error?.response?.data || error)
-    alert('Erro ao guardar processo (ver consola)')
+    console.error('ERRO BACKEND:', error?.response?.data || error)
+    alert('Erro ao guardar processo')
   } finally {
     loading.value = false
   }
@@ -141,7 +139,7 @@ onMounted(fetchData)
           class="w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
         />
 
-        <!-- ALOJAMENTO -->
+        <!-- ALOJAMENTO LOCAL -->
         <input
           v-model="form.alojamento_local"
           placeholder="Alojamento Local"
