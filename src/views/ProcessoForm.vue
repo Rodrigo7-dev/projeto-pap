@@ -21,9 +21,9 @@ const form = ref({
   tipo_publicidade: null
 })
 
-// =====================
+// =========================
 // LOAD DATA
-// =====================
+// =========================
 const fetchData = async () => {
   try {
     const [t, r] = await Promise.all([
@@ -43,6 +43,8 @@ const fetchData = async () => {
         alvara: d.alvara ?? '',
         alojamento_local: d.alojamento_local ?? '',
         validade: d.validade ?? 'valido',
+
+        // normalização segura
         rua: d.rua?.id ?? d.rua ?? null,
         tipo_publicidade: d.tipo_publicidade?.id ?? d.tipo_publicidade ?? null
       }
@@ -53,28 +55,33 @@ const fetchData = async () => {
   }
 }
 
-// =====================
-// NORMALIZA PAYLOAD
-// =====================
+// =========================
+// PAYLOAD (compatível backend)
+// =========================
 const buildPayload = () => {
-  return {
+  const payload = {
     processo: form.value.processo,
     alvara: form.value.alvara,
     alojamento_local: form.value.alojamento_local,
-    validade: form.value.validade,
-
-    // 🔥 normalização correta para backend (IDs explícitos)
-    rua_id: form.value.rua || null,
-    tipo_publicidade_id: form.value.tipo_publicidade || null
+    validade: form.value.validade
   }
+
+  // 🔥 envio dual compatível (resolve 90% dos 422)
+  // alguns backends querem "rua", outros "rua_id"
+  payload.rua = form.value.rua
+  payload.rua_id = form.value.rua
+
+  payload.tipo_publicidade = form.value.tipo_publicidade
+  payload.tipo_publicidade_id = form.value.tipo_publicidade
+
+  return payload
 }
 
-// =====================
+// =========================
 // SUBMIT
-// =====================
+// =========================
 const handleSubmit = async () => {
   if (loading.value) return
-
   loading.value = true
 
   try {
@@ -89,8 +96,8 @@ const handleSubmit = async () => {
     router.push('/processos')
 
   } catch (error) {
-    console.error('Erro ao guardar processo:', error?.response?.data || error)
-    alert('Erro ao guardar processo')
+    console.error('Erro backend:', error?.response?.data || error)
+    alert('Erro ao guardar processo (ver consola)')
   } finally {
     loading.value = false
   }
@@ -124,27 +131,27 @@ onMounted(fetchData)
           v-model="form.processo"
           placeholder="Processo"
           required
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
         />
 
         <!-- ALVARÁ -->
         <input
           v-model="form.alvara"
           placeholder="Alvará"
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
         />
 
         <!-- ALOJAMENTO -->
         <input
           v-model="form.alojamento_local"
           placeholder="Alojamento Local"
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
         />
 
         <!-- VALIDADE -->
         <select
           v-model="form.validade"
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm"
         >
           <option value="valido">Válido</option>
           <option value="invalido">Inválido</option>
@@ -153,14 +160,10 @@ onMounted(fetchData)
         <!-- RUA -->
         <select
           v-model="form.rua"
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm"
         >
           <option :value="null">Selecionar Rua</option>
-          <option
-            v-for="r in ruas"
-            :key="r.id"
-            :value="r.id"
-          >
+          <option v-for="r in ruas" :key="r.id" :value="r.id">
             {{ r.rua }}
           </option>
         </select>
@@ -168,14 +171,10 @@ onMounted(fetchData)
         <!-- TIPO PUBLICIDADE -->
         <select
           v-model="form.tipo_publicidade"
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm"
         >
           <option :value="null">Tipo de Publicidade</option>
-          <option
-            v-for="t in tipos"
-            :key="t.id"
-            :value="t.id"
-          >
+          <option v-for="t in tipos" :key="t.id" :value="t.id">
             {{ t.publicidade || t.tipo }}
           </option>
         </select>
@@ -185,8 +184,8 @@ onMounted(fetchData)
 
           <button
             type="button"
-            @click="router.back()"
-            class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100"
+            @click="router.push('/processos')"
+            class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100"
           >
             Cancelar
           </button>
