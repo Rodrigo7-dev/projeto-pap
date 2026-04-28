@@ -174,39 +174,40 @@ const stats = ref({
 const processos = ref([])
 const loading = ref(false)
 
-const getValidade = (v) => v === 'valido'
-const getInvalido = (v) => v === 'invalido'
+const getStatusClass = (validade) => {
+  if (validade === 'valido') return 'bg-green-100 text-green-800'
+  if (validade === 'invalido') return 'bg-red-100 text-red-800'
+  return 'bg-yellow-100 text-yellow-800'
+}
+
+const getValidadeText = (validade) => {
+  if (validade === 'valido') return 'Válido'
+  if (validade === 'invalido') return 'Inválido'
+  return 'Pendente'
+}
 
 const loadData = async () => {
   loading.value = true
-
   try {
     const [processosRes, ruasRes] = await Promise.all([
       api.getProcessos(),
       api.getRuas()
     ])
 
-    const processosList = processosRes?.data ?? processosRes ?? []
-    const ruasList = ruasRes?.data ?? ruasRes ?? []
+    const listaProcessos = processosRes?.data ?? processosRes ?? []
+    const listaRuas = ruasRes?.data ?? ruasRes ?? []
 
     stats.value = {
-      total_processos: processosList.length,
-      processos_validos: processosList.filter(p => p.validade === 'valido').length,
-      processos_invalidos: processosList.filter(p => p.validade === 'invalido').length,
-      total_ruas: ruasList.length
+      total_processos: listaProcessos.length,
+      processos_validos: listaProcessos.filter(p => p.validade === 'valido').length,
+      processos_invalidos: listaProcessos.filter(p => p.validade === 'invalido').length,
+      total_ruas: listaRuas.length
     }
 
-    processos.value = processosList.slice(0, 10)
+    processos.value = listaProcessos.slice(0, 10)
 
   } catch (e) {
-    console.error('Dashboard error:', e)
-    stats.value = {
-      total_processos: 0,
-      processos_validos: 0,
-      processos_invalidos: 0,
-      total_ruas: 0
-    }
-    processos.value = []
+    console.error(e)
   } finally {
     loading.value = false
   }
