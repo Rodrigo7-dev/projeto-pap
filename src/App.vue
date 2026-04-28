@@ -1,11 +1,16 @@
 <template>
-  <div>
+  <div class="min-h-screen bg-gray-50">
+    
+    <!-- Navbar só aparece quando deve -->
     <Navbar v-if="shouldShowNavbar" />
-    <router-view v-slot="{ Component, route }">
+
+    <!-- Router View com transição -->
+    <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
-        <component :is="Component" :key="route.path" />
+        <component :is="Component" />
       </transition>
     </router-view>
+
   </div>
 </template>
 
@@ -18,37 +23,26 @@ import Navbar from './components/Navbar.vue'
 const route = useRoute()
 const auth = useAuthStore()
 
+// Navbar só aparece se estiver autenticado e a rota não esconder
 const shouldShowNavbar = computed(() => {
-  return auth.isAuthenticated && !route.meta.hideNavbar
+  return auth.isAuthenticated && route.meta.hideNavbar !== true
 })
 </script>
 
 <style scoped>
+/* Transição entre páginas */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: all 0.25s ease;
 }
 
-.fade-enter-from,
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
 .fade-leave-to {
   opacity: 0;
-}
-</style>
-
-<style>
-/* Estilos básicos */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
-
-/* Animação de loading */
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  transform: translateY(-5px);
 }
 </style>

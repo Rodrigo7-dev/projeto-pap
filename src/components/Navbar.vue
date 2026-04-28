@@ -1,21 +1,72 @@
 <template>
-  <nav class="navbar">
-    <div class="navbar-container">
-      <div class="navbar-brand">
-        <img src="../assets/logo_camera.jpg" alt="Logo" class="logo">
-        <span>Sistema v2.0</span>
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+
+      <!-- BRAND -->
+      <div class="flex items-center gap-3">
+        <img src="../assets/logo_camera.jpg" class="h-8 w-8 object-contain" />
+
+        <span class="font-semibold text-gray-900">
+          Sistema v2.0
+        </span>
       </div>
-      
-      <div class="navbar-menu">
-        <router-link to="/dashboard" class="nav-link">Painel</router-link>
-        <router-link to="/processos" class="nav-link">Processos</router-link>
-        <router-link to="/ruas" class="nav-link">Ruas</router-link>
-        <router-link to="/freguesias" class="nav-link">Freguesias</router-link>
-        <router-link to="/tipos" class="nav-link">Tipo de Publicidade</router-link>
+
+      <!-- MENU -->
+      <div class="hidden md:flex gap-8">
+
+        <router-link
+          to="/dashboard"
+          class="nav"
+          active-class="nav-active"
+        >
+          Painel
+        </router-link>
+
+        <router-link
+          to="/processos"
+          class="nav"
+          active-class="nav-active"
+        >
+          Processos
+        </router-link>
+
+        <router-link
+          to="/ruas"
+          class="nav"
+          active-class="nav-active"
+        >
+          Ruas
+        </router-link>
+
+        <router-link
+          to="/freguesias"
+          class="nav"
+          active-class="nav-active"
+        >
+          Freguesias
+        </router-link>
+
+        <router-link
+          to="/tipos"
+          class="nav"
+          active-class="nav-active"
+        >
+          Publicidade
+        </router-link>
+
       </div>
-      
-      <button @click="logout" class="logout-btn">Sair</button>
+
+      <!-- LOGOUT -->
+      <button
+        @click="logout"
+        class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition"
+      >
+        Sair
+      </button>
+
     </div>
+
   </nav>
 </template>
 
@@ -33,74 +84,15 @@ const logout = async () => {
 </script>
 
 <style scoped>
-.navbar {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+.nav {
+  @apply text-gray-500 text-sm font-medium transition;
 }
 
-.navbar-container {
-  max-width: 7xl;
-  margin: 0 auto;
-  padding: 0 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 4rem;
+.nav:hover {
+  @apply text-gray-900;
 }
 
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.logo {
-  height: 2rem;
-}
-
-.navbar-brand span {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #111827;
-}
-
-.navbar-menu {
-  display: flex;
-  gap: 2rem;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.5rem 0;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-
-.nav-link:hover,
-.nav-link.router-link-active {
-  color: #111827;
-  border-bottom-color: #111827;
-}
-
-.logout-btn {
-  background: #111827;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.logout-btn:hover {
-  background: #374151;
+.nav-active {
+  @apply text-gray-900 border-b-2 border-gray-900 pb-1;
 }
 </style>
