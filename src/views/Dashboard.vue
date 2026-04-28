@@ -174,60 +174,43 @@ const stats = ref({
 const processos = ref([])
 const loading = ref(false)
 
-onMounted(loadData)
+const getValidade = (v) => v === 'valido'
+const getInvalido = (v) => v === 'invalido'
 
 const loadData = async () => {
   loading.value = true
 
   try {
-    const [processosData, ruasData] = await Promise.all([
+    const [processosRes, ruasRes] = await Promise.all([
       api.getProcessos(),
       api.getRuas()
     ])
 
-    // ✔ interceptor já devolve dados diretos
-    const listaProcessos = Array.isArray(processosData) ? processosData : []
-    const listaRuas = Array.isArray(ruasData) ? ruasData : []
+    const processosList = processosRes?.data ?? processosRes ?? []
+    const ruasList = ruasRes?.data ?? ruasRes ?? []
 
     stats.value = {
-      total_processos: listaProcessos.length,
-      processos_validos: listaProcessos.filter(p => p.validade === 'valido').length,
-      processos_invalidos: listaProcessos.filter(p => p.validade === 'invalido').length,
-      total_ruas: listaRuas.length
+      total_processos: processosList.length,
+      processos_validos: processosList.filter(p => p.validade === 'valido').length,
+      processos_invalidos: processosList.filter(p => p.validade === 'invalido').length,
+      total_ruas: ruasList.length
     }
 
-    processos.value = listaProcessos
-      .slice()
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-      .slice(0, 10)
+    processos.value = processosList.slice(0, 10)
 
-  } catch (error) {
-    console.error('Erro ao carregar dados:', error)
-
+  } catch (e) {
+    console.error('Dashboard error:', e)
     stats.value = {
       total_processos: 0,
       processos_validos: 0,
       processos_invalidos: 0,
       total_ruas: 0
     }
-
     processos.value = []
   } finally {
     loading.value = false
   }
 }
 
-const getStatusClass = (validade) => {
-  return validade === 'valido'
-    ? 'bg-green-100 text-green-800'
-    : validade === 'invalido'
-      ? 'bg-red-100 text-red-800'
-      : 'bg-yellow-100 text-yellow-800'
-}
-
-const getValidadeText = (validade) => {
-  if (validade === 'valido') return 'Válido'
-  if (validade === 'invalido') return 'Inválido'
-  return 'Pendente'
-}
+onMounted(loadData)
 </script>

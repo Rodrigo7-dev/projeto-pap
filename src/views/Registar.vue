@@ -131,6 +131,7 @@ const form = ref({
 const error = ref(null)
 const success = ref(null)
 const loading = ref(false)
+
 const fieldErrors = ref({
   name: '',
   email: '',
@@ -138,79 +139,95 @@ const fieldErrors = ref({
   password: ''
 })
 
+const resetFields = () => {
+  form.value = {
+    name: '',
+    email: '',
+    nif: '',
+    password: '',
+    confirmPassword: ''
+  }
+}
+
+const clearFieldErrors = () => {
+  fieldErrors.value = {
+    name: '',
+    email: '',
+    nif: '',
+    password: ''
+  }
+}
+
 const handleRegister = async () => {
+  if (loading.value) return
+
+  error.value = null
+  success.value = null
+  clearFieldErrors()
+
+  // 🔴 validações locais
+  if (form.value.password !== form.value.confirmPassword) {
+    error.value = 'As senhas não coincidem'
+    return
+  }
+
+  if (form.value.password.length < 6) {
+    error.value = 'A senha deve ter pelo menos 6 caracteres'
+    return
+  }
+
+  loading.value = true
+
   try {
-    error.value = null
-    success.value = null
-    loading.value = true
-    
-    // Limpar erros dos campos
-    fieldErrors.value = {
-      name: '',
-      email: '',
-      nif: '',
-      password: ''
-    }
-
-    // Validações básicas
-    if (form.value.password !== form.value.confirmPassword) {
-      error.value = 'As senhas não coincidem'
-      return
-    }
-    
-    if (form.value.password.length < 6) {
-      error.value = 'A senha deve ter pelo menos 6 caracteres'
-      return
-    }
-
-    // Enviar para API
     await api.register({
       name: form.value.name.trim(),
       email: form.value.email.trim(),
-      nif: form.value.nif.trim(),
+      nif: form.value.nif?.trim() || null,
       password: form.value.password,
       password_confirmation: form.value.confirmPassword
     })
 
-    success.value = 'Conta criada com sucesso! Redirecionando...'
-    
-    // Redirecionar para dashboard após 2 segundos
+    success.value = 'Conta criada com sucesso!'
+
+    resetFields()
+
     setTimeout(() => {
       router.push('/dashboard')
-    }, 2000)
-    
+    }, 1200)
+
   } catch (err) {
     console.error('Registration error:', err)
-    if (err.response?.status === 422) {
-      const errors = err.response.data?.errors
-      
-      // Mostrar erros específicos de cada campo
-      if (errors?.name) {
-        fieldErrors.value.name = Array.isArray(errors.name) ? errors.name[0] : errors.name
+
+    const status = err?.response?.status
+    const errors = err?.response?.data?.errors
+
+    if (status === 422 && errors) {
+      fieldErrors.value = {
+        name: errors.name?.[0] || '',
+        email: errors.email?.[0] || '',
+        nif: errors.nif?.[0] || '',
+        password: errors.password?.[0] || ''
       }
-      if (errors?.email) {
-        fieldErrors.value.email = Array.isArray(errors.email) ? errors.email[0] : errors.email
-      }
-      if (errors?.nif) {
-        fieldErrors.value.nif = Array.isArray(errors.nif) ? errors.nif[0] : errors.nif
-      }
-      if (errors?.password) {
-        fieldErrors.value.password = Array.isArray(errors.password) ? errors.password[0] : errors.password
-      }
-      
-      // Se não houver erros específicos, mostrar erro geral
-      if (!errors || Object.keys(errors).length === 0) {
-        error.value = 'Verifique os dados informados'
-      }
-    } else if (err.response?.status === 500) {
-      error.value = 'Erro no servidor. Tente novamente.'
-    } else if (err.code === 'ECONNABORTED') {
-      error.value = 'Tempo esgotado. Tente novamente.'
-    } else if (err.message.includes('Network Error')) {
-      error.value = 'Erro de conexão. Verifique sua internet.'
-    } else {
-      error.value = 'Erro ao criar conta. Tente novamente.'
+
+      error.value = 'Verifique os campos'
     }
+
+    else if (status === 500) {
+      error.value = 'Erro no servidor'
+    }
+
+    else if (err?.code === 'ECONNABORTED') {
+      error.value = 'Tempo esgotado. Tente novamente.'
+    }
+
+    else if (!err?.response) {
+      error.value = 'Erro de conexão'
+    }
+
+    else {
+      error.value = 'Erro ao criar conta'
+    }
+
   } finally {
     loading.value = false
   }
