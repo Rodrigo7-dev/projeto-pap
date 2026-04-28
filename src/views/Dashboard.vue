@@ -174,32 +174,21 @@ const stats = ref({
 const processos = ref([])
 const loading = ref(false)
 
-onMounted(() => {
-  loadData()
-})
+onMounted(loadData)
 
 const loadData = async () => {
   loading.value = true
+
   try {
     const [processosData, ruasData] = await Promise.all([
       api.getProcessos(),
       api.getRuas()
     ])
 
-    // Garantir que SEMPRE recebemos arrays
-    const listaProcessos =
-      Array.isArray(processosData) ? processosData :
-      Array.isArray(processosData.data) ? processosData.data :
-      Array.isArray(processosData.processos) ? processosData.processos :
-      []
+    // ✔ interceptor já devolve dados diretos
+    const listaProcessos = Array.isArray(processosData) ? processosData : []
+    const listaRuas = Array.isArray(ruasData) ? ruasData : []
 
-    const listaRuas =
-      Array.isArray(ruasData) ? ruasData :
-      Array.isArray(ruasData.data) ? ruasData.data :
-      Array.isArray(ruasData.ruas) ? ruasData.ruas :
-      []
-
-    // Estatísticas
     stats.value = {
       total_processos: listaProcessos.length,
       processos_validos: listaProcessos.filter(p => p.validade === 'valido').length,
@@ -207,9 +196,9 @@ const loadData = async () => {
       total_ruas: listaRuas.length
     }
 
-    // Últimos 10 processos
     processos.value = listaProcessos
-      .sort((a, b) => (b.id || 0) - (a.id || 0))
+      .slice()
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
       .slice(0, 10)
 
   } catch (error) {
@@ -229,9 +218,11 @@ const loadData = async () => {
 }
 
 const getStatusClass = (validade) => {
-  if (validade === 'valido') return 'bg-green-100 text-green-800'
-  if (validade === 'invalido') return 'bg-red-100 text-red-800'
-  return 'bg-yellow-100 text-yellow-800'
+  return validade === 'valido'
+    ? 'bg-green-100 text-green-800'
+    : validade === 'invalido'
+      ? 'bg-red-100 text-red-800'
+      : 'bg-yellow-100 text-yellow-800'
 }
 
 const getValidadeText = (validade) => {
