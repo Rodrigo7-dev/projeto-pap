@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -68,42 +68,30 @@ const error = ref('')
 const loading = ref(false)
 
 const handleLogin = async () => {
-  if (loading.value) return
-
-  error.value = ''
-  loading.value = true
-
   try {
+    error.value = ''
+    loading.value = true
+
     await auth.login({
-      email: email.value.trim(),
+      email: email.value,
       password: password.value
     })
 
     router.push('/dashboard')
-
+    
   } catch (err) {
     console.error('Login error:', err)
-
-    const status = err?.response?.status
-
-    if (status === 401) {
+    
+    if (err.response?.status === 401) {
       error.value = 'Credenciais inválidas'
-      password.value = '' // limpa password por segurança
-    } 
-    else if (err?.code === 'ECONNABORTED') {
+    } else if (err.code === 'ECONNABORTED') {
       error.value = 'Tempo esgotado. Tente novamente.'
-    } 
-    else if (!err?.response) {
-      error.value = 'Erro de conexão. Verifique a internet.'
-    } 
-    else {
-      error.value = 'Erro inesperado. Tente novamente.'
+    } else if (err.message.includes('Network Error')) {
+      error.value = 'Erro de conexão. Verifique sua internet.'
+    } else {
+      error.value = 'Ocorreu um erro. Tente novamente.'
     }
-
-    // pequeno UX: focar password após erro
-    await nextTick()
-  } 
-  finally {
+  } finally {
     loading.value = false
   }
 }
