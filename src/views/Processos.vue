@@ -3,52 +3,48 @@
     <div class="max-w-6xl mx-auto">
 
       <!-- HEADER -->
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div class="flex items-center justify-between mb-8">
         <div>
-          <h1 class="text-3xl font-semibold text-gray-900">Processos</h1>
+          <h1 class="text-3xl font-semibold text-gray-900">
+            Gestão de Processos
+          </h1>
           <p class="text-sm text-gray-500 mt-1">
-            Gestão e controlo de processos
+            Consulta e gestão de processos ativos
           </p>
         </div>
 
         <router-link
           to="/processos/novo"
-          class="inline-flex items-center justify-center bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition"
+          class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition"
         >
           + Novo Processo
         </router-link>
       </div>
 
       <!-- CARD -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
 
         <!-- SEARCH -->
         <div class="p-4 border-b border-gray-100">
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              🔍
-            </span>
-
-            <input
-              v-model="search"
-              placeholder="Pesquisar processos..."
-              class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 text-sm"
-            />
-          </div>
+          <input
+            v-model="search"
+            placeholder="Pesquisar processos..."
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          />
         </div>
 
         <!-- TABLE -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
 
-            <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+            <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
               <tr>
-                <th class="px-6 py-4 text-left font-medium">Processo</th>
-                <th class="px-6 py-4 text-left font-medium">Alvará</th>
-                <th class="px-6 py-4 text-left font-medium">Publicidade</th>
-                <th class="px-6 py-4 text-left font-medium">Rua</th>
-                <th class="px-6 py-4 text-left font-medium">Estado</th>
-                <th class="px-6 py-4 text-right font-medium">Ações</th>
+                <th class="px-6 py-4 text-left">Processo</th>
+                <th class="px-6 py-4 text-left">Alvará</th>
+                <th class="px-6 py-4 text-left">Publicidade</th>
+                <th class="px-6 py-4 text-left">Rua</th>
+                <th class="px-6 py-4 text-left">Estado</th>
+                <th class="px-6 py-4 text-right">Ações</th>
               </tr>
             </thead>
 
@@ -65,20 +61,20 @@
                 </td>
 
                 <td class="px-6 py-4 text-gray-600">
-                  {{ p.alvara || '-' }}
+                  {{ p.alvara }}
                 </td>
 
                 <td class="px-6 py-4 text-gray-600">
-                  {{ p.tipo_publicidade?.publicidade || '-' }}
+                  {{ p.tipo_publicidade?.publicidade }}
                 </td>
 
                 <td class="px-6 py-4 text-gray-600">
-                  {{ p.rua?.rua || '-' }}
+                  {{ p.rua?.rua }}
                 </td>
 
                 <td class="px-6 py-4">
                   <span
-                    class="px-3 py-1 rounded-full text-xs font-medium"
+                    class="px-3 py-1 text-xs font-medium rounded-full"
                     :class="p.validade === 'valido'
                       ? 'bg-green-50 text-green-700'
                       : 'bg-red-50 text-red-700'"
@@ -91,14 +87,14 @@
 
                   <button
                     @click="editProcesso(p.id)"
-                    class="text-sm px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-100 transition"
+                    class="px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:bg-gray-100 transition"
                   >
                     Editar
                   </button>
 
                   <button
                     @click="handleDelete(p.id, p.processo)"
-                    class="text-sm px-3 py-1.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition"
+                    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition"
                   >
                     Eliminar
                   </button>
@@ -109,17 +105,16 @@
 
             </tbody>
           </table>
-
         </div>
 
         <!-- EMPTY STATE -->
         <div
           v-if="filteredProcessos.length === 0"
-          class="text-center py-16 text-gray-500"
+          class="text-center py-14 text-gray-500"
         >
           <div class="text-4xl mb-2">📄</div>
           <p class="font-medium text-gray-700">Nenhum processo encontrado</p>
-          <p class="text-sm mt-1">Tenta ajustar a pesquisa</p>
+          <p class="text-sm">Tenta alterar a pesquisa</p>
         </div>
 
       </div>
