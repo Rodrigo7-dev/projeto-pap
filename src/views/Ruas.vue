@@ -1,80 +1,111 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Gestão de Ruas</h1>
+
+      <!-- HEADER -->
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-semibold text-gray-900">
+            Gestão de Ruas
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">
+            Consulta e gestão de ruas registadas
+          </p>
+        </div>
+
         <router-link 
           to="/ruas/nova" 
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium"
+          class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition"
         >
           + Nova Rua
         </router-link>
       </div>
-      
-      <div v-if="loading" class="text-center py-12">
-        <div class="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mb-2"></div>
-        <div class="text-gray-600">A carregar ruas...</div>
+
+      <!-- LOADING -->
+      <div v-if="loading" class="text-center py-14">
+        <div class="animate-spin inline-block w-8 h-8 border-4 border-gray-900 border-t-transparent rounded-full mb-3"></div>
+        <p class="text-gray-600 text-sm">A carregar ruas...</p>
       </div>
 
-      <div v-else class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-        <div class="p-4 border-b border-gray-200 bg-white">
+      <!-- CARD -->
+      <div v-else class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+
+        <!-- SEARCH -->
+        <div class="p-4 border-b border-gray-100">
           <input 
             v-model="search" 
-            type="text" 
-            placeholder="Pesquisar por nome da rua ou freguesia..." 
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            placeholder="Pesquisar ruas ou freguesias..." 
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           />
         </div>
 
+        <!-- TABLE -->
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-gray-50 border-b border-gray-200">
+          <table class="w-full text-sm">
+
+            <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
               <tr>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome da Rua</th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Coordenada</th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Freguesia</th>
-                <th class="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Ações</th>
+                <th class="px-6 py-4 text-left">Rua</th>
+                <th class="px-6 py-4 text-left">Coordenada</th>
+                <th class="px-6 py-4 text-left">Freguesia</th>
+                <th class="px-6 py-4 text-right">Ações</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 bg-white">
-              <tr v-for="ruaItem in filteredRuas" :key="ruaItem.id" class="hover:bg-gray-50 transition">
+
+            <tbody class="divide-y divide-gray-100">
+
+              <tr 
+                v-for="r in filteredRuas" 
+                :key="r.id"
+                class="hover:bg-gray-50 transition"
+              >
+
                 <td class="px-6 py-4 font-medium text-gray-900">
-                  {{ ruaItem.rua }}
+                  {{ r.rua }}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-500 font-mono">
-                  {{ ruaItem.coordenada || 'N/D' }}
+
+                <td class="px-6 py-4 text-gray-500 font-mono text-xs">
+                  {{ r.coordenada || 'N/D' }}
                 </td>
-                <td class="px-6 py-4">
-                  <span class="px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded">
-                    {{ ruaItem.freguesia?.freguesia || 'Sem Freguesia' }}
-                  </span>
+
+                <td class="px-6 py-4 text-gray-600">
+                  {{ r.freguesia?.freguesia || 'Sem Freguesia' }}
                 </td>
-                <td class="px-6 py-4 text-right space-x-4">
+
+                <td class="px-6 py-4 text-right space-x-2">
+
                   <button 
-                    @click="editRua(ruaItem.id)" 
-                    class="text-blue-600 hover:text-blue-900 font-semibold text-sm"
+                    @click="editRua(r.id)" 
+                    class="px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:bg-gray-100 transition"
                   >
                     Editar
                   </button>
+
                   <button 
-                    @click="handleDelete(ruaItem.id, ruaItem.rua)" 
-                    class="text-red-600 hover:text-red-900 font-semibold text-sm"
+                    @click="handleDelete(r.id, r.rua)" 
+                    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition"
                   >
-                    Excluir
+                    Eliminar
                   </button>
+
                 </td>
+
               </tr>
+
             </tbody>
           </table>
         </div>
 
-        <div v-if="filteredRuas.length === 0" class="text-center py-12 bg-white">
-          <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <p class="text-gray-500">Nenhuma rua encontrada com o termo "{{ search }}".</p>
+        <!-- EMPTY STATE -->
+        <div 
+          v-if="filteredRuas.length === 0" 
+          class="text-center py-14 text-gray-500"
+        >
+          <div class="text-4xl mb-2">📍</div>
+          <p class="font-medium text-gray-700">Nenhuma rua encontrada</p>
+          <p class="text-sm">Tenta alterar a pesquisa</p>
         </div>
+
       </div>
     </div>
   </div>
@@ -86,6 +117,7 @@ import { useRouter } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
+
 const loading = ref(false)
 const ruas = ref([])
 const search = ref('')
@@ -94,9 +126,14 @@ const loadRuas = async () => {
   loading.value = true
   try {
     const res = await api.getRuas()
-    ruas.value = res
+
+    // 🔥 CORREÇÃO IMPORTANTE (igual aos outros)
+    const lista = res?.data ?? res ?? []
+    ruas.value = Array.isArray(lista) ? lista : []
+
   } catch (error) {
     console.error('Erro ao carregar ruas:', error)
+    ruas.value = []
   } finally {
     loading.value = false
   }
@@ -107,10 +144,7 @@ const filteredRuas = computed(() => {
 
   return ruas.value.filter(r => {
     const rua = (r.rua || '').toLowerCase()
-
-    // suporta object (populate) OU string
-    const freguesia =
-      (r.freguesia?.freguesia || r.freguesia || '').toLowerCase()
+    const freguesia = (r.freguesia?.freguesia || '').toLowerCase()
 
     return rua.includes(t) || freguesia.includes(t)
   })
