@@ -1,3 +1,4 @@
+```vue
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-4xl mx-auto">
@@ -9,7 +10,7 @@
           {{ isEditing ? 'Editar Rua' : 'Nova Rua' }}
         </h1>
       </div>
-      
+
       <div v-if="loading" class="text-center py-12 bg-white rounded-lg border border-gray-200">
         <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mb-4"></div>
         <p class="text-gray-600 font-medium">A carregar dados...</p>
@@ -17,7 +18,8 @@
 
       <form v-else @submit.prevent="handleSubmit" class="bg-white shadow-md rounded-xl border border-gray-200 p-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
+
+          <!-- Nome da Rua -->
           <div class="space-y-2">
             <label class="block text-sm font-bold text-gray-700">Nome da Rua *</label>
             <input
@@ -29,24 +31,30 @@
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
             />
           </div>
-          
+
+          <!-- Freguesia -->
           <div class="space-y-2">
             <label class="block text-sm font-bold text-gray-700">Freguesia *</label>
             <select
-              v-model="form.freguesia_id"
+              v-model="form.freguesia"
               required
-              :class="{'border-red-500 ring-red-100': !form.freguesia_id && showErrors}"
+              :class="{'border-red-500 ring-red-100': !form.freguesia && showErrors}"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none bg-white transition-all"
             >
               <option value="" disabled>Selecione a freguesia</option>
-              <option v-for="freg in freguesias" :key="freg.id" :value="freg.id">
-                {{ freg.freguesia }}
+              <option
+                v-for="freg in freguesias"
+                :key="freg.id || freg._id"
+                :value="freg.freguesia || freg.nome"
+              >
+                {{ freg.freguesia || freg.nome }}
               </option>
             </select>
           </div>
-          
+
+          <!-- Coordenada -->
           <div class="space-y-2 md:col-span-2">
-            <label class="block text-sm font-bold text-gray-700">Coordenada * (Obrigatório)</label>
+            <label class="block text-sm font-bold text-gray-700">Coordenada *</label>
             <input
               v-model="form.coordenada"
               type="text"
@@ -55,10 +63,11 @@
               :class="{'border-red-500 ring-red-100': !form.coordenada && showErrors}"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-mono text-sm"
             />
-            <p class="text-gray-400 text-xs italic">O servidor exige que este campo seja preenchido.</p>
+            <p class="text-gray-400 text-xs italic">Formato: latitude, longitude</p>
           </div>
         </div>
-        
+
+        <!-- Botões -->
         <div class="mt-10 pt-6 border-t border-gray-100 flex justify-end space-x-4">
           <router-link to="/ruas" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium transition-colors">
             Cancelar
@@ -79,7 +88,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import api from '../services/api' //
+import api from '../services/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -91,53 +100,58 @@ const freguesias = ref([])
 
 const form = ref({
   rua: '',
-  freguesia_id: '',
+  freguesia: '',
   coordenada: ''
 })
 
 const isEditing = computed(() => !!route.params.id)
 
+// 🔹 Carregar freguesias
 const loadFreguesias = async () => {
   try {
     const res = await api.getFreguesias()
-    freguesias.value = res.data || res || []
+    freguesias.value = res.data?.data || res.data || []
   } catch (error) {
     console.error('Erro ao carregar freguesias:', error)
   }
 }
 
+// 🔹 Carregar dados da rua (edição)
 const loadRuaData = async () => {
   if (!isEditing.value) return
+
   loading.value = true
   try {
     const res = await api.getRua(route.params.id)
-    const data = res.data || res
+    const data = res.data?.data || res.data || res
+
     form.value = {
       rua: data.rua || '',
-      freguesia_id: data.freguesia?.id || data.freguesia || '',
+      freguesia: data.freguesia || '',
       coordenada: data.coordenada || ''
     }
   } catch (error) {
+    console.error('Erro ao carregar rua:', error)
     router.push('/ruas')
   } finally {
     loading.value = false
   }
 }
 
+// 🔹 Submeter formulário
 const handleSubmit = async () => {
   showErrors.value = true
-  
-  if (!form.value.rua || !form.value.freguesia_id || !form.value.coordenada) {
+
+  if (!form.value.rua || !form.value.freguesia || !form.value.coordenada) {
     return
   }
 
   submitting.value = true
   try {
-    // CORREÇÃO DAS VARIÁVEIS CONFORME O TEU BACKEND:
     const payload = {
       rua: form.value.rua.trim(),
-      freguesia: Number(form.value.freguesia_id), // O servidor espera 'freguesia'
-      coordenada: form.value.coordenada.trim()     // O servidor exige este campo
+      freguesia: form.value.freguesia, // STRING
+      coordenada: form.value.coordenada.trim()
     }
 
     if (isEditing.value) {
@@ -145,26 +159,28 @@ const handleSubmit = async () => {
     } else {
       await api.createRua(payload)
     }
+
     router.push('/ruas')
   } catch (error) {
     const data = error.response?.data
     let msg = "Erro ao salvar."
-    
-    // Tratamento para extrair as mensagens do array de erros
+
     if (data?.errors && Array.isArray(data.errors)) {
       msg = data.errors.map(err => err.msg).join('\n')
     } else if (data?.message) {
       msg = data.message
     }
 
-    alert(`Atenção:\n${msg}`) //
+    alert(`Atenção:\n${msg}`)
   } finally {
     submitting.value = false
   }
 }
 
+// 🔹 Init
 onMounted(async () => {
   await loadFreguesias()
   if (isEditing.value) await loadRuaData()
 })
 </script>
+```
