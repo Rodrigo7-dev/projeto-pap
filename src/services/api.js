@@ -3,7 +3,7 @@ import axios from 'axios'
 // src/services/api.js
 const api = axios.create({
   // Escreve o link diretamente aqui para descartar erro de variável
-  baseURL: 'https://myapp-api-production-a4fa.up.railway.app/api', 
+  baseURL: 'https://myapp-api-production-09ab.up.railway.app/api', 
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
