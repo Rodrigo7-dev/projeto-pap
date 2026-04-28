@@ -117,7 +117,7 @@ const loadFreguesias = async () => {
   try {
     const res = await api.getFreguesias()
 
-    const lista = res?.data ?? []
+    const lista = res?.data ?? res ?? []
     freguesias.value = Array.isArray(lista) ? lista : []
 
   } catch (error) {
