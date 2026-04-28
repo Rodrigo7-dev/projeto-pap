@@ -9,7 +9,7 @@
             Freguesias
           </h1>
           <p class="text-sm text-gray-500 mt-1">
-            Gestão de freguesias do sistema
+            Consulta e gestão de freguesias
           </p>
         </div>
 
@@ -22,7 +22,7 @@
       </div>
 
       <!-- LOADING -->
-      <div v-if="loading" class="text-center py-16">
+      <div v-if="loading" class="text-center py-14">
         <div class="animate-spin inline-block w-8 h-8 border-4 border-gray-900 border-t-transparent rounded-full mb-3"></div>
         <p class="text-gray-600 text-sm">A carregar freguesias...</p>
       </div>
@@ -34,7 +34,6 @@
         <div class="p-4 border-b border-gray-100">
           <input 
             v-model="search" 
-            type="text" 
             placeholder="Pesquisar freguesias..." 
             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           />
@@ -46,7 +45,7 @@
 
             <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
               <tr>
-                <th class="px-6 py-4 text-left">Nome da Freguesia</th>
+                <th class="px-6 py-4 text-left">Freguesia</th>
                 <th class="px-6 py-4 text-right">Ações</th>
               </tr>
             </thead>
@@ -55,7 +54,7 @@
 
               <tr 
                 v-for="f in filteredFreguesias" 
-                :key="f.id" 
+                :key="f.id"
                 class="hover:bg-gray-50 transition"
               >
 
@@ -90,11 +89,11 @@
         <!-- EMPTY STATE -->
         <div 
           v-if="filteredFreguesias.length === 0" 
-          class="text-center py-16 text-gray-500"
+          class="text-center py-14 text-gray-500"
         >
           <div class="text-4xl mb-2">📍</div>
           <p class="font-medium text-gray-700">Nenhuma freguesia encontrada</p>
-          <p class="text-sm mt-1">Tenta alterar a pesquisa</p>
+          <p class="text-sm">Tenta alterar a pesquisa</p>
         </div>
 
       </div>
@@ -108,6 +107,7 @@ import { useRouter } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
+
 const loading = ref(false)
 const freguesias = ref([])
 const search = ref('')
@@ -117,8 +117,7 @@ const loadFreguesias = async () => {
   try {
     const res = await api.getFreguesias()
 
-    // 🔥 mesma lógica robusta que usamos antes
-    const lista = res?.data ?? res ?? []
+    const lista = res?.data ?? []
     freguesias.value = Array.isArray(lista) ? lista : []
 
   } catch (error) {
@@ -148,7 +147,7 @@ const handleDelete = async (id, nome) => {
     await api.deleteFreguesia(id)
     await loadFreguesias()
   } catch (error) {
-    alert('Não foi possível eliminar. Verifique se existem ruas associadas.')
+    alert('Não foi possível eliminar. Verifique dependências.')
   }
 }
 
