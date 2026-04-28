@@ -69,7 +69,7 @@
                 </td>
 
                 <td class="px-6 py-4 text-gray-600">
-                  {{ r.freguesia?.freguesia || 'Sem Freguesia' }}
+                  {{ r.freguesia?.freguesia || r.freguesia || 'Sem Freguesia' }}
                 </td>
 
                 <td class="px-6 py-4 text-right space-x-2">
@@ -127,7 +127,7 @@ const loadRuas = async () => {
   try {
     const res = await api.getRuas()
 
-    // 🔥 CORREÇÃO IMPORTANTE (igual aos outros)
+    // 🔥 igual aos outros componentes (processos/freguesias)
     const lista = res?.data ?? res ?? []
     ruas.value = Array.isArray(lista) ? lista : []
 
@@ -144,7 +144,9 @@ const filteredRuas = computed(() => {
 
   return ruas.value.filter(r => {
     const rua = (r.rua || '').toLowerCase()
-    const freguesia = (r.freguesia?.freguesia || '').toLowerCase()
+
+    const freguesia =
+      (r.freguesia?.freguesia || r.freguesia || '').toLowerCase()
 
     return rua.includes(t) || freguesia.includes(t)
   })
