@@ -55,21 +55,18 @@ const fetchData = async () => {
 }
 
 // =====================
-// PAYLOAD CORRIGIDO (backend espera camelCase)
+// PAYLOAD CORRETO (backend camelCase)
 // =====================
 const buildPayload = () => {
   return {
     processo: form.value.processo,
     alvara: form.value.alvara,
 
-    // 🔥 CORRETO (backend exige camelCase)
     alojamentoLocal: form.value.alojamento_local,
-
     validade: form.value.validade,
 
-    // 🔥 garantir números
-    tipoPublicidade: Number(form.value.tipo_publicidade),
-    rua: Number(form.value.rua)
+    rua: Number(form.value.rua),
+    tipoPublicidade: Number(form.value.tipo_publicidade)
   }
 }
 
@@ -78,12 +75,19 @@ const buildPayload = () => {
 // =====================
 const handleSubmit = async () => {
   if (loading.value) return
+
+  // 🔥 proteção contra null (evita 422 imediato)
+  if (!form.value.rua || !form.value.tipo_publicidade) {
+    alert('Seleciona Rua e Tipo de Publicidade')
+    return
+  }
+
   loading.value = true
 
   try {
     const payload = buildPayload()
 
-    console.log('PAYLOAD ENVIADO:', payload)
+    console.log('PAYLOAD FINAL:', payload)
 
     if (isEditing.value) {
       await api.updateProcesso(route.params.id, payload)
@@ -129,21 +133,21 @@ onMounted(fetchData)
           v-model="form.processo"
           placeholder="Processo"
           required
-          class="w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm"
         />
 
         <!-- ALVARÁ -->
         <input
           v-model="form.alvara"
           placeholder="Alvará"
-          class="w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm"
         />
 
         <!-- ALOJAMENTO LOCAL -->
         <input
           v-model="form.alojamento_local"
           placeholder="Alojamento Local"
-          class="w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
+          class="w-full px-4 py-2.5 border rounded-lg text-sm"
         />
 
         <!-- VALIDADE -->
@@ -157,22 +161,32 @@ onMounted(fetchData)
 
         <!-- RUA -->
         <select
-          v-model="form.rua"
+          v-model.number="form.rua"
           class="w-full px-4 py-2.5 border rounded-lg text-sm"
         >
           <option :value="null">Selecionar Rua</option>
-          <option v-for="r in ruas" :key="r.id" :value="r.id">
+
+          <option
+            v-for="r in ruas"
+            :key="r.id"
+            :value="r.id"
+          >
             {{ r.rua }}
           </option>
         </select>
 
         <!-- TIPO PUBLICIDADE -->
         <select
-          v-model="form.tipo_publicidade"
+          v-model.number="form.tipo_publicidade"
           class="w-full px-4 py-2.5 border rounded-lg text-sm"
         >
           <option :value="null">Tipo de Publicidade</option>
-          <option v-for="t in tipos" :key="t.id" :value="t.id">
+
+          <option
+            v-for="t in tipos"
+            :key="t.id"
+            :value="t.id"
+          >
             {{ t.publicidade || t.tipo }}
           </option>
         </select>
