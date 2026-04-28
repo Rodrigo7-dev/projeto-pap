@@ -7,7 +7,6 @@ const router = useRouter()
 const route = useRoute()
 
 const isEditing = computed(() => !!route.params.id)
-
 const loading = ref(false)
 
 const tipos = ref([])
@@ -18,11 +17,13 @@ const form = ref({
   alvara: '',
   alojamento_local: '',
   validade: 'valido',
-  rua: '',
-  tipo_publicidade: ''
+  rua: null,
+  tipo_publicidade: null
 })
 
+// =====================
 // LOAD DATA
+// =====================
 const fetchData = async () => {
   try {
     const [t, r] = await Promise.all([
@@ -38,28 +39,46 @@ const fetchData = async () => {
       const d = res?.data ?? res
 
       form.value = {
-        processo: d.processo,
-        alvara: d.alvara,
-        alojamento_local: d.alojamento_local,
-        validade: d.validade,
-        rua: d.rua?.id || d.rua,
-        tipo_publicidade: d.tipo_publicidade?.id || d.tipo_publicidade
+        processo: d.processo ?? '',
+        alvara: d.alvara ?? '',
+        alojamento_local: d.alojamento_local ?? '',
+        validade: d.validade ?? 'valido',
+        rua: d.rua?.id ?? d.rua ?? null,
+        tipo_publicidade: d.tipo_publicidade?.id ?? d.tipo_publicidade ?? null
       }
     }
 
   } catch (e) {
-    console.error(e)
+    console.error('Erro ao carregar dados:', e)
   }
 }
 
+// =====================
+// NORMALIZA PAYLOAD
+// =====================
+const buildPayload = () => {
+  return {
+    processo: form.value.processo,
+    alvara: form.value.alvara,
+    alojamento_local: form.value.alojamento_local,
+    validade: form.value.validade,
+
+    // 🔥 normalização correta para backend (IDs explícitos)
+    rua_id: form.value.rua || null,
+    tipo_publicidade_id: form.value.tipo_publicidade || null
+  }
+}
+
+// =====================
 // SUBMIT
+// =====================
 const handleSubmit = async () => {
   if (loading.value) return
 
   loading.value = true
 
   try {
-    const payload = { ...form.value }
+    const payload = buildPayload()
 
     if (isEditing.value) {
       await api.updateProcesso(route.params.id, payload)
@@ -70,7 +89,7 @@ const handleSubmit = async () => {
     router.push('/processos')
 
   } catch (error) {
-    console.error(error.response?.data)
+    console.error('Erro ao guardar processo:', error?.response?.data || error)
     alert('Erro ao guardar processo')
   } finally {
     loading.value = false
@@ -95,7 +114,10 @@ onMounted(fetchData)
       </div>
 
       <!-- FORM -->
-      <form @submit.prevent="handleSubmit" class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4">
+      <form
+        @submit.prevent="handleSubmit"
+        class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4"
+      >
 
         <!-- PROCESSO -->
         <input
@@ -105,7 +127,7 @@ onMounted(fetchData)
           class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 outline-none"
         />
 
-        <!-- ALVARA -->
+        <!-- ALVARÁ -->
         <input
           v-model="form.alvara"
           placeholder="Alvará"
@@ -120,23 +142,40 @@ onMounted(fetchData)
         />
 
         <!-- VALIDADE -->
-        <select v-model="form.validade" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm">
+        <select
+          v-model="form.validade"
+          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
+        >
           <option value="valido">Válido</option>
           <option value="invalido">Inválido</option>
         </select>
 
         <!-- RUA -->
-        <select v-model="form.rua" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm">
-          <option value="">Selecionar Rua</option>
-          <option v-for="r in ruas" :key="r.id" :value="r.id">
+        <select
+          v-model="form.rua"
+          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
+        >
+          <option :value="null">Selecionar Rua</option>
+          <option
+            v-for="r in ruas"
+            :key="r.id"
+            :value="r.id"
+          >
             {{ r.rua }}
           </option>
         </select>
 
-        <!-- TIPO -->
-        <select v-model="form.tipo_publicidade" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm">
-          <option value="">Tipo de Publicidade</option>
-          <option v-for="t in tipos" :key="t.id" :value="t.id">
+        <!-- TIPO PUBLICIDADE -->
+        <select
+          v-model="form.tipo_publicidade"
+          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
+        >
+          <option :value="null">Tipo de Publicidade</option>
+          <option
+            v-for="t in tipos"
+            :key="t.id"
+            :value="t.id"
+          >
             {{ t.publicidade || t.tipo }}
           </option>
         </select>
