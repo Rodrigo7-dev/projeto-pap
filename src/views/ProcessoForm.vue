@@ -17,16 +17,14 @@ const form = ref({
   alvara: '',
   alojamento_local: '',
   validade: 'valido',
-  rua: null,
-  tipo_publicidade: null
+  rua: '',
+  tipo_publicidade: ''
 })
 
 // =====================
 // LOAD DATA
 // =====================
 const fetchData = async () => {
-  console.log('RUAS:', ruas.value)
-  console.log('TIPOS:', tipos.value)
   try {
     const [t, r] = await Promise.all([
       api.getTipos(),
@@ -46,8 +44,9 @@ const fetchData = async () => {
         alojamento_local: d.alojamento_local ?? '',
         validade: d.validade ?? 'valido',
 
-        rua: d.rua?.id ?? d.rua ?? null,
-        tipo_publicidade: d.tipo_publicidade?.id ?? d.tipo_publicidade ?? null
+        // 🔥 manter STRING (MongoDB)
+        rua: d.rua?.id ?? d.rua ?? '',
+        tipo_publicidade: d.tipo_publicidade?.id ?? d.tipo_publicidade ?? ''
       }
     }
 
@@ -57,18 +56,18 @@ const fetchData = async () => {
 }
 
 // =====================
-// PAYLOAD CORRETO (backend camelCase)
+// PAYLOAD (CORRETO)
 // =====================
 const buildPayload = () => {
   return {
     processo: form.value.processo,
     alvara: form.value.alvara,
-
     alojamentoLocal: form.value.alojamento_local,
     validade: form.value.validade,
 
-    rua: Number(form.value.rua),
-    tipoPublicidade: Number(form.value.tipo_publicidade)
+    // 🔥 STRING (não converter!)
+    rua: form.value.rua,
+    tipoPublicidade: form.value.tipo_publicidade
   }
 }
 
@@ -78,7 +77,7 @@ const buildPayload = () => {
 const handleSubmit = async () => {
   if (loading.value) return
 
-  // 🔥 proteção contra null (evita 422 imediato)
+  // validação básica
   if (!form.value.rua || !form.value.tipo_publicidade) {
     alert('Seleciona Rua e Tipo de Publicidade')
     return
@@ -149,6 +148,7 @@ onMounted(fetchData)
         <input
           v-model="form.alojamento_local"
           placeholder="Alojamento Local"
+          required
           class="w-full px-4 py-2.5 border rounded-lg text-sm"
         />
 
@@ -163,10 +163,10 @@ onMounted(fetchData)
 
         <!-- RUA -->
         <select
-          v-model.number="form.rua"
+          v-model="form.rua"
           class="w-full px-4 py-2.5 border rounded-lg text-sm"
         >
-          <option :value="null">Selecionar Rua</option>
+          <option value="">Selecionar Rua</option>
 
           <option
             v-for="r in ruas"
@@ -179,17 +179,17 @@ onMounted(fetchData)
 
         <!-- TIPO PUBLICIDADE -->
         <select
-          v-model.number="form.tipo_publicidade"
+          v-model="form.tipo_publicidade"
           class="w-full px-4 py-2.5 border rounded-lg text-sm"
         >
-          <option :value="null">Tipo de Publicidade</option>
+          <option value="">Tipo de Publicidade</option>
 
           <option
             v-for="t in tipos"
             :key="t.id"
             :value="t.id"
           >
-            {{ t.publicidade || t.tipo }}
+            {{ t.publicidade }}
           </option>
         </select>
 
