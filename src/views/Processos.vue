@@ -85,7 +85,6 @@
 
                 <td class="px-6 py-4 text-right">
 
-                  <!-- EDIT -->
                   <button
                     @click="editProcesso(p.id)"
                     class="px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:bg-gray-100 transition"
@@ -126,11 +125,14 @@ const router = useRouter()
 const processos = ref([])
 const search = ref('')
 
-// LOAD
+// LOAD PROCESSOS
 const loadProcessos = async () => {
   try {
     const res = await api.getProcessos()
-    processos.value = Array.isArray(res) ? res : []
+
+    // 🔥 API retorna { data: [...], meta: {...} }
+    processos.value = Array.isArray(res.data) ? res.data : []
+
   } catch (err) {
     console.error(err)
     processos.value = []
