@@ -25,6 +25,8 @@ const form = ref({
 // LOAD DATA
 // =====================
 const fetchData = async () => {
+  console.log('RUAS:', ruas.value)
+  console.log('TIPOS:', tipos.value)
   try {
     const [t, r] = await Promise.all([
       api.getTipos(),
