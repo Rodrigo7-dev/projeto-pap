@@ -83,20 +83,14 @@
                   </span>
                 </td>
 
-                <td class="px-6 py-4 text-right space-x-2">
+                <td class="px-6 py-4 text-right">
 
+                  <!-- EDIT -->
                   <button
                     @click="editProcesso(p.id)"
                     class="px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:bg-gray-100 transition"
                   >
                     Editar
-                  </button>
-
-                  <button
-                    @click="handleDelete(p.id, p.processo)"
-                    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition"
-                  >
-                    Eliminar
                   </button>
 
                 </td>
@@ -132,40 +126,32 @@ const router = useRouter()
 const processos = ref([])
 const search = ref('')
 
+// LOAD
 const loadProcessos = async () => {
   try {
     const res = await api.getProcessos()
-
-    const lista = res?.data ?? []
-    processos.value = Array.isArray(lista) ? lista : []
-
+    processos.value = Array.isArray(res) ? res : []
   } catch (err) {
     console.error(err)
     processos.value = []
   }
 }
 
+// FILTER
 const filteredProcessos = computed(() => {
   const t = search.value.toLowerCase()
 
   return processos.value.filter(p =>
-    p.processo?.toLowerCase().includes(t) ||
-    p.alvara?.toLowerCase().includes(t) ||
-    p.rua?.rua?.toLowerCase().includes(t) ||
-    p.tipo_publicidade?.publicidade?.toLowerCase().includes(t)
+    (p.processo ?? '').toLowerCase().includes(t) ||
+    (p.alvara ?? '').toLowerCase().includes(t) ||
+    (p.rua?.rua ?? '').toLowerCase().includes(t) ||
+    (p.tipo_publicidade?.publicidade ?? '').toLowerCase().includes(t)
   )
 })
 
-const handleDelete = async (id, nome) => {
-  if (!confirm(`Eliminar ${nome}?`)) return
-
-  await api.deleteProcesso(id)
-
-  processos.value = processos.value.filter(p => p.id !== id)
-}
-
+// EDIT
 const editProcesso = (id) => {
-  router.push(`/processos/${id}`)
+  router.push(`/processos/${id}/editar`)
 }
 
 onMounted(loadProcessos)

@@ -21,9 +21,7 @@ const form = ref({
   tipo_publicidade: ''
 })
 
-// =====================
 // LOAD DATA
-// =====================
 const fetchData = async () => {
   try {
     const [t, r] = await Promise.all([
@@ -31,53 +29,41 @@ const fetchData = async () => {
       api.getRuas()
     ])
 
-    tipos.value = t?.data ?? t ?? []
-    ruas.value = r?.data ?? r ?? []
+    tipos.value = t ?? []
+    ruas.value = r ?? []
 
     if (isEditing.value) {
-      const res = await api.getProcesso(route.params.id)
-      const d = res?.data ?? res
+      const d = await api.getProcesso(route.params.id)
 
       form.value = {
         processo: d.processo ?? '',
         alvara: d.alvara ?? '',
         alojamento_local: d.alojamento_local ?? '',
         validade: d.validade ?? 'valido',
-
-        // 🔥 manter STRING (MongoDB)
         rua: d.rua?.id ?? d.rua ?? '',
         tipo_publicidade: d.tipo_publicidade?.id ?? d.tipo_publicidade ?? ''
       }
     }
 
   } catch (e) {
-    console.error('Erro ao carregar dados:', e)
+    console.error(e)
   }
 }
 
-// =====================
-// PAYLOAD (CORRETO)
-// =====================
-const buildPayload = () => {
-  return {
-    processo: form.value.processo,
-    alvara: form.value.alvara,
-    alojamentoLocal: form.value.alojamento_local,
-    validade: form.value.validade,
+// PAYLOAD
+const buildPayload = () => ({
+  processo: form.value.processo,
+  alvara: form.value.alvara,
+  alojamentoLocal: form.value.alojamento_local,
+  validade: form.value.validade,
+  rua: form.value.rua,
+  tipoPublicidade: form.value.tipo_publicidade
+})
 
-    // 🔥 STRING (não converter!)
-    rua: form.value.rua,
-    tipoPublicidade: form.value.tipo_publicidade
-  }
-}
-
-// =====================
 // SUBMIT
-// =====================
 const handleSubmit = async () => {
   if (loading.value) return
 
-  // validação básica
   if (!form.value.rua || !form.value.tipo_publicidade) {
     alert('Seleciona Rua e Tipo de Publicidade')
     return
@@ -88,8 +74,6 @@ const handleSubmit = async () => {
   try {
     const payload = buildPayload()
 
-    console.log('PAYLOAD FINAL:', payload)
-
     if (isEditing.value) {
       await api.updateProcesso(route.params.id, payload)
     } else {
@@ -98,11 +82,24 @@ const handleSubmit = async () => {
 
     router.push('/processos')
 
-  } catch (error) {
-    console.error('ERRO BACKEND:', error?.response?.data || error)
-    alert('Erro ao guardar processo')
+  } catch (e) {
+    console.error(e)
+    alert('Erro ao guardar')
   } finally {
     loading.value = false
+  }
+}
+
+// DELETE
+const handleDelete = async () => {
+  if (!confirm('Eliminar este processo?')) return
+
+  try {
+    await api.deleteProcesso(route.params.id)
+    router.push('/processos')
+  } catch (e) {
+    console.error(e)
+    alert('Erro ao eliminar')
   }
 }
 
@@ -113,104 +110,56 @@ onMounted(fetchData)
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-4xl mx-auto">
 
-      <!-- HEADER -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-semibold text-gray-900">
-          {{ isEditing ? 'Editar Processo' : 'Novo Processo' }}
-        </h1>
-        <p class="text-sm text-gray-500 mt-1">
-          Preencha os dados do processo
-        </p>
-      </div>
+      <h1 class="text-3xl font-semibold mb-6">
+        {{ isEditing ? 'Editar Processo' : 'Novo Processo' }}
+      </h1>
 
-      <!-- FORM -->
-      <form
-        @submit.prevent="handleSubmit"
-        class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4"
-      >
+      <form @submit.prevent="handleSubmit" class="bg-white p-6 rounded-xl space-y-4">
 
-        <!-- PROCESSO -->
-        <input
-          v-model="form.processo"
-          placeholder="Processo"
-          required
-          class="w-full px-4 py-2.5 border rounded-lg text-sm"
-        />
+        <input v-model="form.processo" placeholder="Processo" required class="input" />
+        <input v-model="form.alvara" placeholder="Alvará" class="input" />
+        <input v-model="form.alojamento_local" placeholder="Alojamento Local" required class="input" />
 
-        <!-- ALVARÁ -->
-        <input
-          v-model="form.alvara"
-          placeholder="Alvará"
-          class="w-full px-4 py-2.5 border rounded-lg text-sm"
-        />
-
-        <!-- ALOJAMENTO LOCAL -->
-        <input
-          v-model="form.alojamento_local"
-          placeholder="Alojamento Local"
-          required
-          class="w-full px-4 py-2.5 border rounded-lg text-sm"
-        />
-
-        <!-- VALIDADE -->
-        <select
-          v-model="form.validade"
-          class="w-full px-4 py-2.5 border rounded-lg text-sm"
-        >
+        <select v-model="form.validade" class="input">
           <option value="valido">Válido</option>
           <option value="invalido">Inválido</option>
         </select>
 
-        <!-- RUA -->
-        <select
-          v-model="form.rua"
-          class="w-full px-4 py-2.5 border rounded-lg text-sm"
-        >
+        <select v-model="form.rua" class="input">
           <option value="">Selecionar Rua</option>
-
-          <option
-            v-for="r in ruas"
-            :key="r.id"
-            :value="r.id"
-          >
+          <option v-for="r in ruas" :key="r.id" :value="r.id">
             {{ r.rua }}
           </option>
         </select>
 
-        <!-- TIPO PUBLICIDADE -->
-        <select
-          v-model="form.tipo_publicidade"
-          class="w-full px-4 py-2.5 border rounded-lg text-sm"
-        >
+        <select v-model="form.tipo_publicidade" class="input">
           <option value="">Tipo de Publicidade</option>
-
-          <option
-            v-for="t in tipos"
-            :key="t.id"
-            :value="t.id"
-          >
+          <option v-for="t in tipos" :key="t.id" :value="t.id">
             {{ t.publicidade }}
           </option>
         </select>
 
-        <!-- ACTIONS -->
-        <div class="flex justify-end gap-3 pt-4">
+        <div class="flex justify-between pt-4">
 
+          <!-- DELETE -->
           <button
+            v-if="isEditing"
             type="button"
-            @click="router.push('/processos')"
-            class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100"
+            @click="handleDelete"
+            class="px-4 py-2 bg-red-100 text-red-600 rounded-lg"
           >
-            Cancelar
+            Eliminar
           </button>
 
-          <button
-            type="submit"
-            :disabled="loading"
-            class="px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 disabled:opacity-50"
-          >
-            {{ loading ? 'A guardar...' : 'Guardar' }}
-          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" @click="router.push('/processos')" class="px-4 py-2 border rounded-lg">
+              Cancelar
+            </button>
+
+            <button type="submit" :disabled="loading" class="px-5 py-2 bg-gray-900 text-white rounded-lg">
+              {{ loading ? 'A guardar...' : (isEditing ? 'Atualizar' : 'Guardar') }}
+            </button>
+          </div>
 
         </div>
 
