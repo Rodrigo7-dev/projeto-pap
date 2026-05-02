@@ -4,7 +4,7 @@
       <div class="text-center mb-8">
         <img src="../assets/logo_camera.jpg" alt="Logo" class="h-16 mx-auto mb-4">
         <h1 class="text-2xl font-semibold text-gray-900 mb-2">Sistema</h1>
-        <p class="text-gray-600 text-sm">Acesso ao Sistema v2.0</p>
+        <p class="text-gray-600 text-sm">Acesso ao Sistema</p>
       </div>
       
       <form @submit.prevent="handleLogin" class="space-y-4">

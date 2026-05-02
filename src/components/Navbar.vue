@@ -8,7 +8,7 @@
         <img src="../assets/logo_camera.jpg" class="h-8 w-8 object-contain" />
 
         <span class="font-semibold text-gray-900">
-          Sistema v2.0
+          Sistema
         </span>
       </div>
 
