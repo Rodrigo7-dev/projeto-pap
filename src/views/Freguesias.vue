@@ -13,8 +13,8 @@
           </p>
         </div>
 
-        <router-link 
-          to="/freguesias/nova" 
+        <router-link
+          to="/freguesias/nova"
           class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition"
         >
           + Nova Freguesia
@@ -32,9 +32,9 @@
 
         <!-- SEARCH -->
         <div class="p-4 border-b border-gray-100">
-          <input 
-            v-model="search" 
-            placeholder="Pesquisar freguesias..." 
+          <input
+            v-model="search"
+            placeholder="Pesquisar freguesias..."
             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           />
         </div>
@@ -52,8 +52,8 @@
 
             <tbody class="divide-y divide-gray-100">
 
-              <tr 
-                v-for="f in filteredFreguesias" 
+              <tr
+                v-for="f in filteredFreguesias"
                 :key="f.id"
                 class="hover:bg-gray-50 transition"
               >
@@ -64,15 +64,15 @@
 
                 <td class="px-6 py-4 text-right space-x-2">
 
-                  <button 
-                    @click="editFreguesia(f.id)" 
+                  <button
+                    @click="editFreguesia(f.id)"
                     class="px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:bg-gray-100 transition"
                   >
                     Editar
                   </button>
 
-                  <button 
-                    @click="handleDelete(f.id, f.freguesia)" 
+                  <button
+                    @click="handleDelete(f.id, f.freguesia)"
                     class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition"
                   >
                     Eliminar
@@ -87,8 +87,8 @@
         </div>
 
         <!-- EMPTY STATE -->
-        <div 
-          v-if="filteredFreguesias.length === 0" 
+        <div
+          v-if="filteredFreguesias.length === 0"
           class="text-center py-14 text-gray-500"
         >
           <div class="text-4xl mb-2">📍</div>
@@ -116,10 +116,8 @@ const loadFreguesias = async () => {
   loading.value = true
   try {
     const res = await api.getFreguesias()
-
     const lista = res?.data ?? res ?? []
     freguesias.value = Array.isArray(lista) ? lista : []
-
   } catch (error) {
     console.error(error)
     freguesias.value = []
@@ -130,9 +128,8 @@ const loadFreguesias = async () => {
 
 const filteredFreguesias = computed(() => {
   const t = search.value.toLowerCase()
-
-  return freguesias.value.filter(f => 
-    (f.freguesia || '').toLowerCase().includes(t)
+  return freguesias.value.filter(f =>
+    (f.freguesia ?? '').toLowerCase().includes(t)
   )
 })
 
@@ -147,7 +144,7 @@ const handleDelete = async (id, nome) => {
     await api.deleteFreguesia(id)
     await loadFreguesias()
   } catch (error) {
-    alert('Não foi possível eliminar. Verifique dependências.')
+    alert('Erro ao eliminar freguesia')
   }
 }
 
