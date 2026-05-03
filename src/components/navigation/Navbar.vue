@@ -5,7 +5,7 @@
 
       <!-- BRAND -->
       <div class="flex items-center gap-3">
-        <img src="../assets/logo_camera.jpg" class="h-8 w-8 object-contain" />
+        <img src="@/assets/logo_camera.jpg" class="h-8 w-8 object-contain" />
 
         <span class="font-semibold text-gray-900">
           Sistema
