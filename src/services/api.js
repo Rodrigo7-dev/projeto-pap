@@ -1,9 +1,7 @@
 import axios from 'axios'
 
-// src/services/api.js
 const api = axios.create({
-  // Escreve o link diretamente aqui para descartar erro de variável
-  baseURL: 'https://myapp-api-production-09ab.up.railway.app/api', 
+  baseURL: 'https://myapp-api-production-09ab.up.railway.app/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -18,13 +16,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// RESPONSE NORMALIZADO (IMPORTANTE)
+// RESPONSE (IMPORTANTE)
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const status = error.response?.status
-
-    if (status === 401) {
+    if (error.response?.status === 401) {
       localStorage.clear()
       window.location.href = '/login'
     }
@@ -33,7 +29,7 @@ api.interceptors.response.use(
   }
 )
 
-const apiMethods = {
+export default {
 
   // AUTH
   login: (data) => api.post('/login', data),
@@ -51,24 +47,20 @@ const apiMethods = {
   getFreguesias: () => api.get('/freguesias'),
   getFreguesia: (id) => api.get(`/freguesias/${id}`),
   createFreguesia: (data) => api.post('/freguesias', data),
-  updateFreguesia: (id, data) => api.put(`/freguesias/${id}`),
+  updateFreguesia: (id, data) => api.put(`/freguesias/${id}`, data),
   deleteFreguesia: (id) => api.delete(`/freguesias/${id}`),
 
   // TIPOS
   getTipos: () => api.get('/tipo-publicidades'),
   getTipo: (id) => api.get(`/tipo-publicidades/${id}`),
   createTipo: (data) => api.post('/tipo-publicidades', data),
-  updateTipo: (id, data) => api.put(`/tipo-publicidades/${id}`),
+  updateTipo: (id, data) => api.put(`/tipo-publicidades/${id}`, data),
   deleteTipo: (id) => api.delete(`/tipo-publicidades/${id}`),
 
-  // 🔴 PROCESSOS (FALTAVA ISTO)
+  // PROCESSOS
   getProcessos: () => api.get('/processos'),
   getProcesso: (id) => api.get(`/processos/${id}`),
   createProcesso: (data) => api.post('/processos', data),
-  updateProcesso: (id, data) => api.put(`/processos/${id}`),
+  updateProcesso: (id, data) => api.put(`/processos/${id}`, data),
   deleteProcesso: (id) => api.delete(`/processos/${id}`)
 }
-
-Object.assign(api, apiMethods)
-
-export default api

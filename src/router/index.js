@@ -1,19 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@/stores/auth'
 
-// Lazy loading
-const Login = () => import('../views/Login.vue')
-const Registar = () => import('../views/Registar.vue')
-const Dashboard = () => import('../views/Dashboard.vue')
-const Processos = () => import('../views/Processos.vue')
-const ProcessoForm = () => import('../views/ProcessoForm.vue')
-const Ruas = () => import('../views/Ruas.vue')
-const RuaForm = () => import('../views/RuaForm.vue')
-const Freguesias = () => import('../views/Freguesias.vue')
-const FreguesiaForm = () => import('../views/FreguesiaForm.vue')
-const Tipos = () => import('../views/Tipos.vue')
-const TipoForm = () => import('../views/TipoForm.vue')
-const NotFound = () => import('../views/NotFound.vue')
+const Login = () => import('@/views/Login.vue')
+const Registar = () => import('@/views/Registar.vue')
+const Dashboard = () => import('@/views/Dashboard.vue')
+const Processos = () => import('@/views/Processos.vue')
+const ProcessoForm = () => import('@/views/ProcessoForm.vue')
+const Ruas = () => import('@/views/Ruas.vue')
+const RuaForm = () => import('@/views/RuaForm.vue')
+const Freguesias = () => import('@/views/Freguesias.vue')
+const FreguesiaForm = () => import('@/views/FreguesiaForm.vue')
+const Tipos = () => import('@/views/Tipos.vue')
+const TipoForm = () => import('@/views/TipoForm.vue')
+const NotFound = () => import('@/views/NotFound.vue')
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
