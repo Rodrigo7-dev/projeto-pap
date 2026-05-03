@@ -3,7 +3,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '../services/api'
 
-// 🔹 IMPORTS NOVOS
 import BaseInput from '../components/BaseInput.vue'
 import BaseSelect from '../components/BaseSelect.vue'
 
@@ -21,8 +20,8 @@ const form = ref({
   alvara: '',
   alojamento_local: '',
   validade: 'valido',
-  rua: '',
-  tipo_publicidade: ''
+  rua: null,
+  tipo_publicidade: null
 })
 
 // LOAD
@@ -44,24 +43,24 @@ const fetchData = async () => {
         alvara: d.alvara ?? '',
         alojamento_local: d.alojamento_local ?? '',
         validade: d.validade ?? 'valido',
-        rua: d.rua?.id ?? '',
-        tipo_publicidade: d.tipo_publicidade?.id ?? ''
+        rua: d.rua?.id ?? null,
+        tipo_publicidade: d.tipo_publicidade?.id ?? null
       }
     }
 
   } catch (e) {
-    console.error(e)
+    console.error('Erro ao carregar dados:', e)
   }
 }
 
-// PAYLOAD
+// PAYLOAD (🔥 CRÍTICO)
 const buildPayload = () => ({
   processo: form.value.processo.trim(),
   alvara: form.value.alvara.trim(),
   alojamentoLocal: form.value.alojamento_local.trim(),
   validade: form.value.validade,
-  rua: form.value.rua,
-  tipoPublicidade: form.value.tipo_publicidade
+  rua: String(form.value.rua), // garantir string
+  tipoPublicidade: String(form.value.tipo_publicidade) // garantir string
 })
 
 // VALIDATION
@@ -88,6 +87,8 @@ const handleSubmit = async () => {
   try {
     const payload = buildPayload()
 
+    console.log('PAYLOAD ENVIADO:', payload) // 🔍 debug
+
     if (isEditing.value) {
       await api.updateProcesso(route.params.id, payload)
     } else {
@@ -97,8 +98,8 @@ const handleSubmit = async () => {
     router.push('/processos')
 
   } catch (e) {
-    console.error(e)
-    alert('Erro ao guardar')
+    console.error('Erro backend:', e.response?.data || e)
+    alert('Erro ao guardar processo')
   } finally {
     loading.value = false
   }
@@ -112,7 +113,7 @@ const handleDelete = async () => {
     await api.deleteProcesso(route.params.id)
     router.push('/processos')
   } catch (e) {
-    console.error(e)
+    console.error('Erro ao eliminar:', e)
     alert('Erro ao eliminar')
   }
 }
@@ -132,12 +133,10 @@ onMounted(fetchData)
 
       <form @submit.prevent="handleSubmit" class="bg-white p-6 rounded-xl space-y-4">
 
-        <!-- INPUTS -->
         <BaseInput v-model="form.processo" placeholder="Processo" required />
         <BaseInput v-model="form.alvara" placeholder="Alvará" />
         <BaseInput v-model="form.alojamento_local" placeholder="Alojamento Local" required />
 
-        <!-- SELECTS -->
         <BaseSelect
           v-model="form.validade"
           :options="[
@@ -163,7 +162,6 @@ onMounted(fetchData)
           placeholder="Tipo de Publicidade"
         />
 
-        <!-- ACTIONS -->
         <div class="flex justify-between pt-4">
 
           <button
