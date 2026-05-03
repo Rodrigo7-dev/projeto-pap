@@ -100,13 +100,18 @@ const load = async () => {
 }
 
 const handleSubmit = async () => {
-  if (isEditing.value) {
-    await api.updateFreguesia(route.params.id, form.value)
-  } else {
-    await api.createFreguesia(form.value)
-  }
+  try {
+    if (isEditing.value) {
+      await api.updateFreguesia(route.params.id, form.value)
+    } else {
+      await api.createFreguesia(form.value)
+    }
 
-  router.push('/freguesias')
+    router.push('/freguesias')
+  } catch (e) {
+    console.error(e)
+    alert('Erro ao guardar freguesia')
+  }
 }
 
 const handleDelete = async () => {
