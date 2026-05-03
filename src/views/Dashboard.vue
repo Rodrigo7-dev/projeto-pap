@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Painel</h1>
-        <p class="text-gray-600">Sistema de Gestão v2.0</p>
+        <p class="text-gray-600">Sistema de Gestão</p>
       </div>
 
       <!-- Estatísticas Principais -->
