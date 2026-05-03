@@ -5,53 +5,39 @@
 
       <!-- BRAND -->
       <div class="flex items-center gap-3">
-        <img src="@/assets/logo_camera.jpg" class="h-8 w-8 object-contain" />
+
+        <img
+          :src="logo"
+          class="h-8 w-8 object-contain"
+          alt="logo"
+        />
 
         <span class="font-semibold text-gray-900">
           Sistema
         </span>
+
       </div>
 
       <!-- MENU -->
       <div class="hidden md:flex gap-8">
 
-        <router-link
-          to="/dashboard"
-          class="nav"
-          active-class="nav-active"
-        >
+        <router-link to="/dashboard" class="nav" active-class="nav-active">
           Painel
         </router-link>
 
-        <router-link
-          to="/processos"
-          class="nav"
-          active-class="nav-active"
-        >
+        <router-link to="/processos" class="nav" active-class="nav-active">
           Processos
         </router-link>
 
-        <router-link
-          to="/ruas"
-          class="nav"
-          active-class="nav-active"
-        >
+        <router-link to="/ruas" class="nav" active-class="nav-active">
           Ruas
         </router-link>
 
-        <router-link
-          to="/freguesias"
-          class="nav"
-          active-class="nav-active"
-        >
+        <router-link to="/freguesias" class="nav" active-class="nav-active">
           Freguesias
         </router-link>
 
-        <router-link
-          to="/tipos"
-          class="nav"
-          active-class="nav-active"
-        >
+        <router-link to="/tipos" class="nav" active-class="nav-active">
           Publicidade
         </router-link>
 
@@ -73,13 +59,17 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import logo from '@/assets/logo_camera.jpg'
 
 const router = useRouter()
 const auth = useAuthStore()
 
 const logout = async () => {
-  await auth.logout()
-  router.push('/login')
+  try {
+    await auth.logout()
+  } finally {
+    router.push('/login')
+  }
 }
 </script>
 

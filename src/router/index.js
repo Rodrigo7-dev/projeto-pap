@@ -139,6 +139,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
 
+router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return next({ name: 'Login' })
   }
@@ -148,6 +149,7 @@ router.beforeEach((to, from, next) => {
   }
 
   next()
+})
 })
 
 export default router

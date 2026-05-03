@@ -17,10 +17,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuthStore } from './stores/auth'
+import { useAuthStore } from '@/stores/auth'
 
 import Navbar from '@/components/navigation/Navbar.vue'
-
 const route = useRoute()
 const auth = useAuthStore()
 

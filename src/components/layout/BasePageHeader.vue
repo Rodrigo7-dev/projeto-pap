@@ -1,5 +1,6 @@
 <template>
   <div class="flex items-center justify-between mb-8">
+
     <div>
       <h1 class="text-3xl font-semibold text-gray-900">
         {{ title }}
@@ -10,13 +11,22 @@
       </p>
     </div>
 
-    <slot />
+    <div v-if="$slots.default">
+      <slot />
+    </div>
+
   </div>
 </template>
 
 <script setup>
 defineProps({
-  title: String,
-  subtitle: String
+  title: {
+    type: String,
+    required: true
+  },
+  subtitle: {
+    type: String,
+    default: ''
+  }
 })
 </script>
