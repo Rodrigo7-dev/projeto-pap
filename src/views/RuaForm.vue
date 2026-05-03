@@ -1,136 +1,165 @@
-```vue
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-4xl mx-auto">
+
+      <!-- HEADER -->
       <div class="flex items-center mb-8">
-        <router-link to="/ruas" class="text-blue-600 hover:text-blue-800 mr-4 font-medium flex items-center">
-          <span class="mr-1">←</span> Voltar
+        <router-link
+          to="/ruas"
+          class="text-sm text-gray-600 hover:text-gray-900 mr-4"
+        >
+          ← Voltar
         </router-link>
-        <h1 class="text-3xl font-bold text-gray-900">
+
+        <h1 class="text-3xl font-semibold text-gray-900">
           {{ isEditing ? 'Editar Rua' : 'Nova Rua' }}
         </h1>
       </div>
 
-      <div v-if="loading" class="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mb-4"></div>
-        <p class="text-gray-600 font-medium">A carregar dados...</p>
-      </div>
+      <!-- FORM -->
+      <form
+        @submit.prevent="handleSubmit"
+        class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4"
+      >
 
-      <form v-else @submit.prevent="handleSubmit" class="bg-white shadow-md rounded-xl border border-gray-200 p-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- RUA -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Nome da Rua
+          </label>
 
-          <!-- Nome da Rua -->
-          <div class="space-y-2">
-            <label class="block text-sm font-bold text-gray-700">Nome da Rua *</label>
-            <input
-              v-model="form.rua"
-              type="text"
-              required
-              placeholder="Ex: Avenida da Liberdade"
-              :class="{'border-red-500 ring-red-100': !form.rua && showErrors}"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
-            />
-          </div>
-
-          <!-- Freguesia -->
-          <div class="space-y-2">
-            <label class="block text-sm font-bold text-gray-700">Freguesia *</label>
-            <select
-              v-model="form.freguesia"
-              required
-              :class="{'border-red-500 ring-red-100': !form.freguesia && showErrors}"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none bg-white transition-all"
-            >
-              <option value="" disabled>Selecione a freguesia</option>
-              <option
-                v-for="freg in freguesias"
-                :key="freg.id || freg._id"
-                :value="freg.freguesia || freg.nome"
-              >
-                {{ freg.freguesia || freg.nome }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Coordenada -->
-          <div class="space-y-2 md:col-span-2">
-            <label class="block text-sm font-bold text-gray-700">Coordenada *</label>
-            <input
-              v-model="form.coordenada"
-              type="text"
-              required
-              placeholder="Ex: 41.5321, -8.4211"
-              :class="{'border-red-500 ring-red-100': !form.coordenada && showErrors}"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-mono text-sm"
-            />
-            <p class="text-gray-400 text-xs italic">Formato: latitude, longitude</p>
-          </div>
+          <input
+            v-model="form.rua"
+            type="text"
+            required
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          />
         </div>
 
-        <!-- Botões -->
-        <div class="mt-10 pt-6 border-t border-gray-100 flex justify-end space-x-4">
-          <router-link to="/ruas" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium transition-colors">
-            Cancelar
-          </router-link>
-          <button
-            type="submit"
-            :disabled="submitting"
-            class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg shadow-blue-200 transition-all disabled:opacity-50"
+        <!-- FREGUESIA -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Freguesia
+          </label>
+
+          <select
+            v-model="form.freguesia"
+            required
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           >
-            {{ submitting ? 'A guardar...' : (isEditing ? 'Atualizar Rua' : 'Criar Rua') }}
-          </button>
+            <option value="" disabled>Selecionar freguesia</option>
+
+            <option
+              v-for="f in freguesias"
+              :key="f.id"
+              :value="f.id"
+            >
+              {{ f.freguesia }}
+            </option>
+          </select>
         </div>
+
+        <!-- COORDENADA -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Coordenada
+          </label>
+
+          <input
+            v-model="form.coordenada"
+            type="text"
+            required
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          />
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex justify-between pt-4">
+
+          <button
+            v-if="isEditing"
+            type="button"
+            @click="handleDelete"
+            class="px-4 py-2 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"
+          >
+            Eliminar
+          </button>
+
+          <div class="flex gap-2 ml-auto">
+
+            <router-link
+              to="/ruas"
+              class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 transition"
+            >
+              Cancelar
+            </router-link>
+
+            <button
+              type="submit"
+              class="px-5 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition"
+            >
+              {{ isEditing ? 'Atualizar' : 'Guardar' }}
+            </button>
+
+          </div>
+
+        </div>
+
       </form>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
 const route = useRoute()
 
+// STATE
 const loading = ref(false)
 const submitting = ref(false)
-const showErrors = ref(false)
 const freguesias = ref([])
 
+// FORM
 const form = ref({
   rua: '',
   freguesia: '',
   coordenada: ''
 })
 
+// EDIT MODE
 const isEditing = computed(() => !!route.params.id)
 
-// FREGUESIAS
+// LOAD FREGUESIAS
 const loadFreguesias = async () => {
   try {
     const res = await api.getFreguesias()
-    freguesias.value = res
-  } catch (error) {
-    console.error(error)
+    const lista = res?.data ?? res ?? []
+    freguesias.value = Array.isArray(lista) ? lista : []
+  } catch {
+    freguesias.value = []
   }
 }
 
-// EDIT MODE
-const loadRuaData = async () => {
+// LOAD RUA (EDIT)
+const loadRua = async () => {
   if (!isEditing.value) return
 
   loading.value = true
   try {
     const res = await api.getRua(route.params.id)
+    const data = res?.data ?? res
 
     form.value = {
-      rua: res.rua || '',
-      freguesia: res.freguesia?._id || res.freguesia || '',
-      coordenada: res.coordenada || ''
+      rua: data.rua ?? '',
+      freguesia: data.freguesia?._id ?? data.freguesia ?? '',
+      coordenada: data.coordenada ?? ''
     }
-  } catch (error) {
-    console.error(error)
+  } catch {
     router.push('/ruas')
   } finally {
     loading.value = false
@@ -139,17 +168,13 @@ const loadRuaData = async () => {
 
 // SUBMIT
 const handleSubmit = async () => {
-  showErrors.value = true
-
-  if (!form.value.rua || !form.value.freguesia || !form.value.coordenada) return
-
   submitting.value = true
 
   try {
     const payload = {
-      rua: form.value.rua.trim(),
+      rua: form.value.rua,
       freguesia: form.value.freguesia,
-      coordenada: form.value.coordenada.trim()
+      coordenada: form.value.coordenada
     }
 
     if (isEditing.value) {
@@ -159,19 +184,27 @@ const handleSubmit = async () => {
     }
 
     router.push('/ruas')
-  } catch (error) {
-    const msg =
-      error.response?.data?.message ||
-      'Erro ao guardar'
-
-    alert(msg)
+  } catch (e) {
+    alert('Erro ao guardar rua')
   } finally {
     submitting.value = false
   }
 }
 
+// DELETE
+const handleDelete = async () => {
+  if (!confirm('Eliminar esta rua?')) return
+
+  try {
+    await api.deleteRua(route.params.id)
+    router.push('/ruas')
+  } catch {
+    alert('Erro ao eliminar rua')
+  }
+}
+
 onMounted(async () => {
   await loadFreguesias()
-  await loadRuaData()
+  await loadRua()
 })
 </script>
