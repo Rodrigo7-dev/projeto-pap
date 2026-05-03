@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    
+
     <!-- Navbar só aparece quando deve -->
     <Navbar v-if="shouldShowNavbar" />
 
@@ -18,19 +18,18 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
-import Navbar from './components/navbar/Navbar.vue'
+
+import Navbar from '@/components/navigation/Navbar.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
 
-// Navbar só aparece se estiver autenticado e a rota não esconder
 const shouldShowNavbar = computed(() => {
   return auth.isAuthenticated && route.meta.hideNavbar !== true
 })
 </script>
 
 <style scoped>
-/* Transição entre páginas */
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.25s ease;
