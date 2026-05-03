@@ -20,8 +20,8 @@ const form = ref({
   alvara: '',
   alojamento_local: '',
   validade: 'valido',
-  rua: null,
-  tipo_publicidade: null
+  rua: '',
+  tipoPublicidade: ''
 })
 
 // LOAD
@@ -43,25 +43,15 @@ const fetchData = async () => {
         alvara: d.alvara ?? '',
         alojamento_local: d.alojamento_local ?? '',
         validade: d.validade ?? 'valido',
-        rua: d.rua?.id ?? null,
-        tipo_publicidade: d.tipo_publicidade?.id ?? null
+        rua: d.rua?.id ?? '',
+        tipoPublicidade: d.tipo_publicidade?.id ?? ''
       }
     }
 
   } catch (e) {
-    console.error('Erro ao carregar dados:', e)
+    console.error(e)
   }
 }
-
-// PAYLOAD (🔥 CRÍTICO)
-const buildPayload = () => ({
-  processo: form.value.processo.trim(),
-  alvara: form.value.alvara.trim(),
-  alojamentoLocal: form.value.alojamento_local.trim(),
-  validade: form.value.validade,
-  rua: String(form.value.rua), // garantir string
-  tipoPublicidade: String(form.value.tipo_publicidade) // garantir string
-})
 
 // VALIDATION
 const isValid = () => {
@@ -69,7 +59,7 @@ const isValid = () => {
     form.value.processo &&
     form.value.alojamento_local &&
     form.value.rua &&
-    form.value.tipo_publicidade
+    form.value.tipoPublicidade
   )
 }
 
@@ -85,21 +75,17 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const payload = buildPayload()
-
-    console.log('PAYLOAD ENVIADO:', payload) // 🔍 debug
-
     if (isEditing.value) {
-      await api.updateProcesso(route.params.id, payload)
+      await api.updateProcesso(route.params.id, form.value)
     } else {
-      await api.createProcesso(payload)
+      await api.createProcesso(form.value)
     }
 
     router.push('/processos')
 
   } catch (e) {
-    console.error('Erro backend:', e.response?.data || e)
-    alert('Erro ao guardar processo')
+    console.error(e)
+    alert('Erro ao guardar')
   } finally {
     loading.value = false
   }
@@ -113,7 +99,7 @@ const handleDelete = async () => {
     await api.deleteProcesso(route.params.id)
     router.push('/processos')
   } catch (e) {
-    console.error('Erro ao eliminar:', e)
+    console.error(e)
     alert('Erro ao eliminar')
   }
 }
@@ -125,11 +111,9 @@ onMounted(fetchData)
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-4xl mx-auto">
 
-      <div class="mb-8">
-        <h1 class="text-3xl font-semibold">
-          {{ isEditing ? 'Editar Processo' : 'Novo Processo' }}
-        </h1>
-      </div>
+      <h1 class="text-3xl font-semibold mb-6">
+        {{ isEditing ? 'Editar Processo' : 'Novo Processo' }}
+      </h1>
 
       <form @submit.prevent="handleSubmit" class="bg-white p-6 rounded-xl space-y-4">
 
@@ -143,7 +127,6 @@ onMounted(fetchData)
             { label: 'Válido', value: 'valido' },
             { label: 'Inválido', value: 'invalido' }
           ]"
-          placeholder="Validade"
         />
 
         <BaseSelect
@@ -155,7 +138,7 @@ onMounted(fetchData)
         />
 
         <BaseSelect
-          v-model="form.tipo_publicidade"
+          v-model="form.tipoPublicidade"
           :options="tipos"
           labelKey="publicidade"
           valueKey="id"
