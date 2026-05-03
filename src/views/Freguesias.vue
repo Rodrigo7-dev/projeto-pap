@@ -21,14 +21,8 @@
         </router-link>
       </div>
 
-      <!-- LOADING -->
-      <div v-if="loading" class="text-center py-14">
-        <div class="animate-spin inline-block w-8 h-8 border-4 border-gray-900 border-t-transparent rounded-full mb-3"></div>
-        <p class="text-gray-600 text-sm">A carregar freguesias...</p>
-      </div>
-
       <!-- CARD -->
-      <div v-else class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
 
         <!-- SEARCH -->
         <div class="p-4 border-b border-gray-100">
@@ -62,20 +56,13 @@
                   {{ f.freguesia }}
                 </td>
 
-                <td class="px-6 py-4 text-right space-x-2">
+                <td class="px-6 py-4 text-right">
 
                   <button
                     @click="editFreguesia(f.id)"
                     class="px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:bg-gray-100 transition"
                   >
                     Editar
-                  </button>
-
-                  <button
-                    @click="handleDelete(f.id, f.freguesia)"
-                    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition"
-                  >
-                    Eliminar
                   </button>
 
                 </td>
@@ -108,21 +95,16 @@ import api from '../services/api'
 
 const router = useRouter()
 
-const loading = ref(false)
 const freguesias = ref([])
 const search = ref('')
 
 const loadFreguesias = async () => {
-  loading.value = true
   try {
     const res = await api.getFreguesias()
     const lista = res?.data ?? res ?? []
     freguesias.value = Array.isArray(lista) ? lista : []
-  } catch (error) {
-    console.error(error)
+  } catch (e) {
     freguesias.value = []
-  } finally {
-    loading.value = false
   }
 }
 
@@ -135,17 +117,6 @@ const filteredFreguesias = computed(() => {
 
 const editFreguesia = (id) => {
   router.push(`/freguesias/${id}/editar`)
-}
-
-const handleDelete = async (id, nome) => {
-  if (!confirm(`Eliminar a freguesia "${nome}"?`)) return
-
-  try {
-    await api.deleteFreguesia(id)
-    await loadFreguesias()
-  } catch (error) {
-    alert('Erro ao eliminar freguesia')
-  }
 }
 
 onMounted(loadFreguesias)

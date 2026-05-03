@@ -16,29 +16,22 @@
         </h1>
       </div>
 
-      <!-- LOADING -->
-      <div v-if="loading" class="text-center py-14">
-        <div class="animate-spin inline-block w-8 h-8 border-4 border-gray-900 border-t-transparent rounded-full mb-3"></div>
-        <p class="text-gray-600 text-sm">A carregar dados...</p>
-      </div>
-
-      <!-- FORM -->
+      <!-- CARD -->
       <form
-        v-else
         @submit.prevent="handleSubmit"
         class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4"
       >
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Nome da Freguesia
+            Freguesia
           </label>
 
           <input
             v-model="form.freguesia"
             type="text"
             required
-            placeholder="Introduzir nome da freguesia"
+            placeholder="Nome da freguesia"
             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           />
         </div>
@@ -66,10 +59,9 @@
 
             <button
               type="submit"
-              :disabled="submitting"
-              class="px-5 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+              class="px-5 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition"
             >
-              {{ submitting ? 'A guardar...' : (isEditing ? 'Atualizar' : 'Guardar') }}
+              {{ isEditing ? 'Atualizar' : 'Guardar' }}
             </button>
 
           </div>
@@ -83,15 +75,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
 const route = useRoute()
-
-const loading = ref(false)
-const submitting = ref(false)
 
 const isEditing = computed(() => !!route.params.id)
 
@@ -99,50 +88,33 @@ const form = ref({
   freguesia: ''
 })
 
-const loadFreguesia = async () => {
+const load = async () => {
   if (!isEditing.value) return
 
-  loading.value = true
   try {
     const res = await api.getFreguesia(route.params.id)
-    const data = res?.data ?? res
-
-    form.value.freguesia = data?.freguesia ?? ''
-  } catch (error) {
-    console.error(error)
+    form.value.freguesia = res?.data?.freguesia ?? res?.freguesia ?? ''
+  } catch {
     router.push('/freguesias')
-  } finally {
-    loading.value = false
   }
 }
 
 const handleSubmit = async () => {
-  submitting.value = true
-  try {
-    if (isEditing.value) {
-      await api.updateFreguesia(route.params.id, form.value)
-    } else {
-      await api.createFreguesia(form.value)
-    }
-
-    router.push('/freguesias')
-  } catch (error) {
-    alert('Erro ao guardar freguesia')
-  } finally {
-    submitting.value = false
+  if (isEditing.value) {
+    await api.updateFreguesia(route.params.id, form.value)
+  } else {
+    await api.createFreguesia(form.value)
   }
+
+  router.push('/freguesias')
 }
 
 const handleDelete = async () => {
-  if (!confirm('Eliminar esta freguesia?')) return
+  if (!confirm('Eliminar freguesia?')) return
 
-  try {
-    await api.deleteFreguesia(route.params.id)
-    router.push('/freguesias')
-  } catch (error) {
-    alert('Erro ao eliminar freguesia')
-  }
+  await api.deleteFreguesia(route.params.id)
+  router.push('/freguesias')
 }
 
-onMounted(loadFreguesia)
+onMounted(load)
 </script>
