@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import api from '../services/api'
+import api from '@/services/api'
 
-import BaseInput from '../components/BaseInput.vue'
-import BaseSelect from '../components/BaseSelect.vue'
+import BaseInput from '@/components/BaseInput.vue'
+import BaseSelect from '@/components/BaseSelect.vue'
 
 const router = useRouter()
 const route = useRoute()
