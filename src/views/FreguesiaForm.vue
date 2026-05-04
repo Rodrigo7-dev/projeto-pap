@@ -1,3 +1,80 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import api from '../services/api'
+
+const router = useRouter()
+const route = useRoute()
+
+const isEditing = computed(() => Boolean(route.params.id))
+const loading = ref(false)
+
+const form = ref({
+  freguesia: ''
+})
+
+// LOAD
+const load = async () => {
+  if (!isEditing.value) return
+
+  try {
+    const res = await api.getFreguesia(route.params.id)
+
+    // 🔥 PADRÃO CORRETO
+    form.value = {
+      freguesia: res.freguesia ?? ''
+    }
+
+  } catch (e) {
+    console.error('Erro ao carregar freguesia:', e)
+    router.push('/freguesias')
+  }
+}
+
+// SUBMIT
+const handleSubmit = async () => {
+  if (loading.value) return
+
+  if (!form.value.freguesia) {
+    alert('Preencha o nome da freguesia')
+    return
+  }
+
+  loading.value = true
+
+  try {
+    if (isEditing.value) {
+      await api.updateFreguesia(route.params.id, form.value)
+    } else {
+      await api.createFreguesia(form.value)
+    }
+
+    router.push('/freguesias')
+
+  } catch (e) {
+    console.error('Erro ao guardar:', e)
+    alert('Erro ao guardar freguesia')
+  } finally {
+    loading.value = false
+  }
+}
+
+// DELETE
+const handleDelete = async () => {
+  if (!confirm('Tem a certeza que deseja eliminar esta freguesia?')) return
+
+  try {
+    await api.deleteFreguesia(route.params.id)
+    router.push('/freguesias')
+  } catch (e) {
+    console.error('Erro ao eliminar:', e)
+    alert('Erro ao eliminar freguesia')
+  }
+}
+
+onMounted(load)
+</script>
+
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-4xl mx-auto">
@@ -16,7 +93,7 @@
         </h1>
       </div>
 
-      <!-- CARD -->
+      <!-- FORM -->
       <form
         @submit.prevent="handleSubmit"
         class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4"
@@ -59,9 +136,10 @@
 
             <button
               type="submit"
-              class="px-5 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition"
+              :disabled="loading"
+              class="px-5 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50 transition"
             >
-              {{ isEditing ? 'Atualizar' : 'Guardar' }}
+              {{ loading ? 'A guardar...' : (isEditing ? 'Atualizar' : 'Guardar') }}
             </button>
 
           </div>
@@ -73,48 +151,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import api from '../services/api'
-
-const router = useRouter()
-const route = useRoute()
-
-const isEditing = computed(() => !!route.params.id)
-
-const form = ref({
-  freguesia: ''
-})
-
-const load = async () => {
-  if (!isEditing.value) return
-
-  try {
-    const res = await api.getFreguesia(route.params.id)
-    form.value.freguesia = res?.data?.freguesia ?? res?.freguesia ?? ''
-  } catch {
-    router.push('/freguesias')
-  }
-}
-
-const handleSubmit = async () => {
-  if (isEditing.value) {
-    await api.updateFreguesia(route.params.id, form.value)
-  } else {
-    await api.createFreguesia(form.value)
-  }
-
-  router.push('/freguesias')
-}
-
-const handleDelete = async () => {
-  if (!confirm('Eliminar freguesia?')) return
-
-  await api.deleteFreguesia(route.params.id)
-  router.push('/freguesias')
-}
-
-onMounted(load)
-</script>
