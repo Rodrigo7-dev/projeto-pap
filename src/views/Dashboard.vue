@@ -174,28 +174,30 @@ const stats = ref({
 const processos = ref([])
 const loading = ref(false)
 
+// STATUS UI
 const getStatusClass = (validade) => {
-  if (validade === 'valido') return 'bg-green-100 text-green-800'
-  if (validade === 'invalido') return 'bg-red-100 text-red-800'
-  return 'bg-yellow-100 text-yellow-800'
+  return validade === 'valido'
+    ? 'bg-green-100 text-green-800'
+    : 'bg-red-100 text-red-800'
 }
 
 const getValidadeText = (validade) => {
-  if (validade === 'valido') return 'Válido'
-  if (validade === 'invalido') return 'Inválido'
-  return 'Pendente'
+  return validade === 'valido' ? 'Válido' : 'Inválido'
 }
 
+// LOAD DATA
 const loadData = async () => {
   loading.value = true
+
   try {
     const [processosRes, ruasRes] = await Promise.all([
       api.getProcessos(),
       api.getRuas()
     ])
 
-    const listaProcessos = processosRes?.data ?? processosRes ?? []
-    const listaRuas = ruasRes?.data ?? ruasRes ?? []
+    // 🔥 PADRÃO CORRETO
+    const listaProcessos = processosRes.data || []
+    const listaRuas = ruasRes.data || []
 
     stats.value = {
       total_processos: listaProcessos.length,
@@ -207,7 +209,7 @@ const loadData = async () => {
     processos.value = listaProcessos.slice(0, 10)
 
   } catch (e) {
-    console.error(e)
+    console.error('Erro ao carregar dashboard:', e)
   } finally {
     loading.value = false
   }
