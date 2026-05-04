@@ -13,8 +13,14 @@ const loadFreguesias = async () => {
   try {
     const res = await api.getFreguesias()
 
-    // 🔥 PADRÃO OFICIAL
-    freguesias.value = res.data || []
+    console.log('Freguesias:', res)
+
+    // 🔥 PROTEÇÃO TOTAL
+    if (Array.isArray(res.data)) {
+      freguesias.value = res.data
+    } else {
+      freguesias.value = []
+    }
 
   } catch (e) {
     console.error('Erro ao carregar freguesias:', e)
