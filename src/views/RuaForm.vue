@@ -156,7 +156,7 @@ const loadRua = async () => {
 
     form.value = {
       rua: data.rua ?? '',
-      freguesia: data.freguesia?._id ?? data.freguesia ?? '',
+      freguesia: data.freguesia?.id ?? data.freguesia ?? '',
       coordenada: data.coordenada ?? ''
     }
   } catch {

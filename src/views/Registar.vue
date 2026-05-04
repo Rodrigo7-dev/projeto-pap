@@ -192,7 +192,7 @@ const handleRegister = async () => {
     resetFields()
 
     setTimeout(() => {
-      router.push('/dashboard')
+      router.push('/login')
     }, 1200)
 
   } catch (err) {
