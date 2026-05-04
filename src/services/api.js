@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// RESPONSE (IMPORTANTE)
+// RESPONSE
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
@@ -29,7 +29,8 @@ api.interceptors.response.use(
   }
 )
 
-export default {
+// METHODS
+const apiMethods = {
 
   // AUTH
   login: (data) => api.post('/login', data),
@@ -64,3 +65,8 @@ export default {
   updateProcesso: (id, data) => api.put(`/processos/${id}`, data),
   deleteProcesso: (id) => api.delete(`/processos/${id}`)
 }
+
+// 🔥 JUNTA TUDO
+Object.assign(api, apiMethods)
+
+export default api

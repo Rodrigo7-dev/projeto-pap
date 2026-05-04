@@ -105,33 +105,24 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/services/api'
+import api from '../services/api'
 
 import BaseLayout from '@/components/layout/BaseLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BasePageHeader from '@/components/layout/BasePageHeader.vue'
-import BaseInput from '@/components/ui/BaseInput.vue'
 
 const router = useRouter()
 
 const processos = ref([])
 const search = ref('')
-const loading = ref(false)
 
 const loadProcessos = async () => {
-  loading.value = true
   try {
     const res = await api.getProcessos()
-
-    // ✔ já vem “limpo” do interceptor
-    processos.value = Array.isArray(res) ? res : []
-
-  } catch (e) {
-    console.error('Erro ao carregar processos:', e)
+    processos.value = Array.isArray(res.data) ? res.data : []
+  } catch {
     processos.value = []
-  } finally {
-    loading.value = false
   }
 }
 
