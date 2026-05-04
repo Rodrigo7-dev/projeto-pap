@@ -105,7 +105,7 @@ const router = useRouter()
 const tipos = ref([])
 const search = ref('')
 
-// LOAD
+// Buscar dados da api
 const loadTipos = async () => {
   try {
     const res = await api.getTipos()
@@ -117,7 +117,7 @@ const loadTipos = async () => {
   }
 }
 
-// FILTER
+// filtrar dados da api
 const filteredTipos = computed(() => {
   const s = search.value.toLowerCase()
 
@@ -126,12 +126,12 @@ const filteredTipos = computed(() => {
   )
 })
 
-// EDIT
+// editar dados da api
 const editTipo = (id) => {
   router.push(`/tipos/${id}/editar`)
 }
 
-// DELETE
+// apagar dados da api
 const handleDelete = async (t) => {
   const id = t.id || t._id
 
