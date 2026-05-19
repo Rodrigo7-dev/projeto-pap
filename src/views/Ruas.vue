@@ -8,6 +8,7 @@
           <h1 class="text-3xl font-semibold text-gray-900">
             Gestão de Ruas
           </h1>
+
           <p class="text-sm text-gray-500 mt-1">
             Consulta e gestão de ruas registadas
           </p>
@@ -33,43 +34,65 @@
           />
         </div>
 
+        <!-- LOADING -->
+        <div
+          v-if="loading"
+          class="text-center py-14 text-gray-500"
+        >
+          A carregar...
+        </div>
+
         <!-- TABLE -->
-        <div class="overflow-x-auto">
+        <div
+          v-else-if="filteredRuas.length"
+          class="overflow-x-auto"
+        >
           <table class="w-full text-sm">
 
             <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
               <tr>
-                <th class="px-6 py-4 text-left">Rua</th>
-                <th class="px-6 py-4 text-left">Coordenada</th>
-                <th class="px-6 py-4 text-left">Freguesia</th>
-                <th class="px-6 py-4 text-right">Ações</th>
+                <th class="px-6 py-4 text-left">
+                  Rua
+                </th>
+
+                <th class="px-6 py-4 text-left">
+                  Coordenada
+                </th>
+
+                <th class="px-6 py-4 text-left">
+                  Freguesia
+                </th>
+
+                <th class="px-6 py-4 text-right">
+                  Ações
+                </th>
               </tr>
             </thead>
 
             <tbody class="divide-y divide-gray-100">
 
               <tr
-                v-for="r in filteredRuas"
-                :key="r.id"
+                v-for="rua in filteredRuas"
+                :key="rua.id"
                 class="hover:bg-gray-50 transition"
               >
 
                 <td class="px-6 py-4 font-medium text-gray-900">
-                  {{ r.rua }}
+                  {{ rua.rua }}
                 </td>
 
-                <td class="px-6 py-4 text-gray-500 font-mono text-xs">
-                  {{ r.coordenada || 'N/D' }}
+                <td class="px-6 py-4 text-gray-500 text-xs font-mono">
+                  {{ rua.coordenada || 'N/D' }}
                 </td>
 
                 <td class="px-6 py-4 text-gray-600">
-                  {{ r.freguesia?.freguesia || r.freguesia || 'Sem Freguesia' }}
+                  {{ getFreguesia(rua) }}
                 </td>
 
                 <td class="px-6 py-4 text-right">
 
                   <button
-                    @click="editRua(r.id)"
+                    @click="editRua(rua.id)"
                     class="px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:bg-gray-100 transition"
                   >
                     Editar
@@ -80,20 +103,30 @@
               </tr>
 
             </tbody>
+
           </table>
         </div>
 
-        <!-- EMPTY STATE -->
+        <!-- EMPTY -->
         <div
-          v-if="filteredRuas.length === 0"
+          v-else
           class="text-center py-14 text-gray-500"
         >
-          <div class="text-4xl mb-2">📍</div>
-          <p class="font-medium text-gray-700">Nenhuma rua encontrada</p>
-          <p class="text-sm">Tenta alterar a pesquisa</p>
+          <div class="text-4xl mb-2">
+            📍
+          </div>
+
+          <p class="font-medium text-gray-700">
+            Nenhuma rua encontrada
+          </p>
+
+          <p class="text-sm">
+            Tenta alterar a pesquisa
+          </p>
         </div>
 
       </div>
+
     </div>
   </div>
 </template>
@@ -107,25 +140,50 @@ const router = useRouter()
 
 const ruas = ref([])
 const search = ref('')
+const loading = ref(false)
 
 const loadRuas = async () => {
+  loading.value = true
+
   try {
     const res = await api.getRuas()
-    const lista = res?.data ?? res ?? []
-    ruas.value = Array.isArray(lista) ? lista : []
-  } catch {
+
+    ruas.value =
+      Array.isArray(res?.data)
+        ? res.data
+        : []
+
+  } catch (e) {
+    console.error(e)
     ruas.value = []
   }
+
+  loading.value = false
+}
+
+const getFreguesia = (rua) => {
+  return (
+    rua?.freguesia?.freguesia ||
+    rua?.freguesia ||
+    'Sem Freguesia'
+  )
 }
 
 const filteredRuas = computed(() => {
-  const t = search.value.toLowerCase()
+  const term = search.value.toLowerCase()
 
-  return ruas.value.filter(r => {
-    const rua = (r.rua ?? '').toLowerCase()
-    const freg = (r.freguesia?.freguesia ?? r.freguesia ?? '').toLowerCase()
+  return ruas.value.filter((rua) => {
+    return (
+      (rua.rua ?? '')
+        .toLowerCase()
+        .includes(term)
 
-    return rua.includes(t) || freg.includes(t)
+      ||
+
+      getFreguesia(rua)
+        .toLowerCase()
+        .includes(term)
+    )
   })
 })
 
