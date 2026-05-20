@@ -10,6 +10,7 @@ const router = useRouter()
 const route = useRoute()
 
 const loading = ref(false)
+const submitting = ref(false)
 
 const tipos = ref([])
 const ruas = ref([])
@@ -29,10 +30,11 @@ const fetchData = async () => {
   loading.value = true
 
   try {
-    const [tiposRes, ruasRes] = await Promise.all([
-      api.getTipos(),
-      api.getRuas()
-    ])
+    const [tiposRes, ruasRes] =
+      await Promise.all([
+        api.getTipos(),
+        api.getRuas()
+      ])
 
     tipos.value =
       Array.isArray(tiposRes?.data)
@@ -45,30 +47,40 @@ const fetchData = async () => {
         : []
 
     if (isEditing.value) {
-      const res = await api.getProcesso(route.params.id)
+      const res =
+        await api.getProcesso(route.params.id)
 
-      const data = res?.data ?? res
+      const data =
+        res?.data ?? res
 
       form.value = {
-        processo: data.processo ?? '',
-        alvara: data.alvara ?? '',
-        alojamento_local: data.alojamento_local ?? '',
-        validade: data.validade ?? 'valido',
+        processo:
+          data.processo ?? '',
+
+        alvara:
+          data.alvara ?? '',
+
+        alojamento_local:
+          data.alojamento_local ?? '',
+
+        validade:
+          data.validade ?? 'valido',
 
         rua:
-          data.rua?.id ??
           data.rua?._id ??
+          data.rua?.id ??
           '',
 
         tipoPublicidade:
-          data.tipo_publicidade?.id ??
+          data.tipoPublicidade?._id ??
           data.tipo_publicidade?._id ??
+          data.tipoPublicidade?.id ??
           ''
       }
     }
 
-  } catch (error) {
-    console.error(error)
+  } catch (e) {
+    console.error(e)
     alert('Erro ao carregar dados')
 
   } finally {
@@ -76,64 +88,85 @@ const fetchData = async () => {
   }
 }
 
-const isValid = () => {
-  return (
-    form.value.processo.trim() &&
-    form.value.alojamento_local.trim() &&
-    form.value.rua &&
-    form.value.tipoPublicidade
-  )
-}
+const isValid = () => (
+  form.value.processo?.trim() &&
+  form.value.alojamento_local?.trim() &&
+  form.value.rua &&
+  form.value.tipoPublicidade
+)
 
 const handleSubmit = async () => {
-  if (loading.value) return
+  if (submitting.value) return
 
   if (!isValid()) {
-    alert('Preencha todos os campos obrigatórios')
+    alert('Preencha os campos obrigatórios')
     return
   }
 
-  loading.value = true
+  submitting.value = true
 
   try {
 
     const payload = {
-      processo: form.value.processo.trim(),
-      alvara: form.value.alvara.trim(),
-      alojamento_local: form.value.alojamento_local.trim(),
-      validade: form.value.validade,
-      rua: form.value.rua,
-      tipoPublicidade: form.value.tipoPublicidade
+      processo:
+        form.value.processo.trim(),
+
+      alvara:
+        (form.value.alvara || '').trim(),
+
+      alojamento_local:
+        form.value.alojamento_local.trim(),
+
+      validade:
+        form.value.validade,
+
+      rua:
+        form.value.rua,
+
+      tipoPublicidade:
+        form.value.tipoPublicidade
     }
 
     if (isEditing.value) {
-      await api.updateProcesso(route.params.id, payload)
+      await api.updateProcesso(
+        route.params.id,
+        payload
+      )
     } else {
-      await api.createProcesso(payload)
+      await api.createProcesso(
+        payload
+      )
     }
 
     router.push('/processos')
 
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao guardar processo')
+  } catch (e) {
+    console.error(e)
+    alert('Erro ao guardar')
 
   } finally {
-    loading.value = false
+    submitting.value = false
   }
 }
 
 const handleDelete = async () => {
-  if (!confirm('Eliminar este processo?')) return
+  if (
+    !confirm(
+      'Eliminar este processo?'
+    )
+  ) return
 
   try {
-    await api.deleteProcesso(route.params.id)
+    await api.deleteProcesso(
+      route.params.id
+    )
 
     router.push('/processos')
 
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao eliminar')
+  } catch {
+    alert(
+      'Erro ao eliminar'
+    )
   }
 }
 
