@@ -1,153 +1,247 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 
 const Login = () => import('@/views/Login.vue')
 const Registar = () => import('@/views/Registar.vue')
+
 const Dashboard = () => import('@/views/Dashboard.vue')
+
 const Processos = () => import('@/views/Processos.vue')
 const ProcessoForm = () => import('@/views/ProcessoForm.vue')
+
 const Ruas = () => import('@/views/Ruas.vue')
 const RuaForm = () => import('@/views/RuaForm.vue')
+
 const Freguesias = () => import('@/views/Freguesias.vue')
 const FreguesiaForm = () => import('@/views/FreguesiaForm.vue')
+
 const Tipos = () => import('@/views/Tipos.vue')
 const TipoForm = () => import('@/views/TipoForm.vue')
+
 const NotFound = () => import('@/views/NotFound.vue')
 
 const routes = [
-  { path: '/', redirect: '/dashboard' },
 
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login,
-    meta: { hideNavbar: true, guest: true }
-  },
+{
+path:'/',
+redirect:'/dashboard'
+},
 
-  {
-    path: '/registar',
-    name: 'Registar',
-    component: Registar,
-    meta: { hideNavbar: true, guest: true }
-  },
+{
+path:'/login',
+component:Login,
+meta:{
+guest:true,
+hideNavbar:true
+}
+},
 
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: Dashboard,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/registar',
+component:Registar,
+meta:{
+guest:true,
+hideNavbar:true
+}
+},
 
-  {
-    path: '/processos',
-    name: 'Processos',
-    component: Processos,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/dashboard',
+component:Dashboard,
+meta:{
+requiresAuth:true
+}
+},
 
-  {
-    path: '/processos/novo',
-    name: 'NovoProcesso',
-    component: ProcessoForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/processos',
+component:Processos,
+meta:{
+requiresAuth:true
+}
+},
 
-  {
-    path: '/processos/:id/editar',
-    name: 'EditarProcesso',
-    component: ProcessoForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/processos/novo',
+component:ProcessoForm,
+meta:{
+requiresAuth:true
+}
+},
 
-  {
-    path: '/ruas',
-    name: 'Ruas',
-    component: Ruas,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/processos/:id/editar',
+component:ProcessoForm,
+meta:{
+requiresAuth:true,
+ownerOnly:true
+}
+},
 
-  {
-    path: '/ruas/nova',
-    name: 'NovaRua',
-    component: RuaForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/ruas',
+component:Ruas,
+meta:{
+requiresAuth:true
+}
+},
 
-  {
-    path: '/ruas/:id/editar',
-    name: 'EditarRua',
-    component: RuaForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/ruas/nova',
+component:RuaForm,
+meta:{
+requiresAuth:true,
+adminOnly:true
+}
+},
 
-  {
-    path: '/freguesias',
-    name: 'Freguesias',
-    component: Freguesias,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/ruas/:id/editar',
+component:RuaForm,
+meta:{
+requiresAuth:true,
+adminOnly:true
+}
+},
 
-  {
-    path: '/freguesias/nova',
-    name: 'NovaFreguesia',
-    component: FreguesiaForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/freguesias',
+component:Freguesias,
+meta:{
+requiresAuth:true
+}
+},
 
-  {
-    path: '/freguesias/:id/editar',
-    name: 'EditarFreguesia',
-    component: FreguesiaForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/freguesias/nova',
+component:FreguesiaForm,
+meta:{
+requiresAuth:true,
+adminOnly:true
+}
+},
 
-  {
-    path: '/tipos',
-    name: 'Tipos',
-    component: Tipos,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/freguesias/:id/editar',
+component:FreguesiaForm,
+meta:{
+requiresAuth:true,
+adminOnly:true
+}
+},
 
-  {
-    path: '/tipos/novo',
-    name: 'NovoTipo',
-    component: TipoForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/tipos',
+component:Tipos,
+meta:{
+requiresAuth:true
+}
+},
 
-  {
-    path: '/tipos/:id/editar',
-    name: 'EditarTipo',
-    component: TipoForm,
-    meta: { requiresAuth: true }
-  },
+{
+path:'/tipos/novo',
+component:TipoForm,
+meta:{
+requiresAuth:true,
+adminOnly:true
+}
+},
 
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: NotFound,
-    meta: { hideNavbar: true }
-  }
+{
+path:'/tipos/:id/editar',
+component:TipoForm,
+meta:{
+requiresAuth:true,
+adminOnly:true
+}
+},
+
+{
+path:'/:pathMatch(.*)*',
+component:NotFound,
+meta:{
+hideNavbar:true
+}
+}
+
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes
+history:createWebHistory(),
+routes
 })
 
-// Guard de autenticação corrigido
-router.beforeEach((to, from, next) => {
-  const auth = useAuthStore()
+router.beforeEach(async (to, from, next) => {
 
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next({ name: 'Login' })
-  }
+const auth = useAuthStore()
 
-  if (to.meta.guest && auth.isAuthenticated) {
-    return next({ name: 'Dashboard' })
-  }
+auth.loadUser()
 
-  next()
+if (
+to.meta.requiresAuth &&
+!auth.isAuthenticated
+) {
+return next('/login')
+}
+
+if (
+to.meta.guest &&
+auth.isAuthenticated
+) {
+return next('/dashboard')
+}
+
+if (
+to.meta.adminOnly &&
+!auth.isAdmin
+) {
+return next('/dashboard')
+}
+
+if (
+to.meta.ownerOnly &&
+!auth.isAdmin
+) {
+
+try {
+
+const processo =
+await api.getProcesso(
+to.params.id
+)
+
+const data =
+processo?.data ??
+processo
+
+const owner =
+data.user?._id ??
+data.user?.id ??
+data.user
+
+if (
+owner !==
+auth.user?.id
+) {
+return next(
+'/processos'
+)
+}
+
+}
+catch {
+
+return next(
+'/processos'
+)
+
+}
+
+}
+
+next()
+
 })
 
 export default router
