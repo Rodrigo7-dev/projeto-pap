@@ -1,12 +1,15 @@
 <template>
   <div class="min-h-screen bg-gray-50">
 
-    <!-- Navbar só aparece quando deve -->
-    <Navbar v-if="shouldShowNavbar" />
+    <Navbar
+      v-if="showNavbar"
+    />
 
-    <!-- Router View com transição -->
     <router-view v-slot="{ Component }">
-      <transition name="fade" mode="out-in">
+      <transition
+        name="fade"
+        mode="out-in"
+      >
         <component :is="Component" />
       </transition>
     </router-view>
@@ -20,27 +23,28 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 import Navbar from '@/components/navigation/Navbar.vue'
+
 const route = useRoute()
 const auth = useAuthStore()
 
-const shouldShowNavbar = computed(() => {
-  return auth.isAuthenticated && route.meta.hideNavbar !== true
+const showNavbar = computed(() => {
+  return auth.isAuthenticated && !route.meta.hideNavbar
 })
 </script>
 
 <style scoped>
 .fade-enter-active,
-.fade-leave-active {
-  transition: all 0.25s ease;
+.fade-leave-active{
+transition:.25s ease;
 }
 
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(5px);
+.fade-enter-from{
+opacity:0;
+transform:translateY(6px);
 }
 
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-5px);
+.fade-leave-to{
+opacity:0;
+transform:translateY(-6px);
 }
 </style>
