@@ -16,7 +16,7 @@ subtitle="Consulta e gestão de processos ativos"
 
 <BaseInput
 v-model="search"
-placeholder="Pesquisar processo, alvará, rua ou publicidade..."
+placeholder="Pesquisar processo..."
 />
 
 </div>
@@ -25,7 +25,7 @@ placeholder="Pesquisar processo, alvará, rua ou publicidade..."
 v-if="loading"
 class="text-center py-10 text-gray-500"
 >
-A carregar processos...
+A carregar...
 </div>
 
 <div
@@ -35,7 +35,7 @@ class="overflow-x-auto"
 
 <table class="w-full text-sm">
 
-<thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+<thead class="bg-gray-50">
 
 <tr>
 
@@ -56,10 +56,6 @@ Rua
 </th>
 
 <th class="px-6 py-4 text-left">
-Utilizador
-</th>
-
-<th class="px-6 py-4 text-left">
 Estado
 </th>
 
@@ -71,15 +67,15 @@ Ações
 
 </thead>
 
-<tbody class="divide-y divide-gray-100">
+<tbody>
 
 <tr
 v-for="p in filteredProcessos"
-:key="p._id || p.id"
-class="hover:bg-gray-50"
+:key="p._id"
+class="border-t"
 >
 
-<td class="px-6 py-4 font-medium">
+<td class="px-6 py-4">
 {{ p.processo }}
 </td>
 
@@ -96,16 +92,18 @@ class="hover:bg-gray-50"
 </td>
 
 <td class="px-6 py-4">
-{{ p.user?.name || '-' }}
-</td>
-
-<td class="px-6 py-4">
 
 <span
 class="px-3 py-1 rounded-full text-xs"
-:class="statusClass(p.validade)"
+:class="
+p.validade==='valido'
+? 'bg-green-100 text-green-700'
+: 'bg-red-100 text-red-700'
+"
 >
-{{ formatEstado(p.validade) }}
+
+{{ p.validade }}
+
 </span>
 
 </td>
@@ -115,17 +113,10 @@ class="px-3 py-1 rounded-full text-xs"
 <BaseButton
 v-if="canEdit(p)"
 variant="secondary"
-@click="editProcesso(p._id || p.id)"
+@click="editProcesso(p._id)"
 >
 Editar
 </BaseButton>
-
-<span
-v-else
-class="text-xs text-gray-400"
->
-Sem permissão
-</span>
 
 </td>
 
@@ -139,20 +130,10 @@ Sem permissão
 
 <div
 v-else
-class="text-center py-14"
+class="text-center py-10"
 >
 
-<div class="text-4xl mb-2">
-📄
-</div>
-
-<p class="font-medium">
-Nenhum processo encontrado
-</p>
-
-<p class="text-sm text-gray-500">
-Tenta alterar a pesquisa
-</p>
+Sem processos
 
 </div>
 
@@ -169,97 +150,89 @@ import api from '@/services/api'
 
 import BaseLayout from '@/components/layout/BaseLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import BasePageHeader from '@/components/layout/BasePageHeader.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 
 const processos = ref([])
-const search = ref('')
 const loading = ref(false)
+const search = ref('')
 
 const loadProcessos = async () => {
-loading.value = true
 
-try {
+loading.value=true
 
-const res = await api.getProcessos()
+try{
 
-processos.value =
+const res=await api.getProcessos()
+
+processos.value=
 Array.isArray(res)
 ? res
 : []
 
 }
-catch (e) {
+
+catch(e){
 
 console.error(e)
 
-processos.value=[]
-
 }
+
 finally{
 
 loading.value=false
 
 }
+
 }
 
-const canEdit = (p) => {
+const canEdit=(p)=>{
 
-if (auth.isAdmin) {
+if(auth.isAdmin){
 return true
 }
 
-return (
-String(
-p.user?._id ||
-p.user?.id
+return String(
+p.user?._id
 )
 
 ===
 
 String(
-auth.user?.id ||
-auth.user?._id
-)
+auth.user?.id
 )
 
 }
 
-const filteredProcessos = computed(() => {
+const filteredProcessos=computed(()=>{
 
-const t = search.value.toLowerCase()
+const t=search.value.toLowerCase()
 
-return processos.value.filter(p =>
+return processos.value.filter(p=>
 
-(p.processo || '')
+(p.processo||'')
 .toLowerCase()
 .includes(t)
 
 ||
 
-(p.alvara || '')
+(p.alvara||'')
 .toLowerCase()
 .includes(t)
 
 ||
 
-(p.tipoPublicidade?.publicidade || '')
+(p.rua?.rua||'')
 .toLowerCase()
 .includes(t)
 
 ||
 
-(p.rua?.rua || '')
-.toLowerCase()
-.includes(t)
-
-||
-
-(p.user?.name || '')
+(p.tipoPublicidade?.publicidade||'')
 .toLowerCase()
 .includes(t)
 
@@ -267,27 +240,11 @@ return processos.value.filter(p =>
 
 })
 
-const editProcesso = (id) => {
+const editProcesso=(id)=>{
 
 router.push(
 `/processos/${id}/editar`
 )
-
-}
-
-const formatEstado = (v) => {
-
-return v === 'valido'
-? 'Válido'
-: 'Inválido'
-
-}
-
-const statusClass = (v) => {
-
-return v === 'valido'
-? 'bg-green-50 text-green-700'
-: 'bg-red-50 text-red-700'
 
 }
 
