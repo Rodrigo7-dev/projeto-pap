@@ -1,72 +1,301 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://myapp-api-production-09ab.up.railway.app/api',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  },
-  timeout: 10000
+baseURL:
+'https://myapp-api-production-09ab.up.railway.app/api',
+
+timeout: 10000,
+
+headers: {
+'Content-Type':
+'application/json',
+
+'Accept':
+'application/json'
+}
 })
 
-// TOKEN
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+/*
+====================
+REQUEST
+====================
+*/
 
-// RESPONSE
-api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.clear()
-      window.location.href = '/login'
-    }
+api.interceptors.request.use(
 
-    return Promise.reject(error)
-  }
+(config) => {
+
+const token =
+localStorage.getItem(
+'auth_token'
 )
 
-// METHODS
-const apiMethods = {
+if (token) {
 
-  // AUTH
-  login: (data) => api.post('/login', data),
-  register: (data) => api.post('/register', data),
-  logout: () => api.post('/logout'),
+config.headers.Authorization =
+`Bearer ${token}`
 
-  // RUAS
-  getRuas: () => api.get('/ruas'),
-  getRua: (id) => api.get(`/ruas/${id}`),
-  createRua: (data) => api.post('/ruas', data),
-  updateRua: (id, data) => api.put(`/ruas/${id}`, data),
-  deleteRua: (id) => api.delete(`/ruas/${id}`),
-
-  // FREGUESIAS
-  getFreguesias: () => api.get('/freguesias'),
-  getFreguesia: (id) => api.get(`/freguesias/${id}`),
-  createFreguesia: (data) => api.post('/freguesias', data),
-  updateFreguesia: (id, data) => api.put(`/freguesias/${id}`, data),
-  deleteFreguesia: (id) => api.delete(`/freguesias/${id}`),
-
-  // TIPOS
-  getTipos: () => api.get('/tipo-publicidades'),
-  getTipo: (id) => api.get(`/tipo-publicidades/${id}`),
-  createTipo: (data) => api.post('/tipo-publicidades', data),
-  updateTipo: (id, data) => api.put(`/tipo-publicidades/${id}`, data),
-  deleteTipo: (id) => api.delete(`/tipo-publicidades/${id}`),
-
-  // PROCESSOS
-  getProcessos: () => api.get('/processos'),
-  getProcesso: (id) => api.get(`/processos/${id}`),
-  createProcesso: (data) => api.post('/processos', data),
-  updateProcesso: (id, data) => api.put(`/processos/${id}`, data),
-  deleteProcesso: (id) => api.delete(`/processos/${id}`)
 }
 
-// 🔥 JUNTA TUDO
-Object.assign(api, apiMethods)
+return config
+
+},
+
+(error) =>
+Promise.reject(error)
+
+)
+
+/*
+====================
+RESPONSE
+====================
+*/
+
+api.interceptors.response.use(
+
+(response) => {
+
+return response.data
+
+},
+
+(error) => {
+
+if (
+error.response?.status === 401
+) {
+
+localStorage.removeItem(
+'auth_token'
+)
+
+localStorage.removeItem(
+'auth_user'
+)
+
+if (
+window.location.pathname !==
+'/login'
+) {
+
+window.location.href =
+'/login'
+
+}
+
+}
+
+return Promise.reject(
+error
+)
+
+}
+
+)
+
+/*
+====================
+API METHODS
+====================
+*/
+
+Object.assign(api, {
+
+//
+// AUTH
+//
+
+login(data) {
+return api.post(
+'/login',
+data
+)
+},
+
+register(data) {
+return api.post(
+'/register',
+data
+)
+},
+
+logout() {
+return api.post(
+'/logout'
+)
+},
+
+//
+// RUAS
+//
+
+getRuas() {
+return api.get(
+'/ruas'
+)
+},
+
+getRua(id) {
+return api.get(
+`/ruas/${id}`
+)
+},
+
+createRua(data) {
+return api.post(
+'/ruas',
+data
+)
+},
+
+updateRua(
+id,
+data
+) {
+return api.put(
+`/ruas/${id}`,
+data
+)
+},
+
+deleteRua(id) {
+return api.delete(
+`/ruas/${id}`
+)
+},
+
+//
+// FREGUESIAS
+//
+
+getFreguesias() {
+return api.get(
+'/freguesias'
+)
+},
+
+getFreguesia(id) {
+return api.get(
+`/freguesias/${id}`
+)
+},
+
+createFreguesia(
+data
+) {
+return api.post(
+'/freguesias',
+data
+)
+},
+
+updateFreguesia(
+id,
+data
+) {
+return api.put(
+`/freguesias/${id}`,
+data
+)
+},
+
+deleteFreguesia(
+id
+) {
+return api.delete(
+`/freguesias/${id}`
+)
+},
+
+//
+// TIPOS
+//
+
+getTipos() {
+return api.get(
+'/tipo-publicidades'
+)
+},
+
+getTipo(id) {
+return api.get(
+`/tipo-publicidades/${id}`
+)
+},
+
+createTipo(
+data
+) {
+return api.post(
+'/tipo-publicidades',
+data
+)
+},
+
+updateTipo(
+id,
+data
+) {
+return api.put(
+`/tipo-publicidades/${id}`,
+data
+)
+},
+
+deleteTipo(
+id
+) {
+return api.delete(
+`/tipo-publicidades/${id}`
+)
+},
+
+//
+// PROCESSOS
+//
+
+getProcessos() {
+return api.get(
+'/processos'
+)
+},
+
+getProcesso(
+id
+) {
+return api.get(
+`/processos/${id}`
+)
+},
+
+createProcesso(
+data
+) {
+return api.post(
+'/processos',
+data
+)
+},
+
+updateProcesso(
+id,
+data
+) {
+return api.put(
+`/processos/${id}`,
+data
+)
+},
+
+deleteProcesso(
+id
+) {
+return api.delete(
+`/processos/${id}`
+)
+}
+
+})
 
 export default api

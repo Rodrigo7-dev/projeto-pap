@@ -15,92 +15,145 @@ const submitting = ref(false)
 const tipos = ref([])
 const ruas = ref([])
 
-const isEditing = computed(() => !!route.params.id)
+const isEditing = computed(
+  () => !!route.params.id
+)
 
 const form = ref({
   processo: '',
   alvara: '',
-  alojamento_local: '',
+  alojamentoLocal: '',
   validade: 'valido',
   rua: '',
   tipoPublicidade: ''
 })
 
 const fetchData = async () => {
+
   loading.value = true
 
   try {
-    const [tiposRes, ruasRes] =
-      await Promise.all([
-        api.getTipos(),
-        api.getRuas()
-      ])
+
+    const [
+      tiposRes,
+      ruasRes
+    ] =
+    await Promise.all([
+      api.getTipos(),
+      api.getRuas()
+    ])
 
     tipos.value =
-      Array.isArray(tiposRes?.data)
-        ? tiposRes.data
-        : []
+      tiposRes?.data ??
+      []
 
     ruas.value =
-      Array.isArray(ruasRes?.data)
-        ? ruasRes.data
-        : []
+      ruasRes?.data ??
+      []
 
-    if (isEditing.value) {
+    if (
+      isEditing.value
+    ) {
+
       const res =
-        await api.getProcesso(route.params.id)
+        await api.getProcesso(
+          route.params.id
+        )
 
       const data =
-        res?.data ?? res
+        res?.data ??
+        res
 
       form.value = {
+
         processo:
-          data.processo ?? '',
+          data.processo ??
+          '',
 
         alvara:
-          data.alvara ?? '',
+          data.alvara ??
+          '',
 
-        alojamento_local:
-          data.alojamento_local ?? '',
+        alojamentoLocal:
+          data.alojamentoLocal ??
+          data.alojamento_local ??
+          '',
 
         validade:
-          data.validade ?? 'valido',
+          data.validade ??
+          'valido',
 
         rua:
           data.rua?._id ??
           data.rua?.id ??
+          data.rua ??
           '',
 
         tipoPublicidade:
           data.tipoPublicidade?._id ??
-          data.tipo_publicidade?._id ??
           data.tipoPublicidade?.id ??
+          data.tipo_publicidade?._id ??
+          data.tipo_publicidade?.id ??
           ''
       }
+
     }
 
-  } catch (e) {
-    console.error(e)
-    alert('Erro ao carregar dados')
-
-  } finally {
-    loading.value = false
   }
+
+  catch (error) {
+
+    console.error(error)
+
+    alert(
+      'Erro ao carregar dados'
+    )
+
+  }
+
+  finally {
+
+    loading.value = false
+
+  }
+
 }
 
-const isValid = () => (
-  form.value.processo?.trim() &&
-  form.value.alojamento_local?.trim() &&
-  form.value.rua &&
-  form.value.tipoPublicidade
-)
+const isValid = () => {
+
+  return (
+
+    form.value.processo
+      ?.trim()
+
+    &&
+
+    form.value.rua
+
+    &&
+
+    form.value.tipoPublicidade
+
+  )
+
+}
 
 const handleSubmit = async () => {
-  if (submitting.value) return
 
-  if (!isValid()) {
-    alert('Preencha os campos obrigatórios')
+  if (
+    submitting.value
+  ) return
+
+  if (
+    !isValid()
+  ) {
+
+    alert(
+      'Preencha os campos obrigatórios'
+    )
+
     return
+
   }
 
   submitting.value = true
@@ -108,14 +161,24 @@ const handleSubmit = async () => {
   try {
 
     const payload = {
+
       processo:
-        form.value.processo.trim(),
+        form.value.processo
+          .trim(),
 
       alvara:
-        (form.value.alvara || '').trim(),
+        (
+          form.value.alvara
+          ||
+          ''
+        ).trim(),
 
-      alojamento_local:
-        form.value.alojamento_local.trim(),
+      alojamentoLocal:
+        (
+          form.value.alojamentoLocal
+          ||
+          ''
+        ).trim(),
 
       validade:
         form.value.validade,
@@ -125,31 +188,54 @@ const handleSubmit = async () => {
 
       tipoPublicidade:
         form.value.tipoPublicidade
+
     }
 
-    if (isEditing.value) {
+    if (
+      isEditing.value
+    ) {
+
       await api.updateProcesso(
         route.params.id,
         payload
       )
-    } else {
+
+    }
+
+    else {
+
       await api.createProcesso(
         payload
       )
+
     }
 
-    router.push('/processos')
+    router.push(
+      '/processos'
+    )
 
-  } catch (e) {
-    console.error(e)
-    alert('Erro ao guardar')
-
-  } finally {
-    submitting.value = false
   }
+
+  catch (error) {
+
+    console.error(error)
+
+    alert(
+      'Erro ao guardar'
+    )
+
+  }
+
+  finally {
+
+    submitting.value = false
+
+  }
+
 }
 
 const handleDelete = async () => {
+
   if (
     !confirm(
       'Eliminar este processo?'
@@ -157,23 +243,34 @@ const handleDelete = async () => {
   ) return
 
   try {
+
     await api.deleteProcesso(
       route.params.id
     )
 
-    router.push('/processos')
+    router.push(
+      '/processos'
+    )
 
-  } catch {
+  }
+
+  catch {
+
     alert(
       'Erro ao eliminar'
     )
+
   }
+
 }
 
-onMounted(fetchData)
+onMounted(
+  fetchData
+)
 </script>
 
 <template>
+
 <div class="min-h-screen bg-gray-50 p-6">
 
 <div class="max-w-4xl mx-auto">
@@ -184,11 +281,15 @@ onMounted(fetchData)
 to="/processos"
 class="text-sm text-gray-600 hover:text-gray-900 mr-4"
 >
+
 ← Voltar
+
 </router-link>
 
 <h1 class="text-3xl font-semibold">
+
 {{ isEditing ? 'Editar Processo' : 'Novo Processo' }}
+
 </h1>
 
 </div>
@@ -200,9 +301,11 @@ class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-5"
 
 <div
 v-if="loading"
-class="text-center py-8 text-gray-500"
+class="text-center py-8"
 >
+
 A carregar...
+
 </div>
 
 <template v-else>
@@ -210,27 +313,33 @@ A carregar...
 <BaseInput
 v-model="form.processo"
 label="Processo"
-placeholder="PROC123"
 />
 
 <BaseInput
 v-model="form.alvara"
 label="Alvará"
-placeholder="ALV123"
 />
 
 <BaseInput
-v-model="form.alojamento_local"
+v-model="form.alojamentoLocal"
 label="Alojamento Local"
-placeholder="SIM"
 />
 
 <BaseSelect
 v-model="form.validade"
 label="Validade"
 :options="[
-{ label:'Válido', value:'valido' },
-{ label:'Inválido', value:'invalido' }
+
+{
+label:'Válido',
+value:'valido'
+},
+
+{
+label:'Inválido',
+value:'invalido'
+}
+
 ]"
 />
 
@@ -239,8 +348,7 @@ v-model="form.rua"
 label="Rua"
 :options="ruas"
 labelKey="rua"
-valueKey="id"
-placeholder="Selecionar rua"
+valueKey="_id"
 />
 
 <BaseSelect
@@ -248,8 +356,7 @@ v-model="form.tipoPublicidade"
 label="Tipo de Publicidade"
 :options="tipos"
 labelKey="publicidade"
-valueKey="id"
-placeholder="Selecionar tipo"
+valueKey="_id"
 />
 
 </template>
@@ -260,9 +367,11 @@ placeholder="Selecionar tipo"
 v-if="isEditing"
 type="button"
 @click="handleDelete"
-class="px-4 py-2 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100"
+class="px-4 py-2 bg-red-50 text-red-600 rounded-lg"
 >
+
 Eliminar
+
 </button>
 
 <div class="flex gap-2 ml-auto">
@@ -272,20 +381,25 @@ type="button"
 @click="router.push('/processos')"
 class="px-4 py-2 border rounded-lg"
 >
+
 Cancelar
+
 </button>
 
 <button
 type="submit"
-:disabled="loading"
+:disabled="submitting"
 class="px-5 py-2 bg-gray-900 text-white rounded-lg disabled:opacity-50"
 >
-{{ loading
+
+{{
+submitting
 ? 'A guardar...'
 : isEditing
 ? 'Atualizar'
 : 'Guardar'
 }}
+
 </button>
 
 </div>
@@ -297,4 +411,5 @@ class="px-5 py-2 bg-gray-900 text-white rounded-lg disabled:opacity-50"
 </div>
 
 </div>
+
 </template>
