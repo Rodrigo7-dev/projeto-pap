@@ -22,7 +22,6 @@ const TipoForm = () => import('@/views/TipoForm.vue')
 const NotFound = () => import('@/views/NotFound.vue')
 
 const routes = [
-
 {
 path:'/',
 redirect:'/dashboard'
@@ -164,7 +163,6 @@ meta:{
 hideNavbar:true
 }
 }
-
 ]
 
 const router = createRouter({
@@ -206,23 +204,26 @@ to.meta.ownerOnly &&
 
 try {
 
-const processo =
+const data =
 await api.getProcesso(
 to.params.id
 )
 
-const data =
-processo?.data ??
-processo
-
-const owner =
+const ownerId =
+String(
 data.user?._id ??
 data.user?.id ??
 data.user
+)
+
+const currentUser =
+String(
+auth.user?._id ??
+auth.user?.id
+)
 
 if (
-owner !==
-auth.user?.id
+ownerId !== currentUser
 ) {
 return next(
 '/processos'
@@ -230,7 +231,9 @@ return next(
 }
 
 }
-catch {
+catch (e) {
+
+console.error(e)
 
 return next(
 '/processos'

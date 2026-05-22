@@ -1,29 +1,183 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
+
+import BaseLayout from '@/components/layout/BaseLayout.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
+import BasePageHeader from '@/components/layout/BasePageHeader.vue'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const processos = ref([])
+const search = ref('')
+const loading = ref(false)
+
+const loadProcessos = async () => {
+loading.value = true
+
+try {
+
+const res =
+await api.getProcessos()
+
+console.log('PROCESSOS', res)
+
+processos.value =
+Array.isArray(res)
+? res
+: []
+
+}
+catch (error) {
+
+console.error(error)
+
+processos.value=[]
+
+}
+finally{
+
+loading.value=false
+
+}
+}
+
+const filteredProcessos = computed(() => {
+
+const t =
+search.value
+.toLowerCase()
+.trim()
+
+return processos.value.filter(p => {
+
+return (
+
+(p.processo||'')
+.toLowerCase()
+.includes(t)
+
+||
+
+(p.alvara||'')
+.toLowerCase()
+.includes(t)
+
+||
+
+(p.rua?.rua||'')
+.toLowerCase()
+.includes(t)
+
+||
+
+(
+p.tipoPublicidade?.publicidade
+||
+p.tipo_publicidade?.publicidade
+||
+''
+)
+.toLowerCase()
+.includes(t)
+
+||
+
+(p.user?.name||'')
+.toLowerCase()
+.includes(t)
+
+)
+
+})
+
+})
+
+const canEdit = (p) => {
+
+if (
+auth.isAdmin
+) {
+return true
+}
+
+const owner =
+String(
+p.user?._id ??
+p.user?.id ??
+p.user
+)
+
+const current =
+String(
+auth.user?._id ??
+auth.user?.id
+)
+
+return owner===current
+
+}
+
+const editProcesso = (id) => {
+router.push(
+`/processos/${id}/editar`
+)
+}
+
+const formatEstado = (estado) => {
+return estado === 'valido'
+? 'Válido'
+: 'Inválido'
+}
+
+const statusClass = (estado) => {
+
+return estado === 'valido'
+? 'bg-green-50 text-green-700'
+: 'bg-red-50 text-red-700'
+
+}
+
+onMounted(loadProcessos)
+</script>
+
 <template>
+
 <BaseLayout>
 
 <BasePageHeader
 title="Gestão de Processos"
 subtitle="Consulta e gestão de processos ativos"
 >
-<BaseButton @click="router.push('/processos/novo')">
+
+<BaseButton
+@click="router.push('/processos/novo')"
+>
 + Novo Processo
 </BaseButton>
+
 </BasePageHeader>
 
 <BaseCard>
 
-<div class="p-4 border-b border-gray-100">
+<div class="p-4 border-b">
 
 <BaseInput
 v-model="search"
-placeholder="Pesquisar processo..."
+placeholder="Pesquisar processos..."
 />
 
 </div>
 
 <div
 v-if="loading"
-class="text-center py-10 text-gray-500"
+class="text-center py-10"
 >
 A carregar...
 </div>
@@ -33,7 +187,7 @@ v-else-if="filteredProcessos.length"
 class="overflow-x-auto"
 >
 
-<table class="w-full text-sm">
+<table class="w-full">
 
 <thead class="bg-gray-50">
 
@@ -71,7 +225,7 @@ Ações
 
 <tr
 v-for="p in filteredProcessos"
-:key="p._id"
+:key="p._id || p.id"
 class="border-t"
 >
 
@@ -84,7 +238,7 @@ class="border-t"
 </td>
 
 <td class="px-6 py-4">
-{{ p.tipoPublicidade?.publicidade || '-' }}
+{{ p.tipoPublicidade?.publicidade || p.tipo_publicidade?.publicidade || '-' }}
 </td>
 
 <td class="px-6 py-4">
@@ -95,14 +249,10 @@ class="border-t"
 
 <span
 class="px-3 py-1 rounded-full text-xs"
-:class="
-p.validade==='valido'
-? 'bg-green-100 text-green-700'
-: 'bg-red-100 text-red-700'
-"
+:class="statusClass(p.validade)"
 >
 
-{{ p.validade }}
+{{ formatEstado(p.validade) }}
 
 </span>
 
@@ -113,9 +263,11 @@ p.validade==='valido'
 <BaseButton
 v-if="canEdit(p)"
 variant="secondary"
-@click="editProcesso(p._id)"
+@click="editProcesso(p._id || p.id)"
 >
+
 Editar
+
 </BaseButton>
 
 </td>
@@ -130,123 +282,19 @@ Editar
 
 <div
 v-else
-class="text-center py-10"
+class="text-center py-14"
 >
 
-Sem processos
+📄
+
+<p>
+Nenhum processo encontrado
+</p>
 
 </div>
 
 </BaseCard>
 
 </BaseLayout>
+
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import api from '@/services/api'
-
-import BaseLayout from '@/components/layout/BaseLayout.vue'
-import BaseCard from '@/components/ui/BaseCard.vue'
-import BaseInput from '@/components/ui/BaseInput.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import BasePageHeader from '@/components/layout/BasePageHeader.vue'
-
-const router = useRouter()
-const auth = useAuthStore()
-
-const processos = ref([])
-const loading = ref(false)
-const search = ref('')
-
-const loadProcessos = async () => {
-
-loading.value=true
-
-try{
-
-const res=await api.getProcessos()
-
-processos.value=
-Array.isArray(res)
-? res
-: []
-
-}
-
-catch(e){
-
-console.error(e)
-
-}
-
-finally{
-
-loading.value=false
-
-}
-
-}
-
-const canEdit=(p)=>{
-
-if(auth.isAdmin){
-return true
-}
-
-return String(
-p.user?._id
-)
-
-===
-
-String(
-auth.user?.id
-)
-
-}
-
-const filteredProcessos=computed(()=>{
-
-const t=search.value.toLowerCase()
-
-return processos.value.filter(p=>
-
-(p.processo||'')
-.toLowerCase()
-.includes(t)
-
-||
-
-(p.alvara||'')
-.toLowerCase()
-.includes(t)
-
-||
-
-(p.rua?.rua||'')
-.toLowerCase()
-.includes(t)
-
-||
-
-(p.tipoPublicidade?.publicidade||'')
-.toLowerCase()
-.includes(t)
-
-)
-
-})
-
-const editProcesso=(id)=>{
-
-router.push(
-`/processos/${id}/editar`
-)
-
-}
-
-onMounted(loadProcessos)
-</script>
