@@ -28,9 +28,14 @@ await api.getProcessos()
 
 console.log('PROCESSOS', res)
 
+const lista =
+res?.data ??
+res ??
+[]
+
 processos.value =
-Array.isArray(res)
-? res
+Array.isArray(lista)
+? lista
 : []
 
 }
@@ -116,8 +121,8 @@ p.user
 
 const current =
 String(
-auth.user?._id ??
-auth.user?.id
+auth.user?.id ??
+auth.user?._id
 )
 
 return owner===current
@@ -186,6 +191,9 @@ A carregar...
 v-else-if="filteredProcessos.length"
 class="overflow-x-auto"
 >
+<div class="p-4 text-xs text-red-500">
+Processos: {{ processos.length }}
+</div>
 
 <table class="w-full">
 
