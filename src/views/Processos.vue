@@ -191,9 +191,6 @@ A carregar...
 v-else-if="filteredProcessos.length"
 class="overflow-x-auto"
 >
-<div class="p-4 text-xs text-red-500">
-Processos: {{ processos.length }}
-</div>
 
 <table class="w-full">
 

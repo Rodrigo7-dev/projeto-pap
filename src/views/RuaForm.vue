@@ -1,146 +1,201 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-4xl mx-auto">
+<div class="min-h-screen bg-gray-50 p-6">
 
-      <!-- HEADER -->
-      <div class="flex items-center mb-8">
-        <router-link
-          to="/ruas"
-          class="text-sm text-gray-600 hover:text-gray-900 mr-4"
-        >
-          ← Voltar
-        </router-link>
+<div class="max-w-4xl mx-auto">
 
-        <h1 class="text-3xl font-semibold text-gray-900">
-          {{ isEditing ? 'Editar Rua' : 'Nova Rua' }}
-        </h1>
-      </div>
+<!-- BLOQUEIO -->
+<div
+v-if="!auth.isAdmin"
+class="bg-white border rounded-xl p-10 text-center"
+>
 
-      <!-- FORM -->
-      <form
-        @submit.prevent="handleSubmit"
-        class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-5"
-      >
+<h2 class="text-2xl font-semibold mb-3">
+Acesso negado
+</h2>
 
-        <div
-          v-if="loading"
-          class="text-center py-8 text-gray-500"
-        >
-          A carregar...
-        </div>
+<p class="text-gray-500 mb-6">
+Apenas administradores podem gerir ruas.
+</p>
 
-        <template v-else>
+<router-link
+to="/ruas"
+class="px-5 py-2 bg-gray-900 text-white rounded-lg"
+>
+Voltar
+</router-link>
 
-          <!-- RUA -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Nome da Rua
-            </label>
+</div>
 
-            <input
-              v-model="form.rua"
-              type="text"
-              required
-              placeholder="Ex: Rua das Flores"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-            />
-          </div>
+<template v-else>
 
-          <!-- FREGUESIA -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Freguesia
-            </label>
+<!-- HEADER -->
+<div class="flex items-center mb-8">
 
-            <select
-              v-model="form.freguesia"
-              required
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-            >
-              <option value="">
-                Selecionar freguesia
-              </option>
+<router-link
+to="/ruas"
+class="text-sm text-gray-600 hover:text-gray-900 mr-4"
+>
+← Voltar
+</router-link>
 
-              <option
-                v-for="f in freguesias"
-                :key="f.id"
-                :value="f.id"
-              >
-                {{ f.freguesia }}
-              </option>
+<h1 class="text-3xl font-semibold">
 
-            </select>
-          </div>
+{{ isEditing
+? 'Editar Rua'
+: 'Nova Rua'
+}}
 
-          <!-- COORDENADA -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Coordenada
-            </label>
+</h1>
 
-            <input
-              v-model="form.coordenada"
-              type="text"
-              required
-              placeholder="41.1579,-8.64442"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-            />
-          </div>
+</div>
 
-        </template>
+<!-- FORM -->
+<form
+@submit.prevent="handleSubmit"
+class="bg-white border rounded-xl shadow-sm p-6 space-y-5"
+>
 
-        <!-- ACTIONS -->
-        <div class="flex justify-between pt-4">
+<div
+v-if="loading"
+class="text-center py-10 text-gray-500"
+>
+A carregar...
+</div>
 
-          <button
-            v-if="isEditing"
-            type="button"
-            @click="handleDelete"
-            class="px-4 py-2 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"
-          >
-            Eliminar
-          </button>
+<template v-else>
 
-          <div class="flex gap-2 ml-auto">
+<!-- RUA -->
+<div>
 
-            <router-link
-              to="/ruas"
-              class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 transition"
-            >
-              Cancelar
-            </router-link>
+<label class="block mb-2 text-sm font-medium">
+Nome da Rua
+</label>
 
-            <button
-              type="submit"
-              :disabled="submitting"
-              class="px-5 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50"
-            >
-              {{
-                submitting
-                  ? 'A guardar...'
-                  : isEditing
-                    ? 'Atualizar'
-                    : 'Guardar'
-              }}
-            </button>
+<input
+v-model="form.rua"
+required
+placeholder="Rua das Flores"
+class="w-full px-4 py-2.5 border rounded-lg"
+/>
 
-          </div>
+</div>
 
-        </div>
+<!-- FREGUESIA -->
+<div>
 
-      </form>
+<label class="block mb-2 text-sm font-medium">
+Freguesia
+</label>
 
-    </div>
-  </div>
+<select
+v-model="form.freguesia"
+required
+class="w-full px-4 py-2.5 border rounded-lg"
+>
+
+<option value="">
+Selecionar freguesia
+</option>
+
+<option
+v-for="f in freguesias"
+:key="f._id || f.id"
+:value="f._id || f.id"
+>
+
+{{ f.freguesia }}
+
+</option>
+
+</select>
+
+</div>
+
+<!-- COORDENADA -->
+<div>
+
+<label class="block mb-2 text-sm font-medium">
+Coordenada
+</label>
+
+<input
+v-model="form.coordenada"
+required
+placeholder="41.1579,-8.64442"
+class="w-full px-4 py-2.5 border rounded-lg font-mono"
+/>
+
+</div>
+
+</template>
+
+<!-- ACTIONS -->
+<div class="flex justify-between pt-4">
+
+<button
+v-if="isEditing"
+type="button"
+@click="handleDelete"
+class="px-4 py-2 bg-red-50 text-red-600 rounded-lg"
+>
+Eliminar
+</button>
+
+<div class="flex gap-2 ml-auto">
+
+<router-link
+to="/ruas"
+class="px-4 py-2 border rounded-lg"
+>
+Cancelar
+</router-link>
+
+<button
+type="submit"
+:disabled="submitting"
+class="px-5 py-2 bg-gray-900 text-white rounded-lg disabled:opacity-50"
+>
+
+{{ submitting
+? 'A guardar...'
+: isEditing
+? 'Atualizar'
+: 'Guardar'
+}}
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</template>
+
+</div>
+
+</div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import api from '../services/api'
+import {
+ref,
+computed,
+onMounted
+} from 'vue'
+
+import {
+useRouter,
+useRoute
+} from 'vue-router'
+
+import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
+const auth = useAuthStore()
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -148,96 +203,226 @@ const submitting = ref(false)
 const freguesias = ref([])
 
 const form = ref({
-  rua: '',
-  freguesia: '',
-  coordenada: ''
+rua:'',
+freguesia:'',
+coordenada:''
 })
 
-const isEditing = computed(() => !!route.params.id)
+const isEditing =
+computed(
+() =>
+!!route.params.id
+)
 
-const loadFreguesias = async () => {
-  try {
-    const res = await api.getFreguesias()
+const loadFreguesias =
+async () => {
 
-    freguesias.value =
-      Array.isArray(res?.data)
-        ? res.data
-        : []
+try {
 
-  } catch {
-    freguesias.value = []
-  }
+const res =
+await api.getFreguesias()
+
+freguesias.value =
+Array.isArray(
+res?.data
+)
+? res.data
+: Array.isArray(res)
+? res
+: []
+
 }
 
-const loadRua = async () => {
-  if (!isEditing.value) return
+catch {
 
-  loading.value = true
+freguesias.value=[]
 
-  try {
-    const res = await api.getRua(route.params.id)
-
-    const data = res?.data ?? res
-
-    form.value = {
-      rua: data.rua ?? '',
-      coordenada: data.coordenada ?? '',
-      freguesia:
-        data.freguesia?.id ??
-        data.freguesia?._id ??
-        data.freguesia ??
-        ''
-    }
-
-  } catch {
-    router.push('/ruas')
-  } finally {
-    loading.value = false
-  }
 }
 
-const handleSubmit = async () => {
-  submitting.value = true
-
-  try {
-    const payload = {
-      rua: form.value.rua.trim(),
-      coordenada: form.value.coordenada.trim(),
-      freguesia: form.value.freguesia
-    }
-
-    if (isEditing.value) {
-      await api.updateRua(route.params.id, payload)
-    } else {
-      await api.createRua(payload)
-    }
-
-    router.push('/ruas')
-
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao guardar rua')
-
-  } finally {
-    submitting.value = false
-  }
 }
 
-const handleDelete = async () => {
-  if (!confirm('Eliminar esta rua?')) return
+const loadRua =
+async () => {
 
-  try {
-    await api.deleteRua(route.params.id)
+if (
+!isEditing.value
+) return
 
-    router.push('/ruas')
+loading.value=true
 
-  } catch {
-    alert('Erro ao eliminar rua')
-  }
+try {
+
+const res =
+await api.getRua(
+route.params.id
+)
+
+const data =
+res?.data ??
+res
+
+form.value = {
+
+rua:
+data.rua
+?? '',
+
+coordenada:
+data.coordenada
+?? '',
+
+freguesia:
+data.freguesia?._id
+??
+data.freguesia?.id
+??
+data.freguesia
+??
+''
+
 }
 
-onMounted(async () => {
-  await loadFreguesias()
-  await loadRua()
-})
+}
+
+catch {
+
+router.push(
+'/ruas'
+)
+
+}
+
+finally {
+
+loading.value=false
+
+}
+
+}
+
+const handleSubmit =
+async () => {
+
+if (
+submitting.value
+) return
+
+if (
+!form.value.rua.trim()
+||
+!form.value.coordenada.trim()
+||
+!form.value.freguesia
+) {
+
+alert(
+'Preencha todos os campos'
+)
+
+return
+
+}
+
+submitting.value=true
+
+try {
+
+const payload = {
+
+rua:
+form.value.rua.trim(),
+
+coordenada:
+form.value.coordenada.trim(),
+
+freguesia:
+form.value.freguesia
+
+}
+
+if (
+isEditing.value
+) {
+
+await api.updateRua(
+route.params.id,
+payload
+)
+
+}
+
+else {
+
+await api.createRua(
+payload
+)
+
+}
+
+router.push(
+'/ruas'
+)
+
+}
+
+catch (error) {
+
+console.error(
+error
+)
+
+alert(
+'Erro ao guardar'
+)
+
+}
+
+finally {
+
+submitting.value=false
+
+}
+
+}
+
+const handleDelete =
+async () => {
+
+if (
+!confirm(
+'Eliminar esta rua?'
+)
+) return
+
+try {
+
+await api.deleteRua(
+route.params.id
+)
+
+router.push(
+'/ruas'
+)
+
+}
+
+catch {
+
+alert(
+'Erro ao eliminar'
+)
+
+}
+
+}
+
+onMounted(
+async () => {
+
+await loadFreguesias()
+
+await loadRua()
+
+}
+)
 </script>
