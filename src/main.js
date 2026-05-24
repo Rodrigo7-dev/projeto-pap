@@ -1,10 +1,10 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-import App from './App.vue'
-import router from './router'
+import App from '@/App.vue'
+import router from '@/router'
 
-import './assets/main.css'
+import '@/assets/main.css'
 
 import { useAuthStore } from '@/stores/auth'
 
@@ -14,10 +14,13 @@ const pinia = createPinia()
 
 app.use(pinia)
 
-// carregar auth ANTES do mount
+// inicializar autenticação antes do router
 const auth = useAuthStore()
+
 auth.loadUser()
 
 app.use(router)
 
-app.mount('#app')
+router.isReady().then(() => {
+  app.mount('#app')
+})

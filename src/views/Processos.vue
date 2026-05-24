@@ -18,135 +18,112 @@ const processos = ref([])
 const search = ref('')
 const loading = ref(false)
 
+const normalizeProcesso = (p) => ({
+  ...p,
+
+  id: p._id || p.id,
+
+  tipo:
+    p.tipoPublicidade?.publicidade ||
+    p.tipo_publicidade?.publicidade ||
+    '-',
+
+  ruaNome:
+    p.rua?.rua ||
+    '-',
+
+  owner:
+    String(
+      p.user?._id ??
+      p.user?.id ??
+      p.user ??
+      ''
+    )
+})
+
 const loadProcessos = async () => {
-loading.value = true
+  loading.value = true
 
-try {
+  try {
+    const res = await api.getProcessos()
 
-const res =
-await api.getProcessos()
+    const lista =
+      res?.data ??
+      res ??
+      []
 
-console.log('PROCESSOS', res)
+    processos.value =
+      Array.isArray(lista)
+        ? lista.map(normalizeProcesso)
+        : []
 
-const lista =
-res?.data ??
-res ??
-[]
+  } catch (error) {
+    console.error(error)
+    processos.value = []
 
-processos.value =
-Array.isArray(lista)
-? lista
-: []
-
-}
-catch (error) {
-
-console.error(error)
-
-processos.value=[]
-
-}
-finally{
-
-loading.value=false
-
-}
+  } finally {
+    loading.value = false
+  }
 }
 
 const filteredProcessos = computed(() => {
+  const term =
+    search.value
+      .toLowerCase()
+      .trim()
 
-const t =
-search.value
-.toLowerCase()
-.trim()
+  return processos.value.filter((p) => {
+    return [
 
-return processos.value.filter(p => {
+      p.processo,
 
-return (
+      p.alvara,
 
-(p.processo||'')
-.toLowerCase()
-.includes(t)
+      p.ruaNome,
 
-||
+      p.tipo,
 
-(p.alvara||'')
-.toLowerCase()
-.includes(t)
+      p.user?.name
 
-||
-
-(p.rua?.rua||'')
-.toLowerCase()
-.includes(t)
-
-||
-
-(
-p.tipoPublicidade?.publicidade
-||
-p.tipo_publicidade?.publicidade
-||
-''
-)
-.toLowerCase()
-.includes(t)
-
-||
-
-(p.user?.name||'')
-.toLowerCase()
-.includes(t)
-
-)
-
-})
-
+    ]
+      .filter(Boolean)
+      .some(value =>
+        value
+          .toLowerCase()
+          .includes(term)
+      )
+  })
 })
 
 const canEdit = (p) => {
+  if (auth.isAdmin) return true
 
-if (
-auth.isAdmin
-) {
-return true
-}
+  const current =
+    String(
+      auth.user?.id ??
+      auth.user?._id ??
+      ''
+    )
 
-const owner =
-String(
-p.user?._id ??
-p.user?.id ??
-p.user
-)
-
-const current =
-String(
-auth.user?.id ??
-auth.user?._id
-)
-
-return owner===current
-
+  return p.owner === current
 }
 
 const editProcesso = (id) => {
-router.push(
-`/processos/${id}/editar`
-)
+  router.push(
+    `/processos/${id}/editar`
+  )
 }
 
 const formatEstado = (estado) => {
-return estado === 'valido'
-? 'Válido'
-: 'Inválido'
+  return estado === 'valido'
+    ? 'Válido'
+    : 'Inválido'
 }
 
 const statusClass = (estado) => {
-
-return estado === 'valido'
-? 'bg-green-50 text-green-700'
-: 'bg-red-50 text-red-700'
-
+  return estado === 'valido'
+    ? 'bg-green-50 text-green-700'
+    : 'bg-red-50 text-red-700'
 }
 
 onMounted(loadProcessos)
@@ -171,54 +148,62 @@ subtitle="Consulta e gestão de processos ativos"
 
 <BaseCard>
 
-<div class="p-4 border-b">
+<!-- PESQUISA -->
+
+<div class="p-4 border-b border-gray-200">
 
 <BaseInput
 v-model="search"
-placeholder="Pesquisar processos..."
+placeholder="Pesquisar processo, rua ou publicidade..."
 />
 
 </div>
 
+<!-- LOADING -->
+
 <div
 v-if="loading"
-class="text-center py-10"
+class="py-10 text-center text-gray-500"
 >
-A carregar...
+
+A carregar processos...
+
 </div>
+
+<!-- TABELA -->
 
 <div
 v-else-if="filteredProcessos.length"
 class="overflow-x-auto"
 >
 
-<table class="w-full">
+<table class="w-full text-sm">
 
-<thead class="bg-gray-50">
+<thead class="table-head">
 
 <tr>
 
-<th class="px-6 py-4 text-left">
+<th class="table-cell text-left">
 Processo
 </th>
 
-<th class="px-6 py-4 text-left">
+<th class="table-cell text-left">
 Alvará
 </th>
 
-<th class="px-6 py-4 text-left">
+<th class="table-cell text-left">
 Publicidade
 </th>
 
-<th class="px-6 py-4 text-left">
+<th class="table-cell text-left">
 Rua
 </th>
 
-<th class="px-6 py-4 text-left">
+<th class="table-cell text-left">
 Estado
 </th>
 
-<th class="px-6 py-4 text-right">
+<th class="table-cell text-right">
 Ações
 </th>
 
@@ -226,31 +211,31 @@ Ações
 
 </thead>
 
-<tbody>
+<tbody class="divide-y divide-gray-100">
 
 <tr
 v-for="p in filteredProcessos"
-:key="p._id || p.id"
-class="border-t"
+:key="p.id"
+class="hover:bg-gray-50 transition"
 >
 
-<td class="px-6 py-4">
+<td class="table-cell">
 {{ p.processo }}
 </td>
 
-<td class="px-6 py-4">
+<td class="table-cell">
 {{ p.alvara || '-' }}
 </td>
 
-<td class="px-6 py-4">
-{{ p.tipoPublicidade?.publicidade || p.tipo_publicidade?.publicidade || '-' }}
+<td class="table-cell">
+{{ p.tipo }}
 </td>
 
-<td class="px-6 py-4">
-{{ p.rua?.rua || '-' }}
+<td class="table-cell">
+{{ p.ruaNome }}
 </td>
 
-<td class="px-6 py-4">
+<td class="table-cell">
 
 <span
 class="px-3 py-1 rounded-full text-xs"
@@ -263,12 +248,12 @@ class="px-3 py-1 rounded-full text-xs"
 
 </td>
 
-<td class="px-6 py-4 text-right">
+<td class="table-cell text-right">
 
 <BaseButton
 v-if="canEdit(p)"
 variant="secondary"
-@click="editProcesso(p._id || p.id)"
+@click="editProcesso(p.id)"
 >
 
 Editar
@@ -285,15 +270,27 @@ Editar
 
 </div>
 
+<!-- EMPTY -->
+
 <div
 v-else
-class="text-center py-14"
+class="empty-state"
 >
 
+<div class="text-4xl mb-2">
 📄
+</div>
 
-<p>
+<p class="font-medium text-gray-700">
+
 Nenhum processo encontrado
+
+</p>
+
+<p class="text-sm">
+
+Tenta alterar a pesquisa
+
 </p>
 
 </div>
