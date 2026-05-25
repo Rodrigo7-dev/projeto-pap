@@ -48,7 +48,10 @@ Array.isArray(lista)
 
 catch (error) {
 
-console.error(error)
+console.error(
+'Erro ao carregar tipos:',
+error
+)
 
 tipos.value=[]
 
@@ -98,52 +101,6 @@ router.push(
 
 }
 
-const handleDelete = async (tipo) => {
-
-const id =
-tipo._id ||
-tipo.id
-
-const nome =
-tipo.publicidade ||
-tipo.tipo
-
-if (
-!confirm(
-`Eliminar "${nome}"?`
-)
-) {
-return
-}
-
-try {
-
-await api.deleteTipo(id)
-
-tipos.value =
-tipos.value.filter(item => {
-
-return (
-(item._id || item.id)
-!== id
-)
-
-})
-
-}
-
-catch (error) {
-
-console.error(error)
-
-alert(
-'Impossível eliminar. Este tipo está a ser utilizado.'
-)
-
-}
-
-}
-
 onMounted(loadTipos)
 </script>
 
@@ -158,11 +115,7 @@ subtitle="Gestão dos tipos disponíveis no sistema"
 
 <BaseButton
 v-if="auth.isAdmin"
-@click="
-router.push(
-'/tipos/novo'
-)
-"
+@click="router.push('/tipos/novo')"
 >
 
 + Novo Tipo
@@ -184,7 +137,7 @@ placeholder="Pesquisar tipos..."
 
 <div
 v-if="loading"
-class="text-center py-10 text-gray-500"
+class="text-center py-10"
 >
 
 A carregar...
@@ -222,10 +175,10 @@ Ações
 <tr
 v-for="tipo in filteredTipos"
 :key="tipo._id || tipo.id"
-class="border-t hover:bg-gray-50"
+class="border-t"
 >
 
-<td class="px-6 py-4 font-medium">
+<td class="px-6 py-4">
 
 {{ tipo.publicidade || tipo.tipo }}
 
@@ -235,8 +188,6 @@ class="border-t hover:bg-gray-50"
 v-if="auth.isAdmin"
 class="px-6 py-4 text-right"
 >
-
-<div class="flex justify-end gap-2">
 
 <BaseButton
 variant="secondary"
@@ -250,21 +201,6 @@ tipo._id || tipo.id
 Editar
 
 </BaseButton>
-
-<BaseButton
-variant="danger"
-@click="
-handleDelete(
-tipo
-)
-"
->
-
-Eliminar
-
-</BaseButton>
-
-</div>
 
 </td>
 
@@ -283,7 +219,7 @@ class="text-center py-14"
 
 📂
 
-<p class="mt-3">
+<p>
 
 Nenhum tipo encontrado
 
