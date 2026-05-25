@@ -1,31 +1,71 @@
-<template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div class="text-center">
-      <div class="mb-8">
-        <h1 class="text-9xl font-bold text-gray-900">404</h1>
-        <h2 class="text-2xl font-semibold text-gray-700 mt-4">Página Não Encontrada</h2>
-        <p class="text-gray-600 mt-2">A página que você está procurando não existe.</p>
-      </div>
-      
-      <div class="space-y-4">
-        <router-link 
-          to="/dashboard" 
-          class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-        >
-          Voltar ao Dashboard
-        </router-link>
-        
-        <div class="text-sm text-gray-500">
-          Ou 
-          <router-link to="/login" class="text-gray-600 hover:text-gray-900 font-medium">
-            faça login
-          </router-link>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-// Página 404 simples
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+import BaseLayout from '@/components/layout/BaseLayout.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+
+const auth = useAuthStore()
+
+const destination = computed(() => {
+return auth.isAuthenticated
+? '/dashboard'
+: '/login'
+})
+
+const buttonText = computed(() => {
+return auth.isAuthenticated
+? 'Voltar ao Painel'
+: 'Ir para Login'
+})
 </script>
+
+<template>
+
+<BaseLayout>
+
+<div class="min-h-[70vh] flex items-center justify-center">
+
+<div class="text-center max-w-lg">
+
+<div
+class="text-8xl font-semibold text-gray-900"
+>
+404
+</div>
+
+<h1
+class="mt-6 text-3xl font-semibold text-gray-900"
+>
+Página não encontrada
+</h1>
+
+<p
+class="mt-3 text-gray-500"
+>
+A página que tentou aceder não existe ou foi removida.
+</p>
+
+<div class="mt-8">
+
+<router-link
+:to="destination"
+>
+
+<BaseButton>
+
+{{ buttonText }}
+
+</BaseButton>
+
+</router-link>
+
+</div>
+
+</div>
+
+</div>
+
+</BaseLayout>
+
+</template>
