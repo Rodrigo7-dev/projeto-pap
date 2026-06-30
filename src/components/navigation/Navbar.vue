@@ -2,12 +2,12 @@
 
 <nav
 class="
-bg-white
-border-b
-border-gray-200
 sticky
 top-0
 z-50
+bg-white
+border-b
+border-gray-200
 "
 >
 
@@ -23,18 +23,15 @@ justify-between
 "
 >
 
-<!-- LOGO -->
+<!-- ESQUERDA -->
 
-<div
-class="
-flex
-items-center
-gap-3
-"
->
+<div class="flex items-center gap-10">
+
+<div class="flex items-center gap-3">
 
 <img
 :src="logo"
+alt="Logo"
 class="
 h-9
 w-9
@@ -45,21 +42,11 @@ object-cover
 
 <div>
 
-<p
-class="
-font-semibold
-text-gray-900
-"
->
+<p class="font-semibold text-gray-900">
 Sistema
 </p>
 
-<p
-class="
-text-xs
-text-gray-500
-"
->
+<p class="text-xs text-gray-500">
 Gestão
 </p>
 
@@ -74,45 +61,43 @@ class="
 hidden
 md:flex
 items-center
-gap-6
+gap-1
 "
 >
 
 <router-link
 to="/dashboard"
-class="nav"
+class="nav-link"
 >
 Painel
 </router-link>
 
 <router-link
 to="/processos"
-class="nav"
+class="nav-link"
 >
 Processos
 </router-link>
 
-<template
-v-if="auth.isAdmin"
->
+<template v-if="auth.isAdmin">
 
 <router-link
 to="/ruas"
-class="nav"
+class="nav-link"
 >
 Ruas
 </router-link>
 
 <router-link
 to="/freguesias"
-class="nav"
+class="nav-link"
 >
 Freguesias
 </router-link>
 
 <router-link
 to="/tipos"
-class="nav"
+class="nav-link"
 >
 Publicidade
 </router-link>
@@ -121,44 +106,32 @@ Publicidade
 
 </div>
 
-<!-- RIGHT -->
+</div>
 
-<div
-class="
-flex
-items-center
-gap-3
-"
->
+<!-- DIREITA -->
+
+<div class="flex items-center gap-4">
 
 <div
 class="
 hidden
-md:block
+lg:block
 text-right
 "
 >
 
-<p
-class="
-text-sm
-font-medium
-text-gray-900
-"
->
+<p class="text-sm font-medium text-gray-900">
 
 {{ auth.user?.name }}
 
 </p>
 
-<p
-class="
-text-xs
-text-gray-500
-"
->
+<p class="text-xs text-gray-500">
 
-{{ auth.isAdmin ? 'Administrador' : 'Utilizador' }}
+{{ auth.isAdmin
+? 'Administrador'
+: 'Utilizador'
+}}
 
 </p>
 
@@ -166,9 +139,12 @@ text-gray-500
 
 <BaseButton
 variant="secondary"
+size="sm"
 @click="logout"
 >
+
 Sair
+
 </BaseButton>
 
 </div>
@@ -181,37 +157,27 @@ Sair
 
 <script setup>
 
-import {
-useRouter
-} from 'vue-router'
-
-import {
-useAuthStore
-} from '@/stores/auth'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 import BaseButton from '@/components/ui/BaseButton.vue'
 
 import logo from '@/assets/logo_camera.jpg'
 
-const router =
-useRouter()
+const router = useRouter()
+const auth = useAuthStore()
 
-const auth =
-useAuthStore()
+const logout = async () => {
 
-const logout =
-async ()=>{
-
-try{
+try {
 
 await auth.logout()
 
 }
-finally{
 
-router.push(
-'/login'
-)
+finally {
+
+router.replace('/login')
 
 }
 
@@ -221,34 +187,32 @@ router.push(
 
 <style scoped>
 
-.nav{
+.nav-link{
 
-color:#6b7280;
-
-font-size:14px;
-
-font-weight:500;
-
-transition:.2s;
+@apply
+px-3
+py-2
+rounded-lg
+text-sm
+font-medium
+text-gray-500
+transition;
 
 }
 
-.nav:hover{
+.nav-link:hover{
 
-color:#111827;
+@apply
+bg-gray-100
+text-gray-900;
 
 }
 
 .router-link-active{
 
-color:#111827;
-
-border-bottom:
-2px solid
-#111827;
-
-padding-bottom:
-6px;
+@apply
+bg-gray-900
+text-white;
 
 }
 

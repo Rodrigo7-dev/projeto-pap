@@ -195,9 +195,15 @@ const loadData = async () => {
       api.getRuas()
     ])
 
-    // 🔥 PADRÃO CORRETO
-    const listaProcessos = processosRes.data || []
-    const listaRuas = ruasRes.data || []
+const listaProcessos =
+Array.isArray(processosRes)
+  ? processosRes
+  : []
+
+const listaRuas =
+Array.isArray(ruasRes)
+  ? ruasRes
+  : []
 
     stats.value = {
       total_processos: listaProcessos.length,
