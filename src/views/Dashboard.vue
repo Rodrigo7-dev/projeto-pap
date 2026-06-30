@@ -1,6 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 
 const stats = ref({
   total_processos: 0,
@@ -12,35 +16,51 @@ const stats = ref({
 const processos = ref([])
 const loading = ref(false)
 
-const statCards = computed(() => [
-  {
-    label: 'Processos',
-    value: stats.value.total_processos || 0,
-    tone: 'bg-slate-100 text-slate-700'
-  },
-  {
-    label: 'Válidos',
-    value: stats.value.processos_validos || 0,
-    tone: 'bg-emerald-50 text-emerald-700'
-  },
-  {
-    label: 'Inválidos',
-    value: stats.value.processos_invalidos || 0,
-    tone: 'bg-rose-50 text-rose-700'
-  },
-  {
-    label: 'Ruas',
-    value: stats.value.total_ruas || 0,
-    tone: 'bg-sky-50 text-sky-700'
-  }
-])
+const statCards = computed(() => {
+  const cards = [
+    {
+      label: 'Processos',
+      value: stats.value.total_processos || 0,
+      tone: 'bg-slate-100 text-slate-700'
+    },
+    {
+      label: 'Válidos',
+      value: stats.value.processos_validos || 0,
+      tone: 'bg-emerald-50 text-emerald-700'
+    },
+    {
+      label: 'Inválidos',
+      value: stats.value.processos_invalidos || 0,
+      tone: 'bg-rose-50 text-rose-700'
+    }
+  ]
 
-const quickLinks = [
-  { to: '/processos', title: 'Processos', text: 'Gerir processos' },
-  { to: '/ruas', title: 'Ruas', text: 'Gerir ruas' },
-  { to: '/freguesias', title: 'Freguesias', text: 'Gerir freguesias' },
-  { to: '/tipos', title: 'Publicidade', text: 'Gerir tipos' }
-]
+  if (auth.isAdmin) {
+    cards.push({
+      label: 'Ruas',
+      value: stats.value.total_ruas || 0,
+      tone: 'bg-sky-50 text-sky-700'
+    })
+  }
+
+  return cards
+})
+
+const quickLinks = computed(() => {
+  const links = [
+    { to: '/processos', title: 'Processos', text: 'Gerir processos' }
+  ]
+
+  if (auth.isAdmin) {
+    links.push(
+      { to: '/ruas', title: 'Ruas', text: 'Gerir ruas' },
+      { to: '/freguesias', title: 'Freguesias', text: 'Gerir freguesias' },
+      { to: '/tipos', title: 'Publicidade', text: 'Gerir tipos' }
+    )
+  }
+
+  return links
+})
 
 const getStatusClass = (validade) => {
   return validade === 'valido'
@@ -58,7 +78,7 @@ const loadData = async () => {
   try {
     const [processosRes, ruasRes] = await Promise.all([
       api.getProcessos(),
-      api.getRuas()
+      auth.isAdmin ? api.getRuas() : Promise.resolve([])
     ])
 
     const listaProcessos = Array.isArray(processosRes)

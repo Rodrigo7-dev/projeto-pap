@@ -82,7 +82,8 @@ ownerOnly:true
 path:'/ruas',
 component:Ruas,
 meta:{
-requiresAuth:true
+requiresAuth:true,
+adminOnly:true
 }
 },
 
@@ -108,7 +109,8 @@ adminOnly:true
 path:'/freguesias',
 component:Freguesias,
 meta:{
-requiresAuth:true
+requiresAuth:true,
+adminOnly:true
 }
 },
 
@@ -134,7 +136,8 @@ adminOnly:true
 path:'/tipos',
 component:Tipos,
 meta:{
-requiresAuth:true
+requiresAuth:true,
+adminOnly:true
 }
 },
 

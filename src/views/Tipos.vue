@@ -1,13 +1,6 @@
 <script setup>
-import {
-ref,
-computed,
-onMounted
-} from 'vue'
-
-import {
-useRouter
-} from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
@@ -26,209 +19,114 @@ const search = ref('')
 const loading = ref(false)
 
 const loadTipos = async () => {
+  loading.value = true
 
-loading.value = true
-
-try {
-
-const res =
-await api.getTipos()
-
-const lista =
-res?.data ??
-res ??
-[]
-
-tipos.value =
-Array.isArray(lista)
-? lista
-: []
-
-}
-
-catch (error) {
-
-console.error(
-'Erro ao carregar tipos:',
-error
-)
-
-tipos.value=[]
-
-}
-
-finally {
-
-loading.value=false
-
-}
-
+  try {
+    const res = await api.getTipos()
+    const lista = res?.data ?? res ?? []
+    tipos.value = Array.isArray(lista) ? lista : []
+  } catch (error) {
+    console.error('Erro ao carregar tipos:', error)
+    tipos.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 const filteredTipos = computed(() => {
+  const term = search.value.toLowerCase().trim()
 
-const term =
-search.value
-.toLowerCase()
-.trim()
-
-return tipos.value.filter(tipo => {
-
-return (
-
-(
-tipo.publicidade
-||
-tipo.tipo
-||
-''
-)
-
-.toLowerCase()
-.includes(term)
-
-)
-
-})
-
+  return tipos.value.filter((tipo) => {
+    return (tipo.publicidade || tipo.tipo || '').toLowerCase().includes(term)
+  })
 })
 
 const editTipo = (id) => {
-
-router.push(
-`/tipos/${id}/editar`
-)
-
+  router.push(`/tipos/${id}/editar`)
 }
 
 onMounted(loadTipos)
 </script>
 
 <template>
+  <BaseLayout>
+    <BasePageHeader
+      title="Tipos de Publicidade"
+      subtitle="Gestão dos tipos disponíveis no sistema"
+    >
+      <BaseButton
+        v-if="auth.isAdmin"
+        @click="router.push('/tipos/novo')"
+      >
+        + Novo Tipo
+      </BaseButton>
+    </BasePageHeader>
 
-<BaseLayout>
+    <BaseCard>
+      <div class="border-b border-slate-200 p-4">
+        <BaseInput
+          v-model="search"
+          placeholder="Pesquisar tipos..."
+        />
+      </div>
 
-<BasePageHeader
-title="Tipos de Publicidade"
-subtitle="Gestão dos tipos disponíveis no sistema"
->
+      <div
+        v-if="loading"
+        class="py-10 text-center text-slate-500"
+      >
+        A carregar...
+      </div>
 
-<BaseButton
-v-if="auth.isAdmin"
-@click="router.push('/tipos/novo')"
->
+      <div
+        v-else-if="filteredTipos.length"
+        class="overflow-x-auto"
+      >
+        <table class="responsive-table">
+          <thead class="table-head">
+            <tr>
+              <th class="table-cell text-left">Publicidade</th>
+              <th
+                v-if="auth.isAdmin"
+                class="table-cell text-right"
+              >
+                Ações
+              </th>
+            </tr>
+          </thead>
 
-+ Novo Tipo
+          <tbody class="divide-y divide-slate-100">
+            <tr
+              v-for="tipo in filteredTipos"
+              :key="tipo._id || tipo.id"
+              class="hover:bg-slate-50"
+            >
+              <td class="table-cell font-medium text-slate-900">
+                {{ tipo.publicidade || tipo.tipo }}
+              </td>
+              <td
+                v-if="auth.isAdmin"
+                class="table-cell text-right"
+              >
+                <BaseButton
+                  variant="secondary"
+                  @click="editTipo(tipo._id || tipo.id)"
+                >
+                  Editar
+                </BaseButton>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-</BaseButton>
-
-</BasePageHeader>
-
-<BaseCard>
-
-<div class="p-4 border-b">
-
-<BaseInput
-v-model="search"
-placeholder="Pesquisar tipos..."
-/>
-
-</div>
-
-<div
-v-if="loading"
-class="text-center py-10"
->
-
-A carregar...
-
-</div>
-
-<div
-v-else-if="filteredTipos.length"
-class="overflow-x-auto"
->
-
-<table class="w-full">
-
-<thead class="bg-gray-50">
-
-<tr>
-
-<th class="px-6 py-4 text-left">
-Publicidade
-</th>
-
-<th
-v-if="auth.isAdmin"
-class="px-6 py-4 text-right"
->
-Ações
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr
-v-for="tipo in filteredTipos"
-:key="tipo._id || tipo.id"
-class="border-t"
->
-
-<td class="px-6 py-4">
-
-{{ tipo.publicidade || tipo.tipo }}
-
-</td>
-
-<td
-v-if="auth.isAdmin"
-class="px-6 py-4 text-right"
->
-
-<BaseButton
-variant="secondary"
-@click="
-editTipo(
-tipo._id || tipo.id
-)
-"
->
-
-Editar
-
-</BaseButton>
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-<div
-v-else
-class="text-center py-14"
->
-
-📂
-
-<p>
-
-Nenhum tipo encontrado
-
-</p>
-
-</div>
-
-</BaseCard>
-
-</BaseLayout>
-
+      <div
+        v-else
+        class="empty-state"
+      >
+        <p class="font-medium text-slate-700">
+          Nenhum tipo encontrado
+        </p>
+      </div>
+    </BaseCard>
+  </BaseLayout>
 </template>
