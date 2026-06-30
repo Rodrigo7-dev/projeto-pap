@@ -1,168 +1,6 @@
-<template>
-  <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-7xl mx-auto">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Painel</h1>
-        <p class="text-gray-600">Sistema de Gestão</p>
-      </div>
-
-      <!-- Estatísticas Principais -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center">
-            <div class="flex-shrink-0 bg-gray-100 rounded-lg p-3">
-              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <div class="text-2xl font-bold text-gray-900">{{ stats.total_processos || 0 }}</div>
-              <div class="text-sm text-gray-600">Processos</div>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center">
-            <div class="flex-shrink-0 bg-green-100 rounded-lg p-3">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <div class="text-2xl font-bold text-gray-900">{{ stats.processos_validos || 0 }}</div>
-              <div class="text-sm text-gray-600">Válidos</div>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center">
-            <div class="flex-shrink-0 bg-red-100 rounded-lg p-3">
-              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <div class="text-2xl font-bold text-gray-900">{{ stats.processos_invalidos || 0 }}</div>
-              <div class="text-sm text-gray-600">Inválidos</div>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center">
-            <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <div class="text-2xl font-bold text-gray-900">{{ stats.total_ruas || 0 }}</div>
-              <div class="text-sm text-gray-600">Ruas</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Navegação Rápida -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <router-link to="/processos" class="bg-white p-6 rounded-lg border border-gray-200 text-center hover:bg-gray-50 hover:border-gray-300 transition-all">
-          <div class="flex flex-col items-center">
-            <svg class="w-8 h-8 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <div class="font-medium text-gray-900">Processos</div>
-            <div class="text-sm text-gray-500 mt-1">Gerir processos</div>
-          </div>
-        </router-link>
-        <router-link to="/ruas" class="bg-white p-6 rounded-lg border border-gray-200 text-center hover:bg-gray-50 hover:border-gray-300 transition-all">
-          <div class="flex flex-col items-center">
-            <svg class="w-8 h-8 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-            </svg>
-            <div class="font-medium text-gray-900">Ruas</div>
-            <div class="text-sm text-gray-500 mt-1">Gerir ruas</div>
-          </div>
-        </router-link>
-        <router-link to="/freguesias" class="bg-white p-6 rounded-lg border border-gray-200 text-center hover:bg-gray-50 hover:border-gray-300 transition-all">
-          <div class="flex flex-col items-center">
-            <svg class="w-8 h-8 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-            </svg>
-            <div class="font-medium text-gray-900">Freguesias</div>
-            <div class="text-sm text-gray-500 mt-1">Gerir freguesias</div>
-          </div>
-        </router-link>
-        <router-link to="/tipos" class="bg-white p-6 rounded-lg border border-gray-200 text-center hover:bg-gray-50 hover:border-gray-300 transition-all">
-          <div class="flex flex-col items-center">
-            <svg class="w-8 h-8 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-            </svg>
-            <div class="font-medium text-gray-900">Tipos de Publicidades</div>
-            <div class="text-sm text-gray-500 mt-1">Gerir Publicidades</div>
-          </div>
-        </router-link>
-      </div>
-    
-      <!-- Processos Recentes -->
-      <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">Processos Recentes</h2>
-        </div>
-        <div v-if="loading" class="text-center py-12">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-          <div class="text-gray-600 mt-2">Carregando...</div>
-        </div>
-        <div v-else class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Processo</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Tipo</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Rua</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Validade</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="processo in processos" :key="processo.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">
-                    {{ processo.processo }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ processo.tipo_publicidade?.publicidade || '-' }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ processo.rua?.nome || processo.rua?.rua || '-' }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="getStatusClass(processo.validade)" class="px-2 py-1 text-xs rounded-full">
-                    {{ getValidadeText(processo.validade) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div v-if="processos.length === 0" class="text-center py-12 text-gray-500">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum processo encontrado</h3>
-            <p class="mt-1 text-sm text-gray-500">Comece adicionando um novo processo</p>
-            <div class="mt-6">
-              <router-link to="/processos/novo" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800">
-                Novo Processo
-              </router-link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted } from 'vue'
-import api from '../services/api'
+import { computed, onMounted, ref } from 'vue'
+import api from '@/services/api'
 
 const stats = ref({
   total_processos: 0,
@@ -174,18 +12,46 @@ const stats = ref({
 const processos = ref([])
 const loading = ref(false)
 
-// STATUS UI
+const statCards = computed(() => [
+  {
+    label: 'Processos',
+    value: stats.value.total_processos || 0,
+    tone: 'bg-slate-100 text-slate-700'
+  },
+  {
+    label: 'Válidos',
+    value: stats.value.processos_validos || 0,
+    tone: 'bg-emerald-50 text-emerald-700'
+  },
+  {
+    label: 'Inválidos',
+    value: stats.value.processos_invalidos || 0,
+    tone: 'bg-rose-50 text-rose-700'
+  },
+  {
+    label: 'Ruas',
+    value: stats.value.total_ruas || 0,
+    tone: 'bg-sky-50 text-sky-700'
+  }
+])
+
+const quickLinks = [
+  { to: '/processos', title: 'Processos', text: 'Gerir processos' },
+  { to: '/ruas', title: 'Ruas', text: 'Gerir ruas' },
+  { to: '/freguesias', title: 'Freguesias', text: 'Gerir freguesias' },
+  { to: '/tipos', title: 'Publicidade', text: 'Gerir tipos' }
+]
+
 const getStatusClass = (validade) => {
   return validade === 'valido'
-    ? 'bg-green-100 text-green-800'
-    : 'bg-red-100 text-red-800'
+    ? 'bg-emerald-50 text-emerald-700'
+    : 'bg-rose-50 text-rose-700'
 }
 
 const getValidadeText = (validade) => {
   return validade === 'valido' ? 'Válido' : 'Inválido'
 }
 
-// LOAD DATA
 const loadData = async () => {
   loading.value = true
 
@@ -195,25 +61,22 @@ const loadData = async () => {
       api.getRuas()
     ])
 
-const listaProcessos =
-Array.isArray(processosRes)
-  ? processosRes
-  : []
+    const listaProcessos = Array.isArray(processosRes)
+      ? processosRes
+      : processosRes?.data ?? []
 
-const listaRuas =
-Array.isArray(ruasRes)
-  ? ruasRes
-  : []
+    const listaRuas = Array.isArray(ruasRes)
+      ? ruasRes
+      : ruasRes?.data ?? []
 
     stats.value = {
       total_processos: listaProcessos.length,
-      processos_validos: listaProcessos.filter(p => p.validade === 'valido').length,
-      processos_invalidos: listaProcessos.filter(p => p.validade === 'invalido').length,
+      processos_validos: listaProcessos.filter((p) => p.validade === 'valido').length,
+      processos_invalidos: listaProcessos.filter((p) => p.validade === 'invalido').length,
       total_ruas: listaRuas.length
     }
 
     processos.value = listaProcessos.slice(0, 10)
-
   } catch (e) {
     console.error('Erro ao carregar dashboard:', e)
   } finally {
@@ -223,3 +86,127 @@ Array.isArray(ruasRes)
 
 onMounted(loadData)
 </script>
+
+<template>
+  <div class="app-shell">
+    <div class="app-container">
+      <div class="mb-6 sm:mb-8">
+        <h1 class="text-2xl font-semibold text-slate-900 sm:text-3xl">
+          Painel
+        </h1>
+        <p class="mt-1 text-sm text-slate-500">
+          Resumo geral do sistema
+        </p>
+      </div>
+
+      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          v-for="card in statCards"
+          :key="card.label"
+          class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-sm text-slate-500">
+                {{ card.label }}
+              </p>
+              <p class="mt-2 text-3xl font-semibold text-slate-900">
+                {{ card.value }}
+              </p>
+            </div>
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-lg text-lg font-semibold"
+              :class="card.tone"
+            >
+              {{ card.label.charAt(0) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <router-link
+          v-for="link in quickLinks"
+          :key="link.to"
+          :to="link.to"
+          class="rounded-lg border border-slate-200 bg-white p-5 transition hover:border-slate-300 hover:bg-slate-50"
+        >
+          <p class="font-medium text-slate-900">
+            {{ link.title }}
+          </p>
+          <p class="mt-1 text-sm text-slate-500">
+            {{ link.text }}
+          </p>
+        </router-link>
+      </div>
+
+      <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 px-4 py-4 sm:px-6">
+          <h2 class="text-lg font-semibold text-slate-900">
+            Processos recentes
+          </h2>
+        </div>
+
+        <div
+          v-if="loading"
+          class="py-12 text-center text-slate-500"
+        >
+          A carregar...
+        </div>
+
+        <div
+          v-else-if="processos.length"
+          class="overflow-x-auto"
+        >
+          <table class="responsive-table">
+            <thead class="table-head">
+              <tr>
+                <th class="table-cell text-left">Processo</th>
+                <th class="table-cell text-left">Tipo</th>
+                <th class="table-cell text-left">Rua</th>
+                <th class="table-cell text-left">Validade</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr
+                v-for="processo in processos"
+                :key="processo.id || processo._id"
+                class="hover:bg-slate-50"
+              >
+                <td class="table-cell font-medium text-slate-900">
+                  {{ processo.processo }}
+                </td>
+                <td class="table-cell text-slate-600">
+                  {{ processo.tipo_publicidade?.publicidade || processo.tipoPublicidade?.publicidade || '-' }}
+                </td>
+                <td class="table-cell text-slate-600">
+                  {{ processo.rua?.nome || processo.rua?.rua || '-' }}
+                </td>
+                <td class="table-cell">
+                  <span
+                    class="rounded-full px-3 py-1 text-xs font-medium"
+                    :class="getStatusClass(processo.validade)"
+                  >
+                    {{ getValidadeText(processo.validade) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          v-else
+          class="empty-state"
+        >
+          <p class="font-medium text-slate-700">
+            Nenhum processo encontrado
+          </p>
+          <p class="mt-1 text-sm">
+            Comece por adicionar um novo processo.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
