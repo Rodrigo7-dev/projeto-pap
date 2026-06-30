@@ -173,6 +173,18 @@ history:createWebHistory(),
 routes
 })
 
+const getUserId = (value) => {
+return String(
+value?._id ??
+value?.id ??
+value?.userId ??
+value?.user_id ??
+value?.user ??
+value ??
+''
+)
+}
+
 router.beforeEach(async (to, from, next) => {
 
 const auth = useAuthStore()
@@ -212,20 +224,27 @@ await api.getProcesso(
 to.params.id
 )
 
+const processo =
+data?.data ??
+data?.processo ??
+data
+
 const ownerId =
-String(
-data.user?._id ??
-data.user?.id ??
-data.user
+getUserId(
+processo?.user ??
+processo?.utilizador ??
+processo?.userId ??
+processo?.user_id
 )
 
 const currentUser =
-String(
-auth.user?._id ??
-auth.user?.id
+getUserId(
+auth.user
 )
 
 if (
+!ownerId ||
+!currentUser ||
 ownerId !== currentUser
 ) {
 return next(
