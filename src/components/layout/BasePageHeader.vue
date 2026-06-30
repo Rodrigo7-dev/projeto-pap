@@ -1,16 +1,16 @@
 <template>
 
-<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+<div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6 sm:mb-8">
 
 <div>
 
-<h1 class="text-3xl font-semibold text-gray-900">
+<h1 class="text-2xl sm:text-3xl font-semibold text-slate-900">
 {{ title }}
 </h1>
 
 <p
 v-if="subtitle"
-class="mt-1 text-sm text-gray-500"
+class="mt-1 text-sm text-slate-500"
 >
 {{ subtitle }}
 </p>
@@ -19,7 +19,7 @@ class="mt-1 text-sm text-gray-500"
 
 <div
 v-if="$slots.default"
-class="shrink-0"
+class="flex shrink-0 flex-col gap-2 sm:flex-row"
 >
 <slot />
 </div>

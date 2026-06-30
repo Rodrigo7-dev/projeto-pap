@@ -31,7 +31,7 @@ defineEmits(['click'])
 
 const classes = computed(() => {
   const base =
-    'px-4 py-2 text-sm rounded-lg font-medium transition'
+    'inline-flex items-center justify-center px-4 py-2 text-sm rounded-lg font-medium transition whitespace-nowrap'
 
   const disabledClass = props.disabled
     ? 'opacity-50 cursor-not-allowed'
@@ -39,13 +39,13 @@ const classes = computed(() => {
 
   switch (props.variant) {
     case 'secondary':
-      return `${base} border border-gray-200 hover:bg-gray-100 text-gray-700 ${disabledClass}`
+      return `${base} border border-slate-200 hover:bg-slate-100 text-slate-700 ${disabledClass}`
 
     case 'danger':
       return `${base} bg-red-50 text-red-600 hover:bg-red-100 ${disabledClass}`
 
     default:
-      return `${base} bg-gray-900 text-white hover:bg-gray-800 ${disabledClass}`
+      return `${base} bg-slate-900 text-white hover:bg-slate-800 ${disabledClass}`
   }
 })
 </script>

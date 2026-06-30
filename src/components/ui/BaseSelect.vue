@@ -18,13 +18,13 @@ w-full
 px-4
 py-2.5
 border
-border-gray-200
+border-slate-200
 rounded-lg
 text-sm
 bg-white
 focus:outline-none
 focus:ring-2
-focus:ring-gray-900/10
+focus:ring-slate-900/10
 "
 >
 
