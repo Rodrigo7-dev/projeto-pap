@@ -60,19 +60,19 @@ const loadRua = async () => {
 const handleSubmit = async () => {
   if (submitting.value) return
 
-  if (!form.value.rua.trim() || !form.value.coordenada.trim() || !form.value.freguesia) {
-    alert('Preencha todos os campos')
-    return
-  }
+if (!form.value.rua.trim() || !form.value.freguesia) {
+  alert('Preencha os campos obrigatórios')
+  return
+}
 
   submitting.value = true
 
   try {
-    const payload = {
-      rua: form.value.rua.trim(),
-      coordenada: form.value.coordenada.trim(),
-      freguesia: form.value.freguesia
-    }
+const payload = {
+  rua: form.value.rua.trim(),
+  coordenada: form.value.coordenada?.trim() || '',
+  freguesia: form.value.freguesia
+}
 
     if (isEditing.value) {
       await api.updateRua(route.params.id, payload)
@@ -154,7 +154,6 @@ onMounted(async () => {
           <BaseInput
             v-model="form.coordenada"
             label="Coordenada"
-            required
             placeholder="41.1579,-8.64442"
             class="font-mono"
           />
