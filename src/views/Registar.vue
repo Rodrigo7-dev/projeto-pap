@@ -129,9 +129,7 @@ const form = ref({
   password: '',
   confirmPassword: ''
 })
-const handleNifInput = (event) => {
-  form.value.nif = event.target.value.replace(/\D/g, '').slice(0, 9)
-}
+
 const error = ref('')
 const loading = ref(false)
 

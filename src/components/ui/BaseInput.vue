@@ -20,25 +20,6 @@
 <script setup>
 defineOptions({ inheritAttrs: false })
 
-defineProps({
-  modelValue: {
-    type: [String, Number],
-    default: ''
-  },
-  type: {
-    type: String,
-    default: 'text'
-  },
-  label: {
-    type: String,
-    default: ''
-  },
-  numericOnly: {
-    type: Boolean,
-    default: false
-  }
-})
-
 const props = defineProps({
   modelValue: {
     type: [String, Number],
@@ -64,10 +45,9 @@ const handleInput = (event) => {
   let value = event.target.value
 
   if (props.numericOnly) {
-    value = value.replace(/\D/g, '')
-  }
+  value = value.replace(/\D/g, '').slice(0, 9)
+}
 
   emit('update:modelValue', value)
 }
-defineEmits(['update:modelValue'])
 </script>
