@@ -62,7 +62,7 @@ onMounted(loadFreguesias)
 </script>
 
 <template>
-  <<TableLayout>>
+  <TableLayout>  
   <BasePageHeader
   title="Gestão de Freguesias"
   subtitle="Consulta e gestão de freguesias registadas"
@@ -73,7 +73,7 @@ onMounted(loadFreguesias)
 </BasePageHeader>
 
   <div class="flex min-h-0 flex-1 flex-col">
-    <BaseCard>
+  <BaseCard class="flex-1">
       <div class="border-b border-slate-200 p-4">
         <BaseInput
           v-model="search"
@@ -159,5 +159,5 @@ onMounted(loadFreguesias)
       </div>
     </BaseCard>
       </div>
-  </<TableLayout>>
+    </TableLayout>
 </template>
