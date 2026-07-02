@@ -1,23 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="flex h-screen flex-col bg-gray-50">
 
     <Navbar
       v-if="showNavbar"
+      class="shrink-0"
     />
 
-    <main>
+    <main class="flex-1 overflow-hidden">
       <router-view v-slot="{ Component }">
-
         <transition
           name="page"
           mode="out-in"
           appear
         >
-          <component
-            :is="Component"
-          />
+          <component :is="Component" />
         </transition>
-
       </router-view>
     </main>
 
