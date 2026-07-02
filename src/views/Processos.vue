@@ -122,12 +122,12 @@ onMounted(loadProcessos)
               </td>
               <td class="table-cell text-right">
                 <BaseButton
-  v-if="auth.isAdmin"
-  variant="secondary"
-  @click="router.push(`/processos/${p.id}/editar`)"
->
-  Editar
-</BaseButton>
+                v-if="auth.isAdmin"
+                variant="secondary"
+                @click="router.push(`/processos/${p.id}/editar`)"
+              >
+                Editar
+              </BaseButton>
               </td>
             </tr>
           </tbody>
