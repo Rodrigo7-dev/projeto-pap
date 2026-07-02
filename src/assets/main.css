@@ -3,125 +3,74 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    @apply box-border;
+  }
 
-*{
-@apply box-border;
-}
+  html,
+  body,
+  #app {
+    @apply min-h-screen;
+  }
 
-html,
-body,
-#app{
-@apply min-h-screen;
-}
+  html {
+    @apply scroll-smooth;
+  }
 
-html{
-@apply scroll-smooth;
-}
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
 
-body{
-@apply bg-slate-50 text-slate-900 antialiased;
-}
-
-button,
-input,
-select,
-textarea{
-@apply focus:outline-none;
-}
-
+  button,
+  input,
+  select,
+  textarea {
+    @apply focus:outline-none;
+  }
 }
 
 @layer components {
+  .table-head {
+    @apply bg-slate-50 text-xs uppercase tracking-wider text-slate-600;
+  }
 
-.page{
-@apply min-h-screen px-4 py-5 sm:px-6 lg:px-8;
-}
+  .table-cell {
+    @apply px-4 py-3 sm:px-6 sm:py-4;
+  }
 
-.page-container{
-@apply max-w-6xl mx-auto;
-}
+  .empty-state {
+    @apply px-4 py-12 text-center text-slate-500;
+  }
 
-.page-card{
-@apply bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden;
-}
+  .auth-shell {
+    @apply flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8;
+  }
 
-.page-input{
-@apply
-w-full
-px-4
-py-2.5
-border
-border-slate-200
-rounded-lg
-text-sm
-bg-white
-focus:ring-2
-focus:ring-slate-900/10;
-}
+  .auth-card {
+    @apply w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-md sm:p-8;
+  }
 
-.table-head{
-@apply
-bg-slate-50
-text-xs
-uppercase
-tracking-wider
-text-slate-600;
-}
+  .responsive-table {
+    @apply w-full min-w-[680px] text-sm;
+  }
 
-.table-cell{
-@apply px-4 py-3 sm:px-6 sm:py-4;
-}
+  .form-card {
+    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6;
+  }
 
-.table-row{
-@apply border-t border-slate-100 hover:bg-slate-50;
-}
+  .form-card form {
+    @apply space-y-5;
+  }
 
-.empty-state{
-@apply text-center py-12 px-4 text-slate-500;
-}
+  .form-actions {
+    @apply flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between;
+  }
 
-.app-shell{
-@apply min-h-screen bg-slate-50 px-4 py-5 sm:px-6 lg:px-8;
-}
+  .form-actions-right {
+    @apply flex flex-col-reverse gap-2 sm:ml-auto sm:flex-row;
+  }
 
-.app-container{
-@apply mx-auto w-full max-w-6xl;
-}
-
-.auth-shell{
-@apply min-h-screen bg-slate-50 px-4 py-8 flex items-center justify-center;
-}
-
-.responsive-table{
-@apply w-full min-w-[680px] text-sm;
-}
-
-.form-card{
-@apply bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6 space-y-5;
-}
-
-.form-actions{
-@apply flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between;
-}
-
-.form-actions-right{
-@apply flex flex-col-reverse gap-2 sm:ml-auto sm:flex-row;
-}
-
-}
-
-@layer utilities {
-
-.no-scrollbar{
-scrollbar-width:none;
-}
-
-.no-scrollbar::-webkit-scrollbar{
-display:none;
-}
-
-.transition-default{
-@apply transition duration-200 ease-out;
-}
-
+  .status-badge {
+    @apply rounded-full px-3 py-1 text-xs font-medium;
+  }
 }

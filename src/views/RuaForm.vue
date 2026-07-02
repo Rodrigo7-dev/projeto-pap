@@ -3,7 +3,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import api from '@/services/api'
+import { getEntityId, unwrapList } from '@/utils/helpers'
 
+import BaseFormLayout from '@/components/layout/BaseFormLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
@@ -13,6 +15,7 @@ const route = useRoute()
 
 const loading = ref(false)
 const submitting = ref(false)
+const error = ref('')
 const freguesias = ref([])
 
 const form = ref({
@@ -23,35 +26,26 @@ const form = ref({
 
 const isEditing = computed(() => !!route.params.id)
 
-const loadFreguesias = async () => {
-  try {
-    const res = await api.getFreguesias()
-    freguesias.value = Array.isArray(res?.data)
-      ? res.data
-      : Array.isArray(res)
-        ? res
-        : []
-  } catch {
-    freguesias.value = []
-  }
-}
-
-const loadRua = async () => {
-  if (!isEditing.value) return
-
+const loadData = async () => {
   loading.value = true
+  error.value = ''
 
   try {
-    const res = await api.getRua(route.params.id)
-    const data = res?.data ?? res
+    freguesias.value = unwrapList(await api.getFreguesias())
 
-    form.value = {
-      rua: data.rua ?? '',
-      coordenada: data.coordenada ?? '',
-      freguesia: data.freguesia?._id ?? data.freguesia?.id ?? data.freguesia ?? ''
+    if (isEditing.value) {
+      const res = await api.getRua(route.params.id)
+      const data = res?.data ?? res
+
+      form.value = {
+        rua: data.rua ?? '',
+        coordenada: data.coordenada ?? '',
+        freguesia: getEntityId(data.freguesia)
+      }
     }
   } catch {
-    router.push('/ruas')
+    error.value = 'Erro ao carregar dados'
+    if (isEditing.value) router.push('/ruas')
   } finally {
     loading.value = false
   }
@@ -60,19 +54,20 @@ const loadRua = async () => {
 const handleSubmit = async () => {
   if (submitting.value) return
 
-if (!form.value.rua.trim() || !form.value.freguesia) {
-  alert('Preencha os campos obrigatórios')
-  return
-}
+  if (!form.value.rua.trim() || !form.value.freguesia) {
+    error.value = 'Preencha os campos obrigatórios'
+    return
+  }
 
   submitting.value = true
+  error.value = ''
 
   try {
-const payload = {
-  rua: form.value.rua.trim(),
-  coordenada: form.value.coordenada?.trim() || '',
-  freguesia: form.value.freguesia
-}
+    const payload = {
+      rua: form.value.rua.trim(),
+      coordenada: form.value.coordenada?.trim() || '',
+      freguesia: form.value.freguesia
+    }
 
     if (isEditing.value) {
       await api.updateRua(route.params.id, payload)
@@ -81,9 +76,9 @@ const payload = {
     }
 
     router.push('/ruas')
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao guardar')
+  } catch (err) {
+    console.error(err)
+    error.value = 'Erro ao guardar'
   } finally {
     submitting.value = false
   }
@@ -96,97 +91,84 @@ const handleDelete = async () => {
     await api.deleteRua(route.params.id)
     router.push('/ruas')
   } catch {
-    alert('Erro ao eliminar')
+    error.value = 'Erro ao eliminar'
   }
 }
 
-onMounted(async () => {
-  await loadFreguesias()
-  await loadRua()
-})
+onMounted(loadData)
 </script>
 
 <template>
-  <div class="app-shell">
-    <div class="mx-auto w-full max-w-4xl">
-      <div class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center">
-        <router-link
-          to="/ruas"
-          class="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          Voltar
-        </router-link>
-
-        <h1 class="text-2xl font-semibold text-slate-900 sm:text-3xl">
-          {{ isEditing ? 'Editar Rua' : 'Nova Rua' }}
-        </h1>
+  <BaseFormLayout
+    :title="isEditing ? 'Editar Rua' : 'Nova Rua'"
+    back-to="/ruas"
+  >
+    <form @submit.prevent="handleSubmit">
+      <div
+        v-if="loading"
+        class="py-10 text-center text-slate-500"
+      >
+        A carregar...
       </div>
 
-      <form
-        class="form-card"
-        @submit.prevent="handleSubmit"
-      >
+      <template v-else>
         <div
-          v-if="loading"
-          class="py-10 text-center text-slate-500"
+          v-if="error"
+          class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
         >
-          A carregar...
+          {{ error }}
         </div>
 
-        <template v-else>
-          <BaseInput
-            v-model="form.rua"
-            label="Nome da rua"
-            required
-            placeholder="Rua das Flores"
-          />
+        <BaseInput
+          v-model="form.rua"
+          label="Nome da rua"
+          required
+          placeholder="Rua das Flores"
+        />
 
-          <BaseSelect
-            v-model="form.freguesia"
-            label="Freguesia"
-            required
-            placeholder="Selecionar freguesia"
-            :options="freguesias"
-            labelKey="freguesia"
-            valueKey="_id"
-          />
+        <BaseSelect
+          v-model="form.freguesia"
+          label="Freguesia"
+          required
+          placeholder="Selecionar freguesia"
+          :options="freguesias"
+          label-key="freguesia"
+        />
 
-          <BaseInput
-            v-model="form.coordenada"
-            label="Coordenada"
-            placeholder="41.1579,-8.64442"
-            class="font-mono"
-          />
-        </template>
+        <BaseInput
+          v-model="form.coordenada"
+          label="Coordenada"
+          placeholder="41.1579,-8.64442"
+        />
+      </template>
 
-        <div class="form-actions">
+      <div class="form-actions">
+        <BaseButton
+          v-if="isEditing"
+          type="button"
+          variant="danger"
+          @click="handleDelete"
+        >
+          Eliminar
+        </BaseButton>
+
+        <div class="form-actions-right">
           <BaseButton
-            v-if="isEditing"
             type="button"
-            variant="danger"
-            @click="handleDelete"
+            variant="secondary"
+            @click="router.push('/ruas')"
           >
-            Eliminar
+            Cancelar
           </BaseButton>
 
-          <div class="form-actions-right">
-            <BaseButton
-              type="button"
-              variant="secondary"
-              @click="router.push('/ruas')"
-            >
-              Cancelar
-            </BaseButton>
-
-            <BaseButton
-              type="submit"
-              :disabled="submitting"
-            >
-              {{ submitting ? 'A guardar...' : isEditing ? 'Atualizar' : 'Guardar' }}
-            </BaseButton>
-          </div>
+          <BaseButton
+            type="submit"
+            :disabled="submitting || loading"
+          >
+            {{ submitting ? 'A guardar...' : isEditing ? 'Atualizar' : 'Guardar' }}
+          </BaseButton>
         </div>
-      </form>
-    </div>
-  </div>
+      </div>
+    </form>
+  </BaseFormLayout>
 </template>

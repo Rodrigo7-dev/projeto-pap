@@ -1,11 +1,11 @@
 <template>
   <div class="auth-shell">
-    <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <div class="auth-card">
       <div class="mb-8 text-center">
         <img
-          src="../assets/logo_camera.jpg"
+          :src="logo"
           alt="Logo"
-          class="mx-auto mb-4 h-16 rounded-lg"
+          class="mx-auto mb-4 h-16 rounded-lg object-cover"
         />
         <h1 class="mb-2 text-2xl font-semibold text-slate-900">
           Sistema
@@ -13,6 +13,13 @@
         <p class="text-sm text-slate-500">
           Acesso ao sistema
         </p>
+      </div>
+
+      <div
+        v-if="registered"
+        class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+      >
+        Conta criada com sucesso. Faça login para continuar.
       </div>
 
       <form
@@ -65,20 +72,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
+import logo from '@/assets/logo_camera.jpg'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+
+const registered = computed(() => route.query.registered === '1')
 
 const handleLogin = async () => {
   try {
@@ -98,7 +109,7 @@ const handleLogin = async () => {
       error.value = 'Credenciais inválidas'
     } else if (err.code === 'ECONNABORTED') {
       error.value = 'Tempo esgotado. Tente novamente.'
-    } else if (err.message.includes('Network Error')) {
+    } else if (err.message?.includes('Network Error')) {
       error.value = 'Erro de conexão. Verifique a internet.'
     } else {
       error.value = 'Ocorreu um erro. Tente novamente.'

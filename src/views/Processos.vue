@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
+import { getEntityId, unwrapList, validadeClass, validadeLabel } from '@/utils/helpers'
 
 import BaseLayout from '@/components/layout/BaseLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -20,22 +21,17 @@ const loading = ref(false)
 
 const normalizeProcesso = (p) => ({
   ...p,
-  id: p._id || p.id,
+  id: getEntityId(p),
   tipo: p.tipoPublicidade?.publicidade || p.tipo_publicidade?.publicidade || '-',
   ruaNome: p.rua?.rua || p.rua?.nome || '-',
-  owner: String(p.user?._id ?? p.user?.id ?? p.user ?? '')
+  owner: getEntityId(p.user)
 })
 
 const loadProcessos = async () => {
   loading.value = true
 
   try {
-    const res = await api.getProcessos()
-    const lista = res?.data ?? res ?? []
-
-    processos.value = Array.isArray(lista)
-      ? lista.map(normalizeProcesso)
-      : []
+    processos.value = unwrapList(await api.getProcessos()).map(normalizeProcesso)
   } catch (error) {
     console.error(error)
     processos.value = []
@@ -47,38 +43,16 @@ const loadProcessos = async () => {
 const filteredProcessos = computed(() => {
   const term = search.value.toLowerCase().trim()
 
-  return processos.value.filter((p) => {
-    return [
-      p.processo,
-      p.alvara,
-      p.ruaNome,
-      p.tipo,
-      p.user?.name
-    ]
+  return processos.value.filter((p) =>
+    [p.processo, p.alvara, p.ruaNome, p.tipo, p.user?.name]
       .filter(Boolean)
       .some((value) => value.toLowerCase().includes(term))
-  })
+  )
 })
 
 const canEdit = (p) => {
   if (auth.isAdmin) return true
-
-  const current = String(auth.user?.id ?? auth.user?._id ?? '')
-  return p.owner === current
-}
-
-const editProcesso = (id) => {
-  router.push(`/processos/${id}/editar`)
-}
-
-const formatEstado = (estado) => {
-  return estado === 'valido' ? 'Válido' : 'Inválido'
-}
-
-const statusClass = (estado) => {
-  return estado === 'valido'
-    ? 'bg-emerald-50 text-emerald-700'
-    : 'bg-rose-50 text-rose-700'
+  return p.owner === getEntityId(auth.user)
 }
 
 onMounted(loadProcessos)
@@ -146,17 +120,17 @@ onMounted(loadProcessos)
               </td>
               <td class="table-cell">
                 <span
-                  class="rounded-full px-3 py-1 text-xs font-medium"
-                  :class="statusClass(p.validade)"
+                  class="status-badge"
+                  :class="validadeClass(p.validade)"
                 >
-                  {{ formatEstado(p.validade) }}
+                  {{ validadeLabel(p.validade) }}
                 </span>
               </td>
               <td class="table-cell text-right">
                 <BaseButton
                   v-if="canEdit(p)"
                   variant="secondary"
-                  @click="editProcesso(p.id)"
+                  @click="router.push(`/processos/${p.id}/editar`)"
                 >
                   Editar
                 </BaseButton>

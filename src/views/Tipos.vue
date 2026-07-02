@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import api from '@/services/api'
-import { useAuthStore } from '@/stores/auth'
+import { getEntityId, unwrapList } from '@/utils/helpers'
 
 import BaseLayout from '@/components/layout/BaseLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -12,7 +12,6 @@ import BaseInput from '@/components/ui/BaseInput.vue'
 import BasePageHeader from '@/components/layout/BasePageHeader.vue'
 
 const router = useRouter()
-const auth = useAuthStore()
 
 const tipos = ref([])
 const search = ref('')
@@ -22,9 +21,7 @@ const loadTipos = async () => {
   loading.value = true
 
   try {
-    const res = await api.getTipos()
-    const lista = res?.data ?? res ?? []
-    tipos.value = Array.isArray(lista) ? lista : []
+    tipos.value = unwrapList(await api.getTipos())
   } catch (error) {
     console.error('Erro ao carregar tipos:', error)
     tipos.value = []
@@ -36,14 +33,10 @@ const loadTipos = async () => {
 const filteredTipos = computed(() => {
   const term = search.value.toLowerCase().trim()
 
-  return tipos.value.filter((tipo) => {
-    return (tipo.publicidade || tipo.tipo || '').toLowerCase().includes(term)
-  })
+  return tipos.value.filter((tipo) =>
+    (tipo.publicidade || tipo.tipo || '').toLowerCase().includes(term)
+  )
 })
-
-const editTipo = (id) => {
-  router.push(`/tipos/${id}/editar`)
-}
 
 onMounted(loadTipos)
 </script>
@@ -54,10 +47,7 @@ onMounted(loadTipos)
       title="Tipos de Publicidade"
       subtitle="Gestão dos tipos disponíveis no sistema"
     >
-      <BaseButton
-        v-if="auth.isAdmin"
-        @click="router.push('/tipos/novo')"
-      >
+      <BaseButton @click="router.push('/tipos/novo')">
         + Novo Tipo
       </BaseButton>
     </BasePageHeader>
@@ -85,31 +75,23 @@ onMounted(loadTipos)
           <thead class="table-head">
             <tr>
               <th class="table-cell text-left">Publicidade</th>
-              <th
-                v-if="auth.isAdmin"
-                class="table-cell text-right"
-              >
-                Ações
-              </th>
+              <th class="table-cell text-right">Ações</th>
             </tr>
           </thead>
 
           <tbody class="divide-y divide-slate-100">
             <tr
               v-for="tipo in filteredTipos"
-              :key="tipo._id || tipo.id"
+              :key="getEntityId(tipo)"
               class="hover:bg-slate-50"
             >
               <td class="table-cell font-medium text-slate-900">
                 {{ tipo.publicidade || tipo.tipo }}
               </td>
-              <td
-                v-if="auth.isAdmin"
-                class="table-cell text-right"
-              >
+              <td class="table-cell text-right">
                 <BaseButton
                   variant="secondary"
-                  @click="editTipo(tipo._id || tipo.id)"
+                  @click="router.push(`/tipos/${getEntityId(tipo)}/editar`)"
                 >
                   Editar
                 </BaseButton>

@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import api from '@/services/api'
 
+import BaseFormLayout from '@/components/layout/BaseFormLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 
@@ -12,6 +13,8 @@ const route = useRoute()
 
 const loading = ref(false)
 const submitting = ref(false)
+const error = ref('')
+
 const isEditing = computed(() => !!route.params.id)
 
 const form = ref({
@@ -22,6 +25,7 @@ const loadTipo = async () => {
   if (!isEditing.value) return
 
   loading.value = true
+  error.value = ''
 
   try {
     const res = await api.getTipo(route.params.id)
@@ -30,9 +34,9 @@ const loadTipo = async () => {
     form.value = {
       publicidade: data.publicidade ?? data.tipo ?? ''
     }
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao carregar tipo')
+  } catch (err) {
+    console.error(err)
+    error.value = 'Erro ao carregar tipo'
     router.push('/tipos')
   } finally {
     loading.value = false
@@ -40,14 +44,17 @@ const loadTipo = async () => {
 }
 
 const handleSubmit = async () => {
+  if (submitting.value) return
+
   const publicidade = form.value.publicidade.trim()
 
   if (!publicidade) {
-    alert('Preencha o nome')
+    error.value = 'Preencha o nome'
     return
   }
 
   submitting.value = true
+  error.value = ''
 
   try {
     const payload = { publicidade }
@@ -59,9 +66,9 @@ const handleSubmit = async () => {
     }
 
     router.push('/tipos')
-  } catch (error) {
-    console.error(error)
-    alert(error?.response?.data?.error || 'Erro ao guardar')
+  } catch (err) {
+    console.error(err)
+    error.value = err?.response?.data?.error || 'Erro ao guardar'
   } finally {
     submitting.value = false
   }
@@ -73,9 +80,9 @@ const handleDelete = async () => {
   try {
     await api.deleteTipo(route.params.id)
     router.push('/tipos')
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao eliminar')
+  } catch (err) {
+    console.error(err)
+    error.value = 'Erro ao eliminar'
   }
 }
 
@@ -83,68 +90,61 @@ onMounted(loadTipo)
 </script>
 
 <template>
-  <div class="app-shell">
-    <div class="mx-auto w-full max-w-4xl">
-      <div class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center">
-        <router-link
-          to="/tipos"
-          class="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          Voltar
-        </router-link>
-
-        <h1 class="text-2xl font-semibold text-slate-900 sm:text-3xl">
-          {{ isEditing ? 'Editar Tipo' : 'Novo Tipo' }}
-        </h1>
+  <BaseFormLayout
+    :title="isEditing ? 'Editar Tipo' : 'Novo Tipo'"
+    back-to="/tipos"
+  >
+    <form @submit.prevent="handleSubmit">
+      <div
+        v-if="loading"
+        class="py-8 text-center text-slate-500"
+      >
+        A carregar...
       </div>
 
-      <form
-        class="form-card"
-        @submit.prevent="handleSubmit"
-      >
+      <template v-else>
         <div
-          v-if="loading"
-          class="py-8 text-center text-slate-500"
+          v-if="error"
+          class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
         >
-          A carregar...
+          {{ error }}
         </div>
 
         <BaseInput
-          v-else
           v-model="form.publicidade"
           label="Nome da publicidade"
           required
           placeholder="Ex: Outdoor"
         />
+      </template>
 
-        <div class="form-actions">
+      <div class="form-actions">
+        <BaseButton
+          v-if="isEditing"
+          type="button"
+          variant="danger"
+          @click="handleDelete"
+        >
+          Eliminar
+        </BaseButton>
+
+        <div class="form-actions-right">
           <BaseButton
-            v-if="isEditing && !loading"
             type="button"
-            variant="danger"
-            @click="handleDelete"
+            variant="secondary"
+            @click="router.push('/tipos')"
           >
-            Eliminar
+            Cancelar
           </BaseButton>
 
-          <div class="form-actions-right">
-            <BaseButton
-              type="button"
-              variant="secondary"
-              @click="router.push('/tipos')"
-            >
-              Cancelar
-            </BaseButton>
-
-            <BaseButton
-              type="submit"
-              :disabled="submitting || loading"
-            >
-              {{ submitting ? 'A guardar...' : isEditing ? 'Atualizar' : 'Guardar' }}
-            </BaseButton>
-          </div>
+          <BaseButton
+            type="submit"
+            :disabled="submitting || loading"
+          >
+            {{ submitting ? 'A guardar...' : isEditing ? 'Atualizar' : 'Guardar' }}
+          </BaseButton>
         </div>
-      </form>
-    </div>
-  </div>
+      </div>
+    </form>
+  </BaseFormLayout>
 </template>

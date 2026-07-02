@@ -1,11 +1,11 @@
 <template>
   <div class="auth-shell">
-    <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <div class="auth-card">
       <div class="mb-8 text-center">
         <img
-          src="../assets/logo_camera.jpg"
+          :src="logo"
           alt="Logo"
-          class="mx-auto mb-4 h-16 rounded-lg"
+          class="mx-auto mb-4 h-16 rounded-lg object-cover"
         />
         <h1 class="mb-2 text-2xl font-semibold text-slate-900">
           Criar conta
@@ -88,13 +88,6 @@
           {{ error }}
         </div>
 
-        <div
-          v-if="success"
-          class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
-        >
-          {{ success }}
-        </div>
-
         <BaseButton
           type="submit"
           :disabled="loading"
@@ -120,10 +113,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../services/api'
+import api from '@/services/api'
 
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
+import logo from '@/assets/logo_camera.jpg'
 
 const router = useRouter()
 
@@ -135,8 +129,7 @@ const form = ref({
   confirmPassword: ''
 })
 
-const error = ref(null)
-const success = ref(null)
+const error = ref('')
 const loading = ref(false)
 
 const fieldErrors = ref({
@@ -145,16 +138,6 @@ const fieldErrors = ref({
   nif: '',
   password: ''
 })
-
-const resetFields = () => {
-  form.value = {
-    name: '',
-    email: '',
-    nif: '',
-    password: '',
-    confirmPassword: ''
-  }
-}
 
 const clearFieldErrors = () => {
   fieldErrors.value = {
@@ -168,8 +151,7 @@ const clearFieldErrors = () => {
 const handleRegister = async () => {
   if (loading.value) return
 
-  error.value = null
-  success.value = null
+  error.value = ''
   clearFieldErrors()
 
   if (form.value.password !== form.value.confirmPassword) {
@@ -193,12 +175,7 @@ const handleRegister = async () => {
       password_confirmation: form.value.confirmPassword
     })
 
-    success.value = 'Conta criada com sucesso!'
-    resetFields()
-
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 1200)
+    router.push({ path: '/login', query: { registered: '1' } })
   } catch (err) {
     console.error('Registration error:', err)
 

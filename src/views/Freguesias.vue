@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import api from '@/services/api'
-import { useAuthStore } from '@/stores/auth'
+import { getEntityId, unwrapList } from '@/utils/helpers'
 
 import BaseLayout from '@/components/layout/BaseLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -12,7 +12,6 @@ import BaseInput from '@/components/ui/BaseInput.vue'
 import BasePageHeader from '@/components/layout/BasePageHeader.vue'
 
 const router = useRouter()
-const auth = useAuthStore()
 
 const freguesias = ref([])
 const search = ref('')
@@ -22,9 +21,7 @@ const loadFreguesias = async () => {
   loading.value = true
 
   try {
-    const res = await api.getFreguesias()
-    const lista = res?.data ?? res ?? []
-    freguesias.value = Array.isArray(lista) ? lista : []
+    freguesias.value = unwrapList(await api.getFreguesias())
   } catch (error) {
     console.error(error)
     freguesias.value = []
@@ -35,12 +32,10 @@ const loadFreguesias = async () => {
 
 const filteredFreguesias = computed(() => {
   const term = search.value.toLowerCase().trim()
-  return freguesias.value.filter((f) => (f.freguesia || '').toLowerCase().includes(term))
+  return freguesias.value.filter((f) =>
+    (f.freguesia || '').toLowerCase().includes(term)
+  )
 })
-
-const editFreguesia = (id) => {
-  router.push(`/freguesias/${id}/editar`)
-}
 
 onMounted(loadFreguesias)
 </script>
@@ -51,10 +46,7 @@ onMounted(loadFreguesias)
       title="Gestão de Freguesias"
       subtitle="Consulta e gestão de freguesias registadas"
     >
-      <BaseButton
-        v-if="auth.isAdmin"
-        @click="router.push('/freguesias/nova')"
-      >
+      <BaseButton @click="router.push('/freguesias/nova')">
         + Nova Freguesia
       </BaseButton>
     </BasePageHeader>
@@ -82,31 +74,23 @@ onMounted(loadFreguesias)
           <thead class="table-head">
             <tr>
               <th class="table-cell text-left">Freguesia</th>
-              <th
-                v-if="auth.isAdmin"
-                class="table-cell text-right"
-              >
-                Ações
-              </th>
+              <th class="table-cell text-right">Ações</th>
             </tr>
           </thead>
 
           <tbody class="divide-y divide-slate-100">
             <tr
               v-for="f in filteredFreguesias"
-              :key="f._id || f.id"
+              :key="getEntityId(f)"
               class="hover:bg-slate-50"
             >
               <td class="table-cell font-medium text-slate-900">
                 {{ f.freguesia }}
               </td>
-              <td
-                v-if="auth.isAdmin"
-                class="table-cell text-right"
-              >
+              <td class="table-cell text-right">
                 <BaseButton
                   variant="secondary"
-                  @click="editFreguesia(f._id || f.id)"
+                  @click="router.push(`/freguesias/${getEntityId(f)}/editar`)"
                 >
                   Editar
                 </BaseButton>

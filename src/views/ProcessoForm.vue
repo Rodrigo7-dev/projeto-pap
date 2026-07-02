@@ -1,8 +1,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import api from '@/services/api'
 
+import api from '@/services/api'
+import { getEntityId, unwrapList } from '@/utils/helpers'
+
+import BaseFormLayout from '@/components/layout/BaseFormLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
@@ -12,6 +15,7 @@ const route = useRoute()
 
 const loading = ref(false)
 const submitting = ref(false)
+const error = ref('')
 
 const tipos = ref([])
 const ruas = ref([])
@@ -29,6 +33,7 @@ const form = ref({
 
 const fetchData = async () => {
   loading.value = true
+  error.value = ''
 
   try {
     const [tiposRes, ruasRes] = await Promise.all([
@@ -36,8 +41,8 @@ const fetchData = async () => {
       api.getRuas()
     ])
 
-    tipos.value = tiposRes?.data ?? tiposRes ?? []
-    ruas.value = ruasRes?.data ?? ruasRes ?? []
+    tipos.value = unwrapList(tiposRes)
+    ruas.value = unwrapList(ruasRes)
 
     if (isEditing.value) {
       const res = await api.getProcesso(route.params.id)
@@ -48,36 +53,28 @@ const fetchData = async () => {
         alvara: data.alvara ?? '',
         alojamentoLocal: data.alojamentoLocal ?? data.alojamento_local ?? '',
         validade: data.validade ?? 'valido',
-        rua: data.rua?._id ?? data.rua?.id ?? data.rua ?? '',
-        tipoPublicidade:
-          data.tipoPublicidade?._id ??
-          data.tipoPublicidade?.id ??
-          data.tipo_publicidade?._id ??
-          data.tipo_publicidade?.id ??
-          ''
+        rua: getEntityId(data.rua),
+        tipoPublicidade: getEntityId(data.tipoPublicidade ?? data.tipo_publicidade)
       }
     }
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao carregar dados')
+  } catch (err) {
+    console.error(err)
+    error.value = 'Erro ao carregar dados'
   } finally {
     loading.value = false
   }
 }
 
-const isValid = () => {
-  return form.value.processo?.trim() && form.value.rua && form.value.tipoPublicidade
-}
-
 const handleSubmit = async () => {
   if (submitting.value) return
 
-  if (!isValid()) {
-    alert('Preencha os campos obrigatórios')
+  if (!form.value.processo?.trim() || !form.value.rua || !form.value.tipoPublicidade) {
+    error.value = 'Preencha os campos obrigatórios'
     return
   }
 
   submitting.value = true
+  error.value = ''
 
   try {
     const payload = {
@@ -96,9 +93,9 @@ const handleSubmit = async () => {
     }
 
     router.push('/processos')
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao guardar')
+  } catch (err) {
+    console.error(err)
+    error.value = 'Erro ao guardar'
   } finally {
     submitting.value = false
   }
@@ -111,7 +108,7 @@ const handleDelete = async () => {
     await api.deleteProcesso(route.params.id)
     router.push('/processos')
   } catch {
-    alert('Erro ao eliminar')
+    error.value = 'Erro ao eliminar'
   }
 }
 
@@ -119,104 +116,97 @@ onMounted(fetchData)
 </script>
 
 <template>
-  <div class="app-shell">
-    <div class="mx-auto w-full max-w-4xl">
-      <div class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center">
-        <router-link
-          to="/processos"
-          class="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          Voltar
-        </router-link>
-
-        <h1 class="text-2xl font-semibold text-slate-900 sm:text-3xl">
-          {{ isEditing ? 'Editar Processo' : 'Novo Processo' }}
-        </h1>
+  <BaseFormLayout
+    :title="isEditing ? 'Editar Processo' : 'Novo Processo'"
+    back-to="/processos"
+  >
+    <form @submit.prevent="handleSubmit">
+      <div
+        v-if="loading"
+        class="py-8 text-center text-slate-500"
+      >
+        A carregar...
       </div>
 
-      <form
-        class="form-card"
-        @submit.prevent="handleSubmit"
-      >
+      <template v-else>
         <div
-          v-if="loading"
-          class="py-8 text-center text-slate-500"
+          v-if="error"
+          class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
         >
-          A carregar...
+          {{ error }}
         </div>
 
-        <template v-else>
-          <BaseInput
-            v-model="form.processo"
-            label="Processo"
-            required
-          />
+        <BaseInput
+          v-model="form.processo"
+          label="Processo"
+          required
+        />
 
-          <BaseInput
-            v-model="form.alvara"
-            label="Alvará"
-          />
+        <BaseInput
+          v-model="form.alvara"
+          label="Alvará"
+        />
 
-          <BaseInput
-            v-model="form.alojamentoLocal"
-            label="Alojamento local"
-          />
+        <BaseInput
+          v-model="form.alojamentoLocal"
+          label="Alojamento local"
+        />
 
-          <BaseSelect
-            v-model="form.validade"
-            label="Validade"
-            :options="[
-              { label: 'Válido', value: 'valido' },
-              { label: 'Inválido', value: 'invalido' }
-            ]"
-            valueKey="value"
-          />
+        <BaseSelect
+          v-model="form.validade"
+          label="Validade"
+          :options="[
+            { label: 'Válido', value: 'valido' },
+            { label: 'Inválido', value: 'invalido' }
+          ]"
+          label-key="label"
+          value-key="value"
+        />
 
-          <BaseSelect
-            v-model="form.rua"
-            label="Rua"
-            :options="ruas"
-            labelKey="rua"
-            valueKey="_id"
-          />
+        <BaseSelect
+          v-model="form.rua"
+          label="Rua"
+          required
+          :options="ruas"
+          label-key="rua"
+        />
 
-          <BaseSelect
-            v-model="form.tipoPublicidade"
-            label="Tipo de publicidade"
-            :options="tipos"
-            labelKey="publicidade"
-            valueKey="_id"
-          />
-        </template>
+        <BaseSelect
+          v-model="form.tipoPublicidade"
+          label="Tipo de publicidade"
+          required
+          :options="tipos"
+          label-key="publicidade"
+        />
+      </template>
 
-        <div class="form-actions">
+      <div class="form-actions">
+        <BaseButton
+          v-if="isEditing"
+          type="button"
+          variant="danger"
+          @click="handleDelete"
+        >
+          Eliminar
+        </BaseButton>
+
+        <div class="form-actions-right">
           <BaseButton
-            v-if="isEditing"
             type="button"
-            variant="danger"
-            @click="handleDelete"
+            variant="secondary"
+            @click="router.push('/processos')"
           >
-            Eliminar
+            Cancelar
           </BaseButton>
 
-          <div class="form-actions-right">
-            <BaseButton
-              type="button"
-              variant="secondary"
-              @click="router.push('/processos')"
-            >
-              Cancelar
-            </BaseButton>
-
-            <BaseButton
-              type="submit"
-              :disabled="submitting"
-            >
-              {{ submitting ? 'A guardar...' : isEditing ? 'Atualizar' : 'Guardar' }}
-            </BaseButton>
-          </div>
+          <BaseButton
+            type="submit"
+            :disabled="submitting || loading"
+          >
+            {{ submitting ? 'A guardar...' : isEditing ? 'Atualizar' : 'Guardar' }}
+          </BaseButton>
         </div>
-      </form>
-    </div>
-  </div>
+      </div>
+    </form>
+  </BaseFormLayout>
 </template>

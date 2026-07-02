@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
+import { getEntityId, unwrapList } from '@/utils/helpers'
 
 import BaseLayout from '@/components/layout/BaseLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -22,9 +23,7 @@ const loadRuas = async () => {
   loading.value = true
 
   try {
-    const res = await api.getRuas()
-    const lista = res?.data ?? res ?? []
-    ruas.value = Array.isArray(lista) ? lista : []
+    ruas.value = unwrapList(await api.getRuas())
   } catch (error) {
     console.error(error)
     ruas.value = []
@@ -33,25 +32,18 @@ const loadRuas = async () => {
   }
 }
 
-const getFreguesia = (rua) => {
-  return rua?.freguesia?.freguesia || rua?.freguesia?.nome || rua?.freguesia || '-'
-}
+const getFreguesia = (rua) =>
+  rua?.freguesia?.freguesia || rua?.freguesia?.nome || rua?.freguesia || '-'
 
 const filteredRuas = computed(() => {
   const term = search.value.toLowerCase().trim()
 
-  return ruas.value.filter((rua) => {
-    return (
-      (rua.rua || '').toLowerCase().includes(term) ||
-      getFreguesia(rua).toLowerCase().includes(term) ||
-      (rua.coordenada || '').toLowerCase().includes(term)
-    )
-  })
+  return ruas.value.filter((rua) =>
+    (rua.rua || '').toLowerCase().includes(term) ||
+    getFreguesia(rua).toLowerCase().includes(term) ||
+    (rua.coordenada || '').toLowerCase().includes(term)
+  )
 })
-
-const editRua = (id) => {
-  router.push(`/ruas/${id}/editar`)
-}
 
 onMounted(loadRuas)
 </script>
@@ -62,10 +54,7 @@ onMounted(loadRuas)
       title="Gestão de Ruas"
       subtitle="Consulta e gestão de ruas registadas"
     >
-      <BaseButton
-        v-if="auth.isAdmin"
-        @click="router.push('/ruas/nova')"
-      >
+      <BaseButton @click="router.push('/ruas/nova')">
         + Nova Rua
       </BaseButton>
     </BasePageHeader>
@@ -95,19 +84,14 @@ onMounted(loadRuas)
               <th class="table-cell text-left">Rua</th>
               <th class="table-cell text-left">Coordenada</th>
               <th class="table-cell text-left">Freguesia</th>
-              <th
-                v-if="auth.isAdmin"
-                class="table-cell text-right"
-              >
-                Ações
-              </th>
+              <th class="table-cell text-right">Ações</th>
             </tr>
           </thead>
 
           <tbody class="divide-y divide-slate-100">
             <tr
               v-for="rua in filteredRuas"
-              :key="rua._id || rua.id"
+              :key="getEntityId(rua)"
               class="hover:bg-slate-50"
             >
               <td class="table-cell font-medium text-slate-900">
@@ -119,13 +103,10 @@ onMounted(loadRuas)
               <td class="table-cell text-slate-600">
                 {{ getFreguesia(rua) }}
               </td>
-              <td
-                v-if="auth.isAdmin"
-                class="table-cell text-right"
-              >
+              <td class="table-cell text-right">
                 <BaseButton
                   variant="secondary"
-                  @click="editRua(rua._id || rua.id)"
+                  @click="router.push(`/ruas/${getEntityId(rua)}/editar`)"
                 >
                   Editar
                 </BaseButton>
