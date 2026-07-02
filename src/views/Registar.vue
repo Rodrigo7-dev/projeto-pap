@@ -48,9 +48,8 @@
 
         <BaseInput
           v-model="form.nif"
-          label="NIF"
           maxlength="9"
-          placeholder="123456789"
+          inputmode="numeric"
         />
         <p
           v-if="fieldErrors.nif"
@@ -197,6 +196,8 @@ const handleRegister = async () => {
       error.value = 'Tempo esgotado. Tente novamente.'
     } else if (!err?.response) {
       error.value = 'Erro de conexão'
+    } else if (status === 409) {
+      error.value = err.response.data.error
     } else {
       error.value = 'Erro ao criar conta'
     }
