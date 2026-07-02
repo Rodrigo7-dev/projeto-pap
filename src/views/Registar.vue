@@ -47,13 +47,12 @@
         </p>
 
         <BaseInput
-  v-model="form.nif"
-  label="NIF"
-  maxlength="9"
-  inputmode="numeric"
-  placeholder="123456789"
-  @input="handleNifInput"
-/>
+        v-model="form.nif"
+        label="NIF"
+        numeric-only
+        maxlength="9"
+        placeholder="123456789"
+      />
         <p
           v-if="fieldErrors.nif"
           class="-mt-2 text-sm text-rose-600"

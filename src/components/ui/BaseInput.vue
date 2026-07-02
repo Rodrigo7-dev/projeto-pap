@@ -12,7 +12,7 @@
       :type="type"
       v-bind="$attrs"
       class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-slate-900/10"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="handleInput"
     />
   </div>
 </template>
@@ -32,8 +32,42 @@ defineProps({
   label: {
     type: String,
     default: ''
+  },
+  numericOnly: {
+    type: Boolean,
+    default: false
   }
 })
 
+const props = defineProps({
+  modelValue: {
+    type: [String, Number],
+    default: ''
+  },
+  type: {
+    type: String,
+    default: 'text'
+  },
+  label: {
+    type: String,
+    default: ''
+  },
+  numericOnly: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+const handleInput = (event) => {
+  let value = event.target.value
+
+  if (props.numericOnly) {
+    value = value.replace(/\D/g, '')
+  }
+
+  emit('update:modelValue', value)
+}
 defineEmits(['update:modelValue'])
 </script>
