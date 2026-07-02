@@ -24,7 +24,6 @@ const normalizeProcesso = (p) => ({
   id: getEntityId(p),
   tipo: p.tipoPublicidade?.publicidade || p.tipo_publicidade?.publicidade || '-',
   ruaNome: p.rua?.rua || p.rua?.nome || '-',
-  owner: getEntityId(p.user)
 })
 
 const loadProcessos = async () => {
@@ -49,11 +48,6 @@ const filteredProcessos = computed(() => {
       .some((value) => value.toLowerCase().includes(term))
   )
 })
-
-const canEdit = (p) => {
-  if (auth.isAdmin) return true
-  return p.owner === getEntityId(auth.user)
-}
 
 onMounted(loadProcessos)
 </script>
@@ -128,12 +122,12 @@ onMounted(loadProcessos)
               </td>
               <td class="table-cell text-right">
                 <BaseButton
-                  v-if="canEdit(p)"
-                  variant="secondary"
-                  @click="router.push(`/processos/${p.id}/editar`)"
-                >
-                  Editar
-                </BaseButton>
+  v-if="auth.isAdmin"
+  variant="secondary"
+  @click="router.push(`/processos/${p.id}/editar`)"
+>
+  Editar
+</BaseButton>
               </td>
             </tr>
           </tbody>
