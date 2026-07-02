@@ -48,8 +48,10 @@
 
         <BaseInput
           v-model="form.nif"
+          label="NIF"
           maxlength="9"
           inputmode="numeric"
+          placeholder="123456789"
         />
         <p
           v-if="fieldErrors.nif"
@@ -163,6 +165,11 @@ const handleRegister = async () => {
     return
   }
 
+      if (!/^\d{9}$/.test(form.value.nif.trim())) {
+      error.value = 'O NIF deve conter exatamente 9 dígitos'
+      return
+    }
+    
   loading.value = true
 
   try {
