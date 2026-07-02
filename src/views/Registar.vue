@@ -47,12 +47,13 @@
         </p>
 
         <BaseInput
-          v-model="form.nif"
-          label="NIF"
-          maxlength="9"
-          inputmode="numeric"
-          placeholder="123456789"
-        />
+  v-model="form.nif"
+  label="NIF"
+  maxlength="9"
+  inputmode="numeric"
+  placeholder="123456789"
+  @input="handleNifInput"
+/>
         <p
           v-if="fieldErrors.nif"
           class="-mt-2 text-sm text-rose-600"
@@ -129,7 +130,9 @@ const form = ref({
   password: '',
   confirmPassword: ''
 })
-
+const handleNifInput = (event) => {
+  form.value.nif = event.target.value.replace(/\D/g, '').slice(0, 9)
+}
 const error = ref('')
 const loading = ref(false)
 
