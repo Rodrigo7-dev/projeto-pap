@@ -23,7 +23,7 @@ const routes = [
   { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/processos', component: Processos, meta: { requiresAuth: true } },
   { path: '/processos/novo', component: ProcessoForm, meta: { requiresAuth: true } },
-  { path: '/processos/:id/editar', component: ProcessoForm, meta: { requiresAuth: true, ownerOnly: true } },
+  { path: '/processos/:id/editar', component: ProcessoForm, meta: { requiresAuth: true, ownerOnly: false } },
   { path: '/ruas', component: Ruas, meta: { requiresAuth: true, adminOnly: true } },
   { path: '/ruas/nova', component: RuaForm, meta: { requiresAuth: true, adminOnly: true } },
   { path: '/ruas/:id/editar', component: RuaForm, meta: { requiresAuth: true, adminOnly: true } },
