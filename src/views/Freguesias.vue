@@ -74,13 +74,14 @@ onMounted(loadFreguesias)
 
   <div class="flex min-h-0 flex-1 flex-col">
   <BaseCard class="flex-1">
-      <div class="border-b border-slate-200 p-4">
-        <BaseInput
-          v-model="search"
-          placeholder="Pesquisar freguesias..."
-        />
-      </div>
-
+      <div class="border-b border-slate-200 bg-slate-50/70 p-5">        
+        <div class="max-w-md">
+  <BaseInput
+    v-model="search"
+    placeholder="🔍 Pesquisar freguesias..."
+  />
+</div>
+</div>
       <div
         v-if="loading"
         class="py-10 text-center text-slate-500"
@@ -93,9 +94,9 @@ onMounted(loadFreguesias)
   class="flex flex-1 flex-col overflow-hidden"
 >
         <div class="flex-1 overflow-y-auto overflow-x-auto">
-  <table class="responsive-table">
-    <thead class="table-head sticky top-0 bg-white z-10">
-      <tr>
+<table class="responsive-table border-collapse">
+  <thead class="table-head sticky top-0 z-10 bg-slate-100 shadow-sm">      
+  <tr>
         <th class="table-cell text-left">Freguesia</th>
         <th class="table-cell text-right">Ações</th>
       </tr>
@@ -105,9 +106,9 @@ onMounted(loadFreguesias)
       <tr
         v-for="f in paginatedFreguesias"
         :key="getEntityId(f)"
-        class="hover:bg-slate-50"
-      >
-        <td class="table-cell font-medium text-slate-900">
+        class="transition-colors hover:bg-slate-50"      
+        >
+        <td class="table-cell font-semibold text-slate-800">
           {{ f.freguesia }}
         </td>
 
@@ -125,19 +126,20 @@ onMounted(loadFreguesias)
 </div>
         <div
   v-if="totalPages > 1"
-  class="flex items-center justify-center gap-2 border-t border-slate-200 p-4"
+  class="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4"
 >
   <BaseButton
-    variant="secondary"
+  variant="secondary"
+  class="min-w-[90px]"
     :disabled="currentPage === 1"
     @click="currentPage--"
   >
     Anterior
   </BaseButton>
 
-  <span>
-    Página {{ currentPage }} de {{ totalPages }}
-  </span>
+ <span class="text-sm font-medium text-slate-600">
+  Página <strong>{{ currentPage }}</strong> de <strong>{{ totalPages }}</strong>
+</span>
 
   <BaseButton
     variant="secondary"
@@ -153,9 +155,13 @@ onMounted(loadFreguesias)
         v-else
         class="empty-state"
       >
-        <p class="font-medium text-slate-700">
-          Nenhuma freguesia encontrada
-        </p>
+        <p class="text-lg font-semibold text-slate-700">
+  Nenhuma freguesia encontrada
+</p>
+
+<p class="mt-2 text-sm text-slate-500">
+  Tente alterar a pesquisa ou criar uma nova freguesia.
+</p>
       </div>
     </BaseCard>
       </div>
