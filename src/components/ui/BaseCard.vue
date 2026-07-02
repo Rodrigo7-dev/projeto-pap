@@ -1,9 +1,9 @@
 <template>
   <div
-    class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+    class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
   >
     <div
-      :class="['flex min-h-0 flex-1 flex-col', padding]"
+      :class="['flex flex-1 flex-col overflow-hidden', padding]"
     >
       <slot />
     </div>

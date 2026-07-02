@@ -6,8 +6,8 @@ import { watch } from 'vue'
 import api from '@/services/api'
 import { getEntityId, unwrapList } from '@/utils/helpers'
 
-import BaseLayout from '@/components/layout/BaseLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
+import TableLayout from '@/components/layout/TableLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BasePageHeader from '@/components/layout/BasePageHeader.vue'
@@ -62,7 +62,7 @@ onMounted(loadFreguesias)
 </script>
 
 <template>
-  <BaseLayout>
+  <<TableLayout>>
   <BasePageHeader
   title="Gestão de Freguesias"
   subtitle="Consulta e gestão de freguesias registadas"
@@ -159,5 +159,5 @@ onMounted(loadFreguesias)
       </div>
     </BaseCard>
       </div>
-  </BaseLayout>
+  </<TableLayout>>
 </template>
