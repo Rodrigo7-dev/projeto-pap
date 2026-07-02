@@ -64,10 +64,10 @@ const handleSubmit = async () => {
 
   try {
     const payload = {
-      rua: form.value.rua.trim(),
-      coordenada: form.value.coordenada?.trim() || '',
-      freguesia: form.value.freguesia
-    }
+    rua: form.value.rua.trim(),
+    coordenada: form.value.coordenada?.trim() || null,
+    freguesia: form.value.freguesia
+  }
 
     if (isEditing.value) {
       await api.updateRua(route.params.id, payload)
@@ -77,11 +77,13 @@ const handleSubmit = async () => {
 
     router.push('/ruas')
   } catch (err) {
-    console.error(err)
-    error.value = 'Erro ao guardar'
-  } finally {
-    submitting.value = false
-  }
+  console.error(err)
+  console.log(err.response?.data)
+
+  error.value =
+    err.response?.data?.message ??
+    JSON.stringify(err.response?.data) ??
+    'Erro ao guardar'
 }
 
 const handleDelete = async () => {
