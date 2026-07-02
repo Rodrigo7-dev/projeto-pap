@@ -108,7 +108,7 @@ onMounted(loadFreguesias)
         :key="getEntityId(f)"
         class="transition-colors hover:bg-slate-50"      
         >
-        <td class="table-cell font-semibold text-slate-800">
+        <td class="table-cell text-slate-900">
           {{ f.freguesia }}
         </td>
 
