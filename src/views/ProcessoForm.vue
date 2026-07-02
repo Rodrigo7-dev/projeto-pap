@@ -65,6 +65,7 @@ const fetchData = async () => {
 
   error.value = 'Erro ao carregar dados'
 }
+}
 
 const handleSubmit = async () => {
   if (submitting.value) return
