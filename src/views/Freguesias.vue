@@ -78,7 +78,7 @@ onMounted(loadFreguesias)
         <div class="max-w-md">
   <BaseInput
     v-model="search"
-    placeholder="🔍 Pesquisar freguesias..."
+    placeholder="Pesquisar freguesias..."
   />
 </div>
 </div>
