@@ -188,26 +188,38 @@ const handleRegister = async () => {
     const status = err?.response?.status
     const errors = err?.response?.data?.errors
 
-    if (status === 422 && errors) {
-      fieldErrors.value = {
-        name: errors.name?.[0] || '',
-        email: errors.email?.[0] || '',
-        nif: errors.nif?.[0] || '',
-        password: errors.password?.[0] || ''
-      }
+    if (status === 409) {
+  error.value = err.response.data.error
 
-      error.value = 'Verifique os campos'
-    } else if (status === 500) {
-      error.value = 'Erro no servidor'
-    } else if (err?.code === 'ECONNABORTED') {
-      error.value = 'Tempo esgotado. Tente novamente.'
-    } else if (!err?.response) {
-      error.value = 'Erro de conexão'
-    } else if (status === 409) {
-      error.value = err.response.data.error
-    } else {
-      error.value = 'Erro ao criar conta'
-    }
+} else if (status === 422 && errors) {
+
+  fieldErrors.value = {
+    name: errors.name?.[0] || '',
+    email: errors.email?.[0] || '',
+    nif: errors.nif?.[0] || '',
+    password: errors.password?.[0] || ''
+  }
+
+  error.value = 'Verifique os campos'
+
+} else if (status === 500) {
+
+  error.value = 'Erro no servidor'
+
+} else if (err.code === 'ECONNABORTED') {
+
+  error.value = 'Tempo esgotado. Tente novamente.'
+
+} else if (!err.response) {
+
+  error.value = 'Erro de ligação ao servidor'
+
+} else {
+
+  error.value = 'Erro ao criar conta'
+
+}
+
   } finally {
     loading.value = false
   }
