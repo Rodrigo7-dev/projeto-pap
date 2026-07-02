@@ -84,6 +84,9 @@ const handleSubmit = async () => {
     err.response?.data?.message ??
     JSON.stringify(err.response?.data) ??
     'Erro ao guardar'
+} finally {
+  submitting.value = false
+}
 }
 
 const handleDelete = async () => {
