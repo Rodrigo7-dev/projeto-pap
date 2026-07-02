@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+  <div class="mb-4 flex shrink-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <h1 class="text-2xl font-semibold text-slate-900 sm:text-3xl">
         {{ title }}

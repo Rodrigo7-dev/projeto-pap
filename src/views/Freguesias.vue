@@ -88,37 +88,40 @@ onMounted(loadFreguesias)
       </div>
 
       <div
-        v-else-if="filteredFreguesias.length"
-        class="overflow-x-auto"
-      >
-        <table class="responsive-table">
-          <thead class="table-head">
-            <tr>
-              <th class="table-cell text-left">Freguesia</th>
-              <th class="table-cell text-right">Ações</th>
-            </tr>
-          </thead>
+  v-else-if="filteredFreguesias.length"
+  class="flex flex-1 flex-col overflow-hidden"
+>
+        <div class="flex-1 overflow-y-auto overflow-x-auto">
+  <table class="responsive-table">
+    <thead class="table-head sticky top-0 bg-white z-10">
+      <tr>
+        <th class="table-cell text-left">Freguesia</th>
+        <th class="table-cell text-right">Ações</th>
+      </tr>
+    </thead>
 
-          <tbody class="divide-y divide-slate-100">
-            <tr
-              v-for="f in paginatedFreguesias"              
-              :key="getEntityId(f)"
-              class="hover:bg-slate-50"
-            >
-              <td class="table-cell font-medium text-slate-900">
-                {{ f.freguesia }}
-              </td>
-              <td class="table-cell text-right">
-                <BaseButton
-                  variant="secondary"
-                  @click="router.push(`/freguesias/${getEntityId(f)}/editar`)"
-                >
-                  Editar
-                </BaseButton>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <tbody class="divide-y divide-slate-100">
+      <tr
+        v-for="f in paginatedFreguesias"
+        :key="getEntityId(f)"
+        class="hover:bg-slate-50"
+      >
+        <td class="table-cell font-medium text-slate-900">
+          {{ f.freguesia }}
+        </td>
+
+        <td class="table-cell text-right">
+          <BaseButton
+            variant="secondary"
+            @click="router.push(`/freguesias/${getEntityId(f)}/editar`)"
+          >
+            Editar
+          </BaseButton>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
         <div
   v-if="totalPages > 1"
   class="flex items-center justify-center gap-2 border-t border-slate-200 p-4"

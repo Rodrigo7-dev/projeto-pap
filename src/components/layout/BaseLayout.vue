@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50">
+  <div class="flex min-h-screen flex-col bg-slate-50">
     <main :class="containerClass">
       <slot />
     </main>
@@ -18,7 +18,7 @@ const props = defineProps({
 
 const containerClass = computed(() =>
   props.narrow
-    ? 'mx-auto w-full max-w-4xl px-4 py-5 sm:px-6 lg:px-8'
-    : 'mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 lg:px-8'
+    ? 'mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 py-4 sm:px-6 lg:px-8'
+    : 'mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-4 sm:px-6 lg:px-8'
 )
 </script>
