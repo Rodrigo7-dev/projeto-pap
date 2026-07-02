@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { watch } from 'vue'
 
 import api from '@/services/api'
 import { getEntityId, unwrapList } from '@/utils/helpers'
@@ -21,20 +22,40 @@ const loadFreguesias = async () => {
   loading.value = true
 
   try {
-    freguesias.value = unwrapList(await api.getFreguesias())
-  } catch (error) {
+  freguesias.value = unwrapList(await api.getFreguesias()).sort((a, b) =>
+    a.freguesia.localeCompare(b.freguesia, 'pt')
+)  } catch (error) {
     console.error(error)
     freguesias.value = []
   } finally {
     loading.value = false
   }
 }
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 const filteredFreguesias = computed(() => {
   const term = search.value.toLowerCase().trim()
   return freguesias.value.filter((f) =>
     (f.freguesia || '').toLowerCase().includes(term)
   )
+})
+
+const totalPages = computed(() =>
+  Math.ceil(filteredFreguesias.value.length / itemsPerPage)
+)
+
+const paginatedFreguesias = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+
+  return filteredFreguesias.value.slice(
+    start,
+    start + itemsPerPage
+  )
+})
+
+watch(search, () => {
+  currentPage.value = 1
 })
 
 onMounted(loadFreguesias)
@@ -80,7 +101,7 @@ onMounted(loadFreguesias)
 
           <tbody class="divide-y divide-slate-100">
             <tr
-              v-for="f in filteredFreguesias"
+              v-for="f in paginatedFreguesias"              
               :key="getEntityId(f)"
               class="hover:bg-slate-50"
             >
@@ -98,6 +119,30 @@ onMounted(loadFreguesias)
             </tr>
           </tbody>
         </table>
+        <div
+  v-if="totalPages > 1"
+  class="flex items-center justify-center gap-2 border-t border-slate-200 p-4"
+>
+  <BaseButton
+    variant="secondary"
+    :disabled="currentPage === 1"
+    @click="currentPage--"
+  >
+    Anterior
+  </BaseButton>
+
+  <span>
+    Página {{ currentPage }} de {{ totalPages }}
+  </span>
+
+  <BaseButton
+    variant="secondary"
+    :disabled="currentPage === totalPages"
+    @click="currentPage++"
+  >
+    Seguinte
+  </BaseButton>
+</div>
       </div>
 
       <div
