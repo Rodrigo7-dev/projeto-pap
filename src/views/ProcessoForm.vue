@@ -58,11 +58,12 @@ const fetchData = async () => {
       }
     }
   } catch (err) {
-    console.error(err)
-    error.value = 'Erro ao carregar dados'
-  } finally {
-    loading.value = false
-  }
+  console.error(err)
+  console.log('STATUS:', err.response?.status)
+  console.log('DATA:', err.response?.data)
+  console.log('URL:', err.config?.url)
+
+  error.value = 'Erro ao carregar dados'
 }
 
 const handleSubmit = async () => {
