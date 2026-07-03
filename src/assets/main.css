@@ -10,7 +10,7 @@
   html,
   body,
   #app {
-    @apply h-screen overflow-hidden;
+    @apply h-screen;
   }
 
   html {
@@ -18,7 +18,7 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-slate-100 text-slate-800 antialiased;
   }
 
   button,
@@ -30,47 +30,127 @@
 }
 
 @layer components {
+
+  /* ---------- TABLES ---------- */
+
+  .responsive-table {
+    @apply w-full min-w-[700px] text-sm;
+  }
+
   .table-head {
-    @apply bg-slate-50 text-xs uppercase tracking-wider text-slate-600;
+    @apply bg-[#EEF5FB]
+           uppercase
+           tracking-wider
+           text-xs
+           font-semibold
+           text-[#0F4C81]
+           border-b;
   }
 
   .table-cell {
-    @apply px-4 py-3 sm:px-6 sm:py-4;
+    @apply px-6 py-4 align-middle;
   }
+
+  .table-row {
+    @apply transition duration-200 hover:bg-blue-50;
+  }
+
+  /* ---------- EMPTY ---------- */
 
   .empty-state {
-    @apply px-4 py-12 text-center text-slate-500;
+    @apply flex
+           flex-col
+           items-center
+           justify-center
+           py-16
+           text-center
+           text-slate-500;
   }
 
+  /* ---------- STATUS ---------- */
+
+  .status-badge {
+    @apply rounded-full
+           px-3
+           py-1
+           text-xs
+           font-semibold;
+  }
+
+  /* ---------- AUTH ---------- */
+
   .auth-shell {
-    @apply flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8;
+    @apply flex
+           min-h-screen
+           items-center
+           justify-center
+           bg-slate-100
+           px-4;
   }
 
   .auth-card {
-    @apply w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-md sm:p-8;
+    @apply w-full
+           max-w-md
+           rounded-2xl
+           bg-white
+           shadow-xl
+           border
+           border-slate-200
+           p-8;
   }
 
-  .responsive-table {
-    @apply w-full min-w-[680px] text-sm;
-  }
+  /* ---------- FORMS ---------- */
 
   .form-card {
-    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6;
+    @apply rounded-2xl
+           bg-white
+           border
+           border-slate-200
+           shadow-md
+           p-6;
   }
 
   .form-card form {
-    @apply space-y-5;
+    @apply space-y-6;
   }
 
   .form-actions {
-    @apply flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between;
+    @apply flex
+           flex-col-reverse
+           gap-3
+           pt-6
+           border-t
+           border-slate-200
+           sm:flex-row
+           sm:justify-between;
   }
 
   .form-actions-right {
-    @apply flex flex-col-reverse gap-2 sm:ml-auto sm:flex-row;
+    @apply flex
+           flex-col-reverse
+           gap-3
+           sm:flex-row
+           sm:ml-auto;
   }
 
-  .status-badge {
-    @apply rounded-full px-3 py-1 text-xs font-medium;
-  }
+}
+
+/* ---------- Scrollbar ---------- */
+
+::-webkit-scrollbar{
+    width:10px;
+    height:10px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
+}
+
+::-webkit-scrollbar-track{
+    background:#f8fafc;
 }
