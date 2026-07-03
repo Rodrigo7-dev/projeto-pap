@@ -1,19 +1,19 @@
 <template>
-  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow">
     <div class="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
       <div class="flex min-w-0 items-center gap-4 lg:gap-10">
         <div class="flex min-w-0 items-center gap-3">
           <img
             :src="logo"
             alt="Logo"
-            class="h-9 w-9 rounded-lg object-cover"
+            class="h-11 w-11 object-contain"
           />
 
           <div class="min-w-0">
-            <p class="truncate text-lg font-bold text-[#0F4C81]">
+            <p class="truncate text-xl font-bold tracking-tight text-[#0F4C81]">
 Sistema de Publicidade
 </p>
-            <p class="text-xs text-slate-500">
+            <p class="text-sm text-slate-500">
 Município de Barcelos
 </p>
           </div>
@@ -71,11 +71,12 @@ Município de Barcelos
         </button>
 
         <BaseButton
-          variant="secondary"
-          @click="logout"
-        >
-          Sair
-        </BaseButton>
+  variant="secondary"
+  class="px-5"
+  @click="logout"
+>
+  Sair
+</BaseButton>
       </div>
     </div>
 
@@ -138,15 +139,14 @@ const logout = async () => {
 
 <style scoped>
 .nav-link{
-
 @apply rounded-xl
 px-4
-py-2.5
-font-medium
+py-2
+text-sm
+font-semibold
 text-slate-700
 transition-all
 duration-200;
-
 }
 
 .nav-link:hover{
@@ -160,6 +160,7 @@ text-[#0F4C81];
 
 background:#0F4C81;
 color:white;
+box-shadow:0 4px 12px rgba(15,76,129,.25);
 
 }
 </style>

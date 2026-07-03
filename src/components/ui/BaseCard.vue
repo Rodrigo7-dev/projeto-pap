@@ -1,10 +1,8 @@
 <template>
   <div
-    class="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 shadow-sm"
+    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md"
   >
-    <div
-      :class="padding"
-    >
+    <div :class="padding">
       <slot />
     </div>
   </div>
