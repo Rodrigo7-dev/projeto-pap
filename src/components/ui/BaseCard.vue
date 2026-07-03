@@ -5,7 +5,7 @@ class="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 
 >
 
 <div
-:class="['flex flex-1 flex-col overflow-hidden',padding]"
+:class="['flex flex-1 flex-col rounded-2xl border border-slate-200 bg-white shadow-md',padding]"
 >
 
 <slot/>
