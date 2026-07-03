@@ -7,11 +7,11 @@
     @apply box-border;
   }
 
-  html,
-  body,
-  #app {
-    @apply h-screen;
-  }
+html,
+body,
+#app{
+    @apply min-h-screen;
+}
 
   html {
     @apply scroll-smooth;
