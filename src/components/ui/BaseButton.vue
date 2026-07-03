@@ -17,10 +17,7 @@ const props = defineProps({
     type: String,
     default: 'primary'
   },
-  disabled: {
-    type: Boolean,
-    default: false
-  },
+  disabled: Boolean,
   type: {
     type: String,
     default: 'button'
@@ -29,23 +26,23 @@ const props = defineProps({
 
 defineEmits(['click'])
 
-const classes = computed(() => {
-  const base =
-    'inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition whitespace-nowrap focus:ring-2 focus:ring-slate-900/20 focus:ring-offset-1'
+const base =
+  'inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 whitespace-nowrap'
 
-  const disabledClass = props.disabled
-    ? 'cursor-not-allowed opacity-50'
-    : ''
+const classes = computed(() => {
+  if (props.disabled) {
+    return `${base} opacity-50 cursor-not-allowed`
+  }
 
   switch (props.variant) {
     case 'secondary':
-      return `${base} border border-slate-200 text-slate-700 hover:bg-slate-100 ${disabledClass}`
+      return `${base} border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 hover:border-slate-400`
 
     case 'danger':
-      return `${base} bg-rose-50 text-rose-600 hover:bg-rose-100 ${disabledClass}`
+      return `${base} bg-red-600 text-white hover:bg-red-700`
 
     default:
-      return `${base} bg-slate-900 text-white hover:bg-slate-800 ${disabledClass}`
+      return `${base} bg-[#0F4C81] text-white shadow hover:bg-[#0B3D69] hover:shadow-lg`
   }
 })
 </script>

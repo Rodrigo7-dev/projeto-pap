@@ -1,5 +1,5 @@
 <template>
-  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white">
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
     <div class="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
       <div class="flex min-w-0 items-center gap-4 lg:gap-10">
         <div class="flex min-w-0 items-center gap-3">
@@ -10,12 +10,12 @@
           />
 
           <div class="min-w-0">
-            <p class="truncate font-semibold text-slate-900">
-              Sistema
-            </p>
+            <p class="truncate text-lg font-bold text-[#0F4C81]">
+Sistema de Publicidade
+</p>
             <p class="text-xs text-slate-500">
-              Gestão
-            </p>
+Município de Barcelos
+</p>
           </div>
         </div>
 
@@ -138,14 +138,28 @@ const logout = async () => {
 
 <style scoped>
 .nav-link{
-  @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition;
+
+@apply rounded-xl
+px-4
+py-2.5
+font-medium
+text-slate-700
+transition-all
+duration-200;
+
 }
 
 .nav-link:hover{
-  @apply bg-slate-100 text-slate-900;
+
+@apply bg-blue-50
+text-[#0F4C81];
+
 }
 
 .router-link-active{
-  @apply bg-slate-900 text-white;
+
+background:#0F4C81;
+color:white;
+
 }
 </style>

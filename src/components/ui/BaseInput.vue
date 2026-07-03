@@ -1,8 +1,9 @@
 <template>
   <div class="space-y-2">
+
     <label
       v-if="label"
-      class="block text-sm font-medium text-slate-700"
+      class="text-sm font-semibold text-slate-700"
     >
       {{ label }}
     </label>
@@ -11,70 +12,60 @@
       :value="modelValue"
       :type="type"
       v-bind="$attrs"
-      class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-slate-900/10"
+      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm transition focus:border-[#0F4C81] focus:ring-4 focus:ring-blue-100"
       @keydown="handleKeyDown"
       @input="handleInput"
-    />
+    >
+
   </div>
 </template>
 
 <script setup>
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs:false })
 
-const props = defineProps({
-  modelValue: {
-    type: [String, Number],
-    default: ''
-  },
-  type: {
-    type: String,
-    default: 'text'
-  },
-  label: {
-    type: String,
-    default: ''
-  },
-  numericOnly: {
-    type: Boolean,
-    default: false
-  }
+const props=defineProps({
+modelValue:[String,Number],
+type:{
+type:String,
+default:'text'
+},
+label:String,
+numericOnly:Boolean
 })
 
-const handleKeyDown = (event) => {
-  if (!props.numericOnly) return
+const emit=defineEmits(['update:modelValue'])
 
-  // Permitir teclas de edição
-  const allowed = [
-    'Backspace',
-    'Delete',
-    'ArrowLeft',
-    'ArrowRight',
-    'Tab',
-    'Home',
-    'End'
-  ]
+const handleKeyDown=(event)=>{
 
-  if (allowed.includes(event.key) || event.ctrlKey || event.metaKey) {
-    return
-  }
+if(!props.numericOnly) return
 
-  // Bloquear tudo o que não seja número
-  if (!/^\d$/.test(event.key)) {
-    event.preventDefault()
-  }
+const allowed=[
+'Backspace',
+'Delete',
+'ArrowLeft',
+'ArrowRight',
+'Tab',
+'Home',
+'End'
+]
+
+if(allowed.includes(event.key)||event.ctrlKey||event.metaKey)
+return
+
+if(!/^\d$/.test(event.key))
+event.preventDefault()
+
 }
 
-const emit = defineEmits(['update:modelValue'])
+const handleInput=(event)=>{
 
-const handleInput = (event) => {
-  let value = event.target.value
+let value=event.target.value
 
-  console.log(props.numericOnly)
-
-  if (props.numericOnly) {
-  value = value.replace(/\D/g, '').slice(0, 9)
+if(props.numericOnly){
+value=value.replace(/\D/g,'').slice(0,9)
 }
 
-  emit('update:modelValue', value)
+emit('update:modelValue',value)
+
 }
 </script>
