@@ -75,15 +75,15 @@ onMounted(loadFreguesias)
 
 </BasePageHeader>
 
-<div class="flex flex-1 flex-col">
+<div>
 
-<BaseCard class="overflow-hidden">
+<BaseCard>
 
 <!-- Pesquisa -->
 
 <div class="border-b bg-[#EEF5FB] px-6 py-5">
 
-<div class="max-w-md">
+<div class="w-full max-w-xl">
 
 <BaseInput
 v-model="search"

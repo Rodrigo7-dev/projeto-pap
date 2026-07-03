@@ -1,7 +1,7 @@
 <template>
 
 <div
-class="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
+class="mb-6 flex flex-col items-center gap-5 lg:flex-row lg:justify-between"
 >
 
 <div>

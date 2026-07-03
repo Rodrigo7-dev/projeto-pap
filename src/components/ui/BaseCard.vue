@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm"
+    class="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 shadow-sm"
   >
     <div
       :class="padding"
