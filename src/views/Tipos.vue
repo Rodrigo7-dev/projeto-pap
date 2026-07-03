@@ -1,11 +1,11 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import api from '@/services/api'
 import { getEntityId, unwrapList } from '@/utils/helpers'
 
-import BaseLayout from '@/components/layout/BaseLayout.vue'
+import TableLayout from '@/components/layout/TableLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
@@ -16,6 +16,9 @@ const router = useRouter()
 const tipos = ref([])
 const search = ref('')
 const loading = ref(false)
+
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 const loadTipos = async () => {
   loading.value = true
@@ -34,15 +37,34 @@ const filteredTipos = computed(() => {
   const term = search.value.toLowerCase().trim()
 
   return tipos.value.filter((tipo) =>
-    (tipo.publicidade || tipo.tipo || '').toLowerCase().includes(term)
+    (tipo.publicidade || tipo.tipo || '')
+      .toLowerCase()
+      .includes(term)
   )
+})
+
+const totalPages = computed(() =>
+  Math.ceil(filteredTipos.value.length / itemsPerPage)
+)
+
+const paginatedTipos = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+
+  return filteredTipos.value.slice(
+    start,
+    start + itemsPerPage
+  )
+})
+
+watch(search, () => {
+  currentPage.value = 1
 })
 
 onMounted(loadTipos)
 </script>
 
 <template>
-  <BaseLayout>
+  <TableLayout>
     <BasePageHeader
       title="Tipos de Publicidade"
       subtitle="Gestão dos tipos disponíveis no sistema"
@@ -52,7 +74,7 @@ onMounted(loadTipos)
       </BaseButton>
     </BasePageHeader>
 
-    <BaseCard>
+    <BaseCard class="flex-1">
       <div class="border-b border-slate-200 p-4">
         <BaseInput
           v-model="search"
@@ -69,36 +91,71 @@ onMounted(loadTipos)
 
       <div
         v-else-if="filteredTipos.length"
-        class="overflow-x-auto"
+        class="flex flex-1 flex-col overflow-hidden"
       >
-        <table class="responsive-table">
-          <thead class="table-head">
-            <tr>
-              <th class="table-cell text-left">Publicidade</th>
-              <th class="table-cell text-right">Ações</th>
-            </tr>
-          </thead>
+        <div class="flex-1 overflow-y-auto overflow-x-auto">
+          <table class="responsive-table">
+            <thead class="table-head sticky top-0 z-10 bg-white">
+              <tr>
+                <th class="table-cell text-left">Publicidade</th>
+                <th class="table-cell text-right">Ações</th>
+              </tr>
+            </thead>
 
-          <tbody class="divide-y divide-slate-100">
-            <tr
-              v-for="tipo in filteredTipos"
-              :key="getEntityId(tipo)"
-              class="hover:bg-slate-50"
-            >
-              <td class="table-cell font-medium text-slate-900">
-                {{ tipo.publicidade || tipo.tipo }}
-              </td>
-              <td class="table-cell text-right">
-                <BaseButton
-                  variant="secondary"
-                  @click="router.push(`/tipos/${getEntityId(tipo)}/editar`)"
-                >
-                  Editar
-                </BaseButton>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <tbody class="divide-y divide-slate-100">
+              <tr
+                v-for="tipo in paginatedTipos"
+                :key="getEntityId(tipo)"
+                class="transition hover:bg-slate-50"
+              >
+                <td class="table-cell text-slate-900">
+                  {{ tipo.publicidade || tipo.tipo }}
+                </td>
+
+                <td class="table-cell text-right">
+                  <BaseButton
+                    variant="secondary"
+                    @click="router.push(`/tipos/${getEntityId(tipo)}/editar`)"
+                  >
+                    Editar
+                  </BaseButton>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          v-if="totalPages > 1"
+          class="flex items-center justify-center gap-3 border-t border-slate-200 bg-white px-6 py-4"
+        >
+          <BaseButton
+            variant="secondary"
+            :disabled="currentPage === 1"
+            @click="currentPage--"
+          >
+            ← Anterior
+          </BaseButton>
+
+          <span class="text-sm text-slate-600">
+            Página
+            <span class="font-semibold text-slate-900">
+              {{ currentPage }}
+            </span>
+            de
+            <span class="font-semibold text-slate-900">
+              {{ totalPages }}
+            </span>
+          </span>
+
+          <BaseButton
+            variant="secondary"
+            :disabled="currentPage === totalPages"
+            @click="currentPage++"
+          >
+            Seguinte →
+          </BaseButton>
+        </div>
       </div>
 
       <div
@@ -110,5 +167,5 @@ onMounted(loadTipos)
         </p>
       </div>
     </BaseCard>
-  </BaseLayout>
+  </TableLayout>
 </template>

@@ -5,7 +5,7 @@ import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { unwrapList, validadeClass, validadeLabel } from '@/utils/helpers'
 
-import BaseLayout from '@/components/layout/BaseLayout.vue'
+import TableLayout from '@/components/layout/TableLayout.vue'
 import BasePageHeader from '@/components/layout/BasePageHeader.vue'
 
 const auth = useAuthStore()
@@ -97,7 +97,7 @@ onMounted(loadData)
 </script>
 
 <template>
-  <BaseLayout>
+  <TableLayout>
     <BasePageHeader
       title="Painel"
       subtitle="Resumo geral do sistema"
@@ -107,17 +107,19 @@ onMounted(loadData)
       <div
         v-for="card in statCards"
         :key="card.label"
-        class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+        class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
       >
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-slate-500">
               {{ card.label }}
             </p>
+
             <p class="mt-2 text-3xl font-semibold text-slate-900">
               {{ card.value }}
             </p>
           </div>
+
           <div
             class="flex h-11 w-11 items-center justify-center rounded-lg text-lg font-semibold"
             :class="card.tone"
@@ -133,19 +135,20 @@ onMounted(loadData)
         v-for="link in quickLinks"
         :key="link.to"
         :to="link.to"
-        class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+        class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
       >
-        <p class="font-medium text-slate-900">
+        <p class="font-semibold text-slate-900">
           {{ link.title }}
         </p>
+
         <p class="mt-1 text-sm text-slate-500">
           {{ link.text }}
         </p>
       </router-link>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div class="border-b border-slate-200 px-4 py-4 sm:px-6">
+    <BaseCard class="flex-1">
+      <div class="border-b border-slate-200 px-5 py-4">
         <h2 class="text-lg font-semibold text-slate-900">
           Processos recentes
         </h2>
@@ -160,43 +163,60 @@ onMounted(loadData)
 
       <div
         v-else-if="processos.length"
-        class="overflow-x-auto"
+        class="flex flex-1 flex-col overflow-hidden"
       >
-        <table class="responsive-table">
-          <thead class="table-head">
-            <tr>
-              <th class="table-cell text-left">Processo</th>
-              <th class="table-cell text-left">Tipo</th>
-              <th class="table-cell text-left">Rua</th>
-              <th class="table-cell text-left">Validade</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr
-              v-for="processo in processos"
-              :key="processo.id || processo._id"
-              class="hover:bg-slate-50"
-            >
-              <td class="table-cell font-medium text-slate-900">
-                {{ processo.processo }}
-              </td>
-              <td class="table-cell text-slate-600">
-                {{ processo.tipo_publicidade?.publicidade || processo.tipoPublicidade?.publicidade || '-' }}
-              </td>
-              <td class="table-cell text-slate-600">
-                {{ processo.rua?.nome || processo.rua?.rua || '-' }}
-              </td>
-              <td class="table-cell">
-                <span
-                  class="status-badge"
-                  :class="validadeClass(processo.validade)"
-                >
-                  {{ validadeLabel(processo.validade) }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="flex-1 overflow-auto">
+          <table class="responsive-table">
+            <thead class="table-head sticky top-0 z-10 bg-white">
+              <tr>
+                <th class="table-cell text-left">
+                  Processo
+                </th>
+
+                <th class="table-cell text-left">
+                  Tipo
+                </th>
+
+                <th class="table-cell text-left">
+                  Rua
+                </th>
+
+                <th class="table-cell text-left">
+                  Validade
+                </th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+              <tr
+                v-for="processo in processos"
+                :key="processo.id || processo._id"
+                class="transition hover:bg-slate-50"
+              >
+                <td class="table-cell text-slate-800">
+                  {{ processo.processo }}
+                </td>
+
+                <td class="table-cell text-slate-600">
+                  {{ processo.tipo_publicidade?.publicidade || processo.tipoPublicidade?.publicidade || '-' }}
+                </td>
+
+                <td class="table-cell text-slate-600">
+                  {{ processo.rua?.nome || processo.rua?.rua || '-' }}
+                </td>
+
+                <td class="table-cell">
+                  <span
+                    class="status-badge"
+                    :class="validadeClass(processo.validade)"
+                  >
+                    {{ validadeLabel(processo.validade) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div
@@ -206,10 +226,11 @@ onMounted(loadData)
         <p class="font-medium text-slate-700">
           Nenhum processo encontrado
         </p>
-        <p class="mt-1 text-sm">
+
+        <p class="mt-1 text-sm text-slate-500">
           Comece por adicionar um novo processo.
         </p>
       </div>
-    </div>
-  </BaseLayout>
+    </BaseCard>
+  </TableLayout>
 </template>
