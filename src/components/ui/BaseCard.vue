@@ -1,8 +1,10 @@
 <template>
   <div
-    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
   >
-    <div :class="padding">
+    <div
+      :class="['flex min-h-0 flex-1 flex-col', padding]"
+    >
       <slot />
     </div>
   </div>
@@ -10,9 +12,9 @@
 
 <script setup>
 defineProps({
-  padding: {
-    type: String,
-    default: 'p-0'
+  padding:{
+    type:String,
+    default:'p-0'
   }
 })
 </script>
