@@ -7,7 +7,7 @@ v-if="label"
 class="block text-sm font-semibold text-slate-700"
 >
 
-{{label}}
+{{ label }}
 
 </label>
 
@@ -26,24 +26,37 @@ class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm tran
 
 <script setup>
 
-defineOptions({inheritAttrs:false})
+defineOptions({
+inheritAttrs:false
+})
 
 const props=defineProps({
 
-modelValue:[String,Number],
+modelValue:{
+type:[String,Number],
+default:''
+},
 
 type:{
 type:String,
 default:'text'
 },
 
-label:String,
+label:{
+type:String,
+default:''
+},
 
-numericOnly:Boolean
+numericOnly:{
+type:Boolean,
+default:false
+}
 
 })
 
-const emit=defineEmits(['update:modelValue'])
+const emit=defineEmits([
+'update:modelValue'
+])
 
 const handleKeyDown=(event)=>{
 
@@ -59,7 +72,11 @@ const allowed=[
 'End'
 ]
 
-if(allowed.includes(event.key)||event.ctrlKey||event.metaKey){
+if(
+allowed.includes(event.key)||
+event.ctrlKey||
+event.metaKey
+){
 return
 }
 

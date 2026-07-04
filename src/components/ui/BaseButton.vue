@@ -1,52 +1,55 @@
 <template>
   <button
-    :class="classes"
+    :class="[classes, $attrs.class]"
     :disabled="disabled"
     :type="type"
-    @click="$emit('click',$event)"
+    @click="$emit('click', $event)"
   >
-    <slot/>
+    <slot />
   </button>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 
-const props=defineProps({
-variant:{
-type:String,
-default:'primary'
-},
-disabled:Boolean,
-type:{
-type:String,
-default:'button'
-}
+defineOptions({
+  inheritAttrs: false
+})
+
+const props = defineProps({
+  variant: {
+    type: String,
+    default: 'primary'
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  },
+  type: {
+    type: String,
+    default: 'button'
+  }
 })
 
 defineEmits(['click'])
 
-const base=
-'inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 whitespace-nowrap'
+const base =
+  'inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 whitespace-nowrap focus:outline-none'
 
-const classes=computed(()=>{
+const classes = computed(() => {
+  if (props.disabled) {
+    return `${base} opacity-50 cursor-not-allowed`
+  }
 
-if(props.disabled){
-return `${base} opacity-50 cursor-not-allowed`
-}
+  switch (props.variant) {
+    case 'secondary':
+      return `${base} border border-slate-300 bg-white text-slate-700 hover:bg-blue-50 hover:border-[#0F4C81]`
 
-switch(props.variant){
+    case 'danger':
+      return `${base} bg-red-600 text-white hover:bg-red-700`
 
-case 'secondary':
-return `${base} border border-slate-300 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:border-[#0F4C81]`
-
-case 'danger':
-return `${base} bg-red-600 text-white hover:bg-red-700`
-
-default:
-return `${base} bg-[#0F4C81] text-white shadow hover:bg-[#0B3D69] hover:shadow-lg`
-
-}
-
+    default:
+      return `${base} bg-[#0F4C81] text-white shadow hover:bg-[#0B3D69] hover:shadow-lg`
+  }
 })
 </script>

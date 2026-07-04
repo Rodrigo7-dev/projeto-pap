@@ -5,7 +5,7 @@ import { getEntityId } from '@/utils/helpers'
 
 const Login = () => import('@/views/Login.vue')
 const Registar = () => import('@/views/Registar.vue')
-const Dashboard = () => import('@/views/Dashboard.vue')
+const Dashboard = () => import('@/views/Painel.vue')
 const Processos = () => import('@/views/Processos.vue')
 const ProcessoForm = () => import('@/views/ProcessoForm.vue')
 const Ruas = () => import('@/views/Ruas.vue')
