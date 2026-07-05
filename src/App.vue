@@ -26,7 +26,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
-import Navbar from '@/components/navigation/Navbar.vue'
+import Navbar from '@/components/layout/Navbar.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
