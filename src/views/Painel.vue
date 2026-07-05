@@ -6,8 +6,6 @@ import { useAuthStore } from '@/stores/auth'
 import { unwrapList, validadeClass, validadeLabel } from '@/utils/helpers'
 
 import TableLayout from '@/components/layout/TableLayout.vue'
-import BasePageHeader from '@/components/layout/BasePageHeader.vue'
-
 const auth = useAuthStore()
 
 const stats = ref({
