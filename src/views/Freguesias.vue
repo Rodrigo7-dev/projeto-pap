@@ -9,7 +9,6 @@ import TableLayout from '@/components/layout/TableLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
-import BasePageHeader from '@/components/layout/BasePageHeader.vue'
 
 const router = useRouter()
 
