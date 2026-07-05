@@ -6,10 +6,15 @@ import api from '@/services/api'
 import { getEntityId, unwrapList } from '@/utils/helpers'
 
 import TableLayout from '@/components/layout/TableLayout.vue'
+import BasePageHeader from '@/components/layout/BasePageHeader.vue'
+
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
-import BasePageHeader from '@/components/layout/BasePageHeader.vue'
+import BaseTable from '@/components/ui/BaseTable.vue'
+import BasePagination from '@/components/ui/BasePagination.vue'
+import BaseLoader from '@/components/ui/BaseLoader.vue'
+import BaseEmptyState from '@/components/ui/BaseEmptyState.vue'
 
 const router = useRouter()
 
@@ -24,7 +29,9 @@ const loadRuas = async () => {
   loading.value = true
 
   try {
-    ruas.value = unwrapList(await api.getRuas())
+    ruas.value = unwrapList(await api.getRuas()).sort((a, b) =>
+      (a.rua || '').localeCompare(b.rua || '', 'pt')
+    )
   } catch (error) {
     console.error(error)
     ruas.value = []
@@ -34,23 +41,34 @@ const loadRuas = async () => {
 }
 
 const getFreguesia = (rua) =>
-  rua?.freguesia?.freguesia ||
-  rua?.freguesia?.nome ||
-  rua?.freguesia ||
+  rua?.freguesia?.freguesia ??
+  rua?.freguesia?.nome ??
+  rua?.freguesia ??
   '-'
 
 const filteredRuas = computed(() => {
-  const term = search.value.toLowerCase().trim()
+  const term = search.value.trim().toLowerCase()
+
+  if (!term) return ruas.value
 
   return ruas.value.filter((rua) =>
-    (rua.rua || '').toLowerCase().includes(term) ||
-    getFreguesia(rua).toLowerCase().includes(term) ||
-    (rua.coordenada || '').toLowerCase().includes(term)
+    [
+      rua.rua,
+      rua.coordenada,
+      getFreguesia(rua)
+    ]
+      .filter(Boolean)
+      .some(value =>
+        value.toString().toLowerCase().includes(term)
+      )
   )
 })
 
 const totalPages = computed(() =>
-  Math.ceil(filteredRuas.value.length / itemsPerPage)
+  Math.max(
+    1,
+    Math.ceil(filteredRuas.value.length / itemsPerPage)
+  )
 )
 
 const paginatedRuas = computed(() => {
@@ -64,6 +82,12 @@ const paginatedRuas = computed(() => {
 
 watch(search, () => {
   currentPage.value = 1
+})
+
+watch(totalPages, pages => {
+  if (currentPage.value > pages) {
+    currentPage.value = pages
+  }
 })
 
 onMounted(loadRuas)
@@ -81,107 +105,80 @@ onMounted(loadRuas)
     </BasePageHeader>
 
     <BaseCard class="flex-1">
-      <div class="border-b border-slate-200 p-4">
+      <div class="border-b border-slate-200 bg-slate-50 px-6 py-5">
         <BaseInput
           v-model="search"
-          placeholder="Pesquisar ruas..."
+          placeholder="Pesquisar rua, freguesia ou coordenada..."
         />
       </div>
 
-      <div
+      <BaseLoader
         v-if="loading"
-        class="py-10 text-center text-slate-500"
-      >
-        A carregar...
-      </div>
+        text="A carregar ruas..."
+      />
 
-      <div
-        v-else-if="filteredRuas.length"
-        class="flex flex-1 flex-col overflow-hidden"
-      >
-        <div class="flex-1 overflow-y-auto overflow-x-auto">
-          <table class="responsive-table">
-            <thead class="table-head sticky top-0 z-10 bg-white">
-              <tr>
-                <th class="table-cell text-left">Rua</th>
-                <th class="table-cell text-left">Coordenada</th>
-                <th class="table-cell text-left">Freguesia</th>
-                <th class="table-cell text-right">Ações</th>
-              </tr>
-            </thead>
+      <template v-else-if="filteredRuas.length">
+        <BaseTable>
+          <template #head>
+            <tr>
+              <th class="table-cell text-left">
+                Rua
+              </th>
 
-            <tbody class="divide-y divide-slate-100">
-              <tr
-                v-for="rua in paginatedRuas"
-                :key="getEntityId(rua)"
-                class="transition hover:bg-slate-50"
+              <th class="table-cell text-left">
+                Coordenada
+              </th>
+
+              <th class="table-cell text-left">
+                Freguesia
+              </th>
+
+              <th class="table-cell text-right">
+                Ações
+              </th>
+            </tr>
+          </template>
+
+          <tr
+            v-for="rua in paginatedRuas"
+            :key="getEntityId(rua)"
+          >
+            <td class="table-cell font-medium text-slate-800">
+              {{ rua.rua }}
+            </td>
+
+            <td class="table-cell font-mono text-xs text-slate-500">
+              {{ rua.coordenada || '-' }}
+            </td>
+
+            <td class="table-cell text-slate-600">
+              {{ getFreguesia(rua) }}
+            </td>
+
+            <td class="table-cell text-right">
+              <BaseButton
+                variant="secondary"
+                @click="router.push(`/ruas/${getEntityId(rua)}/editar`)"
               >
-                <td class="table-cell text-slate-900">
-                  {{ rua.rua }}
-                </td>
+                Editar
+              </BaseButton>
+            </td>
+          </tr>
 
-                <td class="table-cell font-mono text-xs text-slate-500">
-                  {{ rua.coordenada || '-' }}
-                </td>
+          <template #pagination>
+            <BasePagination
+              v-model:currentPage="currentPage"
+              :totalPages="totalPages"
+            />
+          </template>
+        </BaseTable>
+      </template>
 
-                <td class="table-cell text-slate-600">
-                  {{ getFreguesia(rua) }}
-                </td>
-
-                <td class="table-cell text-right">
-                  <BaseButton
-                    variant="secondary"
-                    @click="router.push(`/ruas/${getEntityId(rua)}/editar`)"
-                  >
-                    Editar
-                  </BaseButton>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div
-          v-if="totalPages > 1"
-          class="flex items-center justify-center gap-3 border-t border-slate-200 bg-white px-6 py-4"
-        >
-          <BaseButton
-            variant="secondary"
-            :disabled="currentPage === 1"
-            @click="currentPage--"
-          >
-            ← Anterior
-          </BaseButton>
-
-          <span class="text-sm text-slate-600">
-            Página
-            <span class="font-semibold text-slate-900">
-              {{ currentPage }}
-            </span>
-            de
-            <span class="font-semibold text-slate-900">
-              {{ totalPages }}
-            </span>
-          </span>
-
-          <BaseButton
-            variant="secondary"
-            :disabled="currentPage === totalPages"
-            @click="currentPage++"
-          >
-            Seguinte →
-          </BaseButton>
-        </div>
-      </div>
-
-      <div
+      <BaseEmptyState
         v-else
-        class="empty-state"
-      >
-        <p class="font-medium text-slate-700">
-          Nenhuma rua encontrada
-        </p>
-      </div>
+        title="Nenhuma rua encontrada"
+        description="Experimente alterar a pesquisa ou criar uma nova rua."
+      />
     </BaseCard>
   </TableLayout>
 </template>

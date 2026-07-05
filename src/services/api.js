@@ -25,7 +25,7 @@ api.interceptors.request.use(
 
 (config) => {
 
-const token =
+ token =
 localStorage.getItem(
 'auth_token'
 )
